@@ -32,11 +32,11 @@ const Homepage = () => {
             <Header />
             <section className="py-16 bg-pink-100 relative h-auto">
                 <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center px-4">
-                    <div className="space-y-10">
-                        <h1 className="text-6xl font-bold">
+                    <div className="space-y-10 pl-20">
+                        <h1 className="text-7xl text-left font-bold">
                             Fresh Flowers For Any Occasion
                         </h1>
-                        <Paragraph className="text-gray-600 text-left pl-10 text-base leading-relaxed">
+                        <Paragraph className="text-gray-600 text-left text-base leading-relaxed">
                             Most flowering plants depend on animals, such as bees, moths, and butterflies, to transfer their pollen between different flowers, and have evolved to attract these pollinators.
                         </Paragraph>
                         <button className="bg-pink-600 text-white px-10 p-2 hover:bg-pink-800">
@@ -57,26 +57,26 @@ const Homepage = () => {
                             </div>
                         </section>
                     </div>
-                    <div className="relative w-full h-[300px] md:h-[500px]">
-                        <div className="absolute top-0 right-10 z-10">
+                    <div className="relative w-full h-[300px] md:h-[600px]">
+                        <div className="absolute top-[0px] left-[450px] z-10">
                             <img
                                 src={Flower1}
                                 alt="Flower 1"
-                                className="rounded-lg w-[200px] h-[200px] object-contain"
+                                className="rounded-lg w-[230px] h-[230px] object-contain"
                             />
                         </div>
-                        <div className="absolute top-[50px] left-[120px] md:top-[130px] md:left-[140px] z-0">
+                        <div className="absolute top-[50px] left-[120px] md:top-[130px] md:left-[230px] z-0">
                             <img
                                 src={Flower2}
                                 alt="Flower 2"
-                                className="rounded-lg w-[300px] h-[300px] object-contain"
+                                className="rounded-lg w-[350px] h-[350px] object-contain"
                             />
                         </div>
-                        <div className="absolute top-[180px] left-[50px] md:top-[320px] md:left-[40px] z-10">
+                        <div className="absolute top-[180px] left-[50px] md:top-[360px] md:left-[110px] z-10">
                             <img
                                 src={Flower3}
                                 alt="Flower 3"
-                                className="rounded-lg w-[200px] h-[200px] object-contain"
+                                className="rounded-lg w-[230px] h-[230px] object-contain"
                             />
                         </div>
                     </div>
@@ -124,11 +124,11 @@ const Homepage = () => {
 
             <section className="py-16 bg-white relative h-auto">
                 <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center px-4">
-                    <div className="space-y-10">
-                        <h1 className="text-6xl font-bold">
+                    <div className="space-y-10 pl-20">
+                        <h1 className="text-6xl text-left font-bold">
                             Create Your Perfect Floral Design
                         </h1>
-                        <Paragraph className="text-gray-600 text-left pl-10 text-base leading-relaxed">
+                        <Paragraph className="text-gray-600 text-left text-base leading-relaxed">
                             Craft stunning flower designs tailored to your unique preferences. Choose from a wide range of blooms, styles, and personalized touches to make your bouquet truly one of a kind.
                         </Paragraph>
                         <button className="bg-pink-600 text-white px-10 p-2 hover:bg-pink-800">
@@ -136,18 +136,18 @@ const Homepage = () => {
                         </button>
                     </div>
                     <div className="relative w-full h-[300px] md:h-[500px]">
-                        <div className="absolute top-[0] right-[0] z-0">
+                        <div className="absolute md:top-[0px] md:left-[150px] z-0">
                             <img
                                 src={Homepic4}
                                 alt="Homepic 4"
-                                className="w-[450px] h-[450px] object-contain"
+                                className="w-[500px] h-[500px] object-contain"
                             />
                         </div>
-                        <div className="absolute top-[180px] left-[50px] md:top-[240px] md:left-[70px] z-10">
+                        <div className="absolute top-[180px] left-[50px] md:top-[240px] md:left-[100px] z-10">
                             <img
                                 src={Homepic5}
                                 alt="Homepic 5"
-                                className="w-[250px] h-[250px] object-contain"
+                                className="w-[300px] h-[300px] object-contain"
                             />
                         </div>
                     </div>
@@ -163,9 +163,9 @@ const Homepage = () => {
                     backgroundPosition: "center",
                 }}
             >
-                <h1 className="text-5xl font-bold mb-4">Get The Latest Deals</h1>
+                <h1 className="text-5xl font-bold mb-4 mt-10">Get The Latest Deals</h1>
                 <p className="text-gray-600 mb-6">Sign up now and get $10 coupon for first shopping!</p>
-                <div className="inline-flex">
+                <div className="inline-flex mb-10">
                     <input
                         type="email"
                         placeholder="Enter your email"

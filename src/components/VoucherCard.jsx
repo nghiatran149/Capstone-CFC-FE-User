@@ -4,7 +4,7 @@ import { Button } from 'antd';
 const VoucherCard = ({ title, description, buttonText }) => {
   return (
     <div
-      className="bg-pink-100 rounded-lg shadow-md p-6"
+      className="bg-pink-100 shadow-md p-6"
       style={{
         backgroundImage: `url(${VoucherBackground})`,
         backgroundSize: "cover",
