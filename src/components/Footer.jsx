@@ -27,7 +27,7 @@ const Footer = () => {
         </div>
 
         <div className="col-span-2 flex flex-col justify-between text-center space-y-4">
-          <h2 className="text-3xl font-bold text-pink-500 font-serif">CUSTOMFLOWERCHAIN</h2>
+          <h2 className="text-4xl font-bold text-pink-500 font-serif">CustomFlowerChain</h2>
           <div className="flex justify-center gap-6 text-3xl mt-6">
             <FacebookOutlined />
             <InstagramOutlined />
@@ -45,7 +45,7 @@ const Footer = () => {
       <Divider className="border-gray-500" />
 
       <div className="text-center text-sm text-gray-400">
-        <p>2025 @customflowerchain, all right reserved.</p>
+        <p>© 2025 @customflowerchain, all right reserved.</p>
       </div>
     </footer>
   );

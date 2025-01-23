@@ -17,7 +17,7 @@ const Header = () => {
   }, [location.pathname]);
 
   return (
-    <header className="w-full border-b border-gray-200 px-4 py-3 bg-white shadow-md">
+    <header className="w-full border-b border-gray-200 px-4 py-3 bg-pink-90 shadow-md">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="text-3xl font-bold text-pink-500">
           CustomFlowerChain
