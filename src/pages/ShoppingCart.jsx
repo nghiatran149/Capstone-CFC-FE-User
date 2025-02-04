@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, InputNumber } from 'antd';
 import { DeleteOutlined, ArrowLeftOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
@@ -55,9 +55,11 @@ const ShoppingCart = () => {
                 ))}
 
                 <div className="text-center mt-10 mb-8">
-                    <Button type="primary" className="bg-pink-400 text-white text-2xl px-10 py-8 rounded-md">
-                        ${total} Checkout
-                    </Button>
+                    <Link to="/checkout">
+                        <Button type="primary" className="bg-pink-400 text-white text-2xl px-10 py-8 rounded-md">
+                            ${total} Checkout
+                        </Button>
+                    </Link>
                 </div>
             </div>
             <Footer />
