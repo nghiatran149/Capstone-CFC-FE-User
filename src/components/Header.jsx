@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { SearchOutlined, ShoppingCartOutlined, UserOutlined, LogoutOutlined, WalletOutlined } from '@ant-design/icons';
 
 const Header = () => {
   const navItems = [
@@ -9,12 +10,15 @@ const Header = () => {
     { name: 'Contact Us', link: '/contact' }
   ];
 
-  const location = useLocation();
-  const [activeItem, setActiveItem] = useState(location.pathname);
+const location = useLocation();
+const [activeItem, setActiveItem] = useState(location.pathname);
+const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  useEffect(() => {
-    setActiveItem(location.pathname);
-  }, [location.pathname]);
+useEffect(() => {
+  setActiveItem(location.pathname);
+}, [location.pathname]);
+
+const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
   return (
     <header className="w-full border-b border-gray-200 px-4 py-3 bg-pink-50 shadow-md">
@@ -40,23 +44,58 @@ const Header = () => {
 
         <div className="flex items-center space-x-6">
           <button className="text-gray-600 hover:text-pink-500 transition-colors">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+            <SearchOutlined className="text-2xl" />
           </button>
-          <Link to="/cart" className="text-gray-600 hover:text-pink-500 transition-colors">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-          </Link>
-          <Link to="/userprofile" className="text-gray-600 hover:text-pink-500 transition-colors">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-          </Link>
+
+          {/* Cart Icon with Dropdown */}
+          <div className="relative">
+            <Link
+              to="/cart"
+              className="text-gray-600 hover:text-pink-500 transition-colors"
+            >
+              <ShoppingCartOutlined className="text-2xl" />
+            </Link>
+          </div>
+
+          {/* User Profile Icon with Dropdown */}
+          <div className="relative">
+            <button
+              onClick={toggleDropdown}
+              className="text-gray-600 hover:text-pink-500 transition-colors"
+            >
+              <UserOutlined className="text-2xl" />
+            </button>
+
+            {isDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md py-2 z-50">
+                <Link
+                  to="/userprofile"
+                  className="flex items-center px-4 py-2 text-blue-600 hover:bg-pink-200"
+                >
+                  <UserOutlined className="text-lg mr-4" />
+                  Profile
+                </Link>
+                <Link
+                  to="/wallet"
+                  className="flex items-center px-4 py-2 text-green-600 hover:bg-pink-200"
+                >
+                  <WalletOutlined className="text-lg mr-4" />
+                  Wallet
+                </Link>
+                <Link
+                  to="/logout"
+                  className="flex items-center px-4 py-2 text-red-600 hover:bg-pink-200"
+                >
+                  <LogoutOutlined className="text-lg mr-4" />
+                  Log Out
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
+      {/* Mobile Version */}
       <div className="md:hidden flex justify-between items-center py-2">
         <div className="text-2xl font-bold text-pink-500">
           CustomFlowerChain
@@ -70,6 +109,4 @@ const Header = () => {
     </header>
   );
 };
-
 export default Header;
-

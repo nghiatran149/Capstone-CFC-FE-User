@@ -5,6 +5,7 @@ import RegisterPage from "./pages/RegisterPage"
 import Homepage from "./pages/Homepage"
 import ProductPage from "./pages/ProductPage"
 import UserProfile from "./pages/UserProfile"
+import WalletPage from "./pages/Wallet"
 import ShoppingCart from "./pages/ShoppingCart"
 import Checkout from "./pages/Checkout"
 
@@ -19,6 +20,7 @@ function App() {
                 <Route path="/product" element={<ProductPage />} />
 
                 <Route path="/userprofile" element={<UserProfile />} />
+                <Route path="/wallet" element={<WalletPage />} />
 
                 <Route path="/cart" element={<ShoppingCart />} />
                 <Route path="/checkout" element={<Checkout />} />
