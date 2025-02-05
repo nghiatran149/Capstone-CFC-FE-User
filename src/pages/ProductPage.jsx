@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Input, Card, Row, Col } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import Header from "../components/Header";
@@ -95,6 +96,7 @@ const ProductPage = () => {
             <Row gutter={[16, 16]}>
                 {filteredProducts.map(product => (
                     <Col key={product.id} xs={24} sm={12} md={6}>
+                        <Link to="/productdetail">
                         <Card
                             hoverable
                             cover={<img alt={product.title} src={product.image} className="w-full h-60 object-cover" />}
@@ -109,6 +111,7 @@ const ProductPage = () => {
                                 </a>
                             </div>
                         </Card>
+                        </Link>
                     </Col>
                 ))}
             </Row>

@@ -63,19 +63,19 @@ const WalletPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-20 mb-10-">
                     <div className="bg-blue-500 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
                         <div className="absolute right-0 top-0 w-24 h-24 bg-blue-400 rounded-full transform translate-x-8 -translate-y-8"></div>
-                        <h3 className="text-lg font-medium mb-2">Total Orders</h3>
+                        <h3 className="text-xl font-medium mb-2">Total Orders</h3>
                         <p className="text-3xl font-bold">2</p>
                     </div>
 
                     <div className="bg-green-500 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
                         <div className="absolute right-0 top-0 w-24 h-24 bg-green-400 rounded-full transform translate-x-8 -translate-y-8"></div>
-                        <h3 className="text-lg font-medium mb-2">Total Transactions</h3>
+                        <h3 className="text-xl font-medium mb-2">Total Transactions</h3>
                         <p className="text-3xl font-bold">3</p>
                     </div>
 
                     <div className="bg-purple-500 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
                         <div className="absolute right-0 top-0 w-24 h-24 bg-purple-400 rounded-full transform translate-x-8 -translate-y-8"></div>
-                        <h3 className="text-lg font-medium mb-2">Wallet Balance</h3>
+                        <h3 className="text-xl font-medium mb-2">Wallet Balance</h3>
                         <p className="text-3xl font-bold">$125</p>
                     </div>
 
@@ -97,22 +97,22 @@ const WalletPage = () => {
                             <table className="min-w-full">
                                 <thead className="bg-pink-50">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order ID</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Details</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Order ID</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Details</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Price</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Date</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
                                     {orders.map((order) => (
                                         <tr key={order.orderId}>
-                                            <td className="px-6 py-4 text-left whitespace-nowrap text-sm">{order.orderId}</td>
-                                            <td className="px-6 py-4 text-left text-sm">{order.details.join(", ")}</td>
-                                            <td className="px-6 py-4 text-left whitespace-nowrap text-sm">${order.price}</td>
-                                            <td className="px-6 py-4 text-left whitespace-nowrap text-sm">{order.date}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.orderId}</td>
+                                            <td className="px-6 py-4 text-left text-base">{order.details.join(", ")}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">${order.price}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.date}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap">
-                                                <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(order.status)}`}>
+                                                <span className={`px-2 py-1 text-base rounded-full ${getStatusColor(order.status)}`}>
                                                     {order.status}
                                                 </span>
                                             </td>
@@ -129,26 +129,26 @@ const WalletPage = () => {
                             <table className="min-w-full">
                                 <thead className="bg-pink-50">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Transaction ID</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Transaction ID</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Type</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Amount</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Date</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
                                     {transactions.map((transaction) => (
                                         <tr key={transaction.transactionId}>
-                                            <td className="px-6 py-4 text-left whitespace-nowrap text-sm">{transaction.transactionId}</td>
-                                            <td className="px-6 py-4 text-left whitespace-nowrap text-sm">{transaction.type}</td>
-                                            <td className="px-6 py-4 text-left whitespace-nowrap text-sm">
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{transaction.transactionId}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{transaction.type}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">
                                                 <span className={transaction.amount > 0 ? 'text-green-600' : 'text-red-600'}>
                                                     ${Math.abs(transaction.amount)}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 text-left whitespace-nowrap text-sm">{transaction.date}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{transaction.date}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap">
-                                                <span className={`px-2 py-1 text-left text-xs rounded-full ${getStatusColor(transaction.status)}`}>
+                                                <span className={`px-2 py-1 text-left text-base rounded-full ${getStatusColor(transaction.status)}`}>
                                                     {transaction.status}
                                                 </span>
                                             </td>

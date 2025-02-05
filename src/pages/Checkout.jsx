@@ -93,10 +93,11 @@ const Checkout = () => {
 
                     <div>
                         <h2 className="text-3xl font-semibold text-pink-500 mb-10">Your Wallet Balance</h2>
-                        <Card className="bg-purple-400 text-white text-center shadow-md h-2/3 w-1/2 mx-auto">
-                            <h3 className="text-xl text-gray-200 mb-5">Wallet Balance</h3>
+                        <div className="bg-purple-500 rounded-xl p-6 h-2/3 w-1/2 mx-auto text-white shadow-lg relative overflow-hidden">
+                            <div className="absolute right-0 top-0 w-24 h-24 bg-purple-400 rounded-full transform translate-x-8 -translate-y-8"></div>
+                            <h3 className="text-xl font-medium mb-2">Wallet Balance</h3>
                             <p className="text-3xl font-bold">${walletBalance}</p>
-                        </Card>
+                        </div>
                     </div>
                 </div>
 
