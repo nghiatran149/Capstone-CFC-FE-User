@@ -1,48 +1,46 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, Input, Button, message } from 'antd';
-import Header from "../components/Header";
+import { Input, Button, message } from 'antd';
 import axios from 'axios';
+import Header from "../components/Header";
 import Footer from "../components/Footer";
 import AuthPic from "../assets/authpic.jpg";
 import AuthBG from "../assets/authbg.jpg";
 
-const RegisterPage = () => {
+const ForgotPasswordPage = () => {
     const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        // Simple validation
-        if (password !== confirmPassword) {
-            message.error("Passwords do not match!");
+    
+        // Kiểm tra nếu email hợp lệ
+        if (!email) {
+            message.error("Please enter your email.");
             return;
         }
-
+    
         try {
-            // Gửi request đăng ký đến API
-            const response = await axios.post('http://localhost:5243/api/auth/register-customer-account', {
-                email: email,
-                password: password
-            });
-
-            // Nếu đăng ký thành công
-            if (response.data.resultStatus === 'Success') {
-                message.success("Register successfully!");
-                setEmail('');
-                setPassword('');
-                setConfirmPassword('');
+            // Gửi yêu cầu đến API forgot-password
+            const response = await axios.post(
+                `http://localhost:5243/api/auth/forgot-password-by-customer?email=${encodeURIComponent(email)}`
+            );
+    
+            if (response.status === 200) {
+                // Nếu yêu cầu thành công
+                message.success("Password reset link sent to your email.");
             } else {
-                message.error("Error: " + response.data.messages.join(' '));
+                // Nếu có lỗi khi gửi yêu cầu
+                message.error("Failed to send password reset link.");
             }
+    
+            // Reset form
+            setEmail('');
         } catch (error) {
-            // Xử lý lỗi nếu có
-            console.error("Error during registration:", error);
-            message.error("Registration failed. Please try again.");
+            console.error('Error during password reset request:', error);
+            message.error("An error occurred. Please try again later.");
         }
     };
+
     return (
         <div className="bg-pink-50 w-full min-h-screen">
             <Header />
@@ -55,10 +53,10 @@ const RegisterPage = () => {
                 }}
             >
                 <h1 className="text-6xl text-white text-left font-bold mt-10 mb-10 mx-20 max-w-2xl">
-                    Sign In to Customize Your Dream Bouquets
+                    Forgot Password
                 </h1>
                 <p className="text-white text-left mb-6 mx-20 max-w-2xl">
-                    Unlock a world of possibilities—personalize your floral designs, manage orders, and enjoy seamless delivery with just a few clicks.
+                    Enter your email to receive a link to reset your password.
                 </p>
             </section>
 
@@ -73,7 +71,7 @@ const RegisterPage = () => {
             >
                 <section className=" p-8 max-w-md w-full">
                     <h1 className="text-6xl font-serif font-bold mt-10 mb-10 text-center">
-                        Sign Up
+                        Forgot Password
                     </h1>
                     <Link to={"/login"} className="text-lg font-serif block text-center mb-5">
                         Already have an account? Sign In
@@ -89,29 +87,11 @@ const RegisterPage = () => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label htmlFor="password" className="block text-xl text-left font-medium mb-5">Password</label>
-                            <Input.Password
-                                id="password"
-                                placeholder="Enter your password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label htmlFor="confirm-password" className="block text-xl text-left font-medium mb-5">Confirm Password</label>
-                            <Input.Password
-                                id="confirm-password"
-                                placeholder="Re-enter your password"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                            />
-                        </div>
-                        <div className="mb-4">
                             <button
-                                htmlType="submit"
+                                type="submit"
                                 className="bg-pink-600 text-white px-10 p-2 mt-5 hover:bg-pink-800"
                             >
-                                Sign Up
+                               Confirm
                             </button>
                         </div>
                     </form>
@@ -122,4 +102,4 @@ const RegisterPage = () => {
     );
 };
 
-export default RegisterPage;
+export default ForgotPasswordPage;
