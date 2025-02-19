@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, Input, Button, message } from 'antd';
 import Header from "../components/Header";
+import axios from 'axios';
 import Footer from "../components/Footer";
 import AuthPic from "../assets/authpic.jpg";
 import AuthBG from "../assets/authbg.jpg";
@@ -11,7 +12,7 @@ const RegisterPage = () => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         // Simple validation
@@ -20,12 +21,27 @@ const RegisterPage = () => {
             return;
         }
 
-        // Handle successful signup logic here
-        message.success("Signup successful!");
-        // Reset form fields
-        setEmail('');
-        setPassword('');
-        setConfirmPassword('');
+        try {
+            // Gửi request đăng ký đến API
+            const response = await axios.post('http://localhost:5243/api/auth/register-customer-account', {
+                email: email,
+                password: password
+            });
+
+            // Nếu đăng ký thành công
+            if (response.data.resultStatus === 'Success') {
+                message.success("Register successfully!");
+                setEmail('');
+                setPassword('');
+                setConfirmPassword('');
+            } else {
+                message.error("Error: " + response.data.messages.join(' '));
+            }
+        } catch (error) {
+            // Xử lý lỗi nếu có
+            console.error("Error during registration:", error);
+            message.error("Registration failed. Please try again.");
+        }
     };
 
     return (

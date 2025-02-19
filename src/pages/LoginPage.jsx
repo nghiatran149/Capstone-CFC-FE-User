@@ -1,12 +1,43 @@
-import React from 'react';
+
+import React, { useState } from 'react'; 
 import { Link } from 'react-router-dom';
-import { Card, Input, Button } from 'antd';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { Input, Button, message } from 'antd';
+import axios from 'axios';
 import AuthPic from "../assets/authpic.jpg";
 import AuthBG from "../assets/authbg.jpg";
 
 const LoginPage = () => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        
+        if (!email || !password) {
+            message.error("Email and password are required!");
+            return;
+        }
+
+        try {
+            const response = await axios.post('http://localhost:5243/api/auth/login', {
+                email: email,
+                password: password
+            });
+            if (response.data.resultStatus === 'Success') {
+                message.success("Login successfully! Welcome Customer");
+                localStorage.setItem("accessToken", response.data.data.accessToken);
+                window.location.href = "/Homepage"; 
+            } else {
+                message.error("Login failed: " + response.data.messages.join(' '));
+            }
+        } catch (error) {
+            console.error("Error during login:", error);
+            message.error("Login failed. Please try again.");
+        }
+    };
     return (
         <div className="bg-pink-50 w-full min-h-screen">
             <Header />
@@ -35,29 +66,44 @@ const LoginPage = () => {
                     padding: '40px 0',
                 }}
             >
-                <section>
-                    <h1 className="text-6xl font-serif font-bold mt-10 mb-10 mx-20 max-w-2xl">
+                <section className="p-8 max-w-md w-full">
+                    <h1 className="text-6xl font-serif font-bold mt-10 mb-10 text-center">
                         Sign In
                     </h1>
-                    <Link to={"/register"} className="text-lg font-serif ">
+                    <Link to={"/register"} className="text-lg font-serif block text-center mb-5">
                         Don&apos;t have an account? Sign Up
                     </Link>
-                        <form>
-                            <div className="mb-4 mt-10">
-                                <label htmlFor="username" className="block text-xl text-left font-medium mb-5">Email</label>
-                                <Input id="username" placeholder="Enter your username or email" />
-                            </div>
-                            <div className="mb-4">
-                                <label htmlFor="password" className="block text-xl text-left font-medium mb-5">Password</label>
-                                <Input.Password id="password" placeholder="Enter your password" />
-                            </div>
-                            <div className="mb-4">
-                                <button className="bg-pink-600 text-white px-10 p-2 mt-5 hover:bg-pink-800">Sign In</button>
-                            </div>
-                            <div className="text-right text-gray-600 text-sm mt-5">
-                                <Link to={"/forgot"} className="hover:text-gray-800">Forgot your password?</Link>
-                            </div>
-                        </form>
+                    <form onSubmit={handleSubmit}>
+                        <div className="mb-4">
+                            <label htmlFor="email" className="block text-xl text-left font-medium mb-5">Email</label>
+                            <Input
+                                id="email"
+                                placeholder="Enter your email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="password" className="block text-xl text-left font-medium mb-5">Password</label>
+                            <Input.Password
+                                id="password"
+                                placeholder="Enter your password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <button
+                                type="submit"
+                                className="bg-pink-600 text-white px-10 p-2 mt-5 hover:bg-pink-800"
+                            >
+                                Sign In
+                            </button>
+                        </div>
+                        <div className="text-right text-gray-600 text-sm mt-5">
+                            <Link to={"/forgot"} className="hover:text-gray-800">Forgot your password?</Link>
+                        </div>
+                    </form>
                 </section>
             </div>
             <Footer />
