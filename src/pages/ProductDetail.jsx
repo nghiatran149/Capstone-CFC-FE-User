@@ -28,24 +28,24 @@ const ProductDetail = () => {
           <div>
             <div className="w-full h-auto flex items-center justify-center rounded-lg overflow-hidden">
               <img
-                src="https://lh5.googleusercontent.com/proxy/5zcQXR2SJ2IX2ouF_fMsypmkdAAno2VwGqGzE3kbpZuJa6JEDVYRxR6H9EJUynA_M_PJZNBoLbmA6rlO0xBxwJikx2FO67ur43zTN6QbGhLUeX-yiIRJupDzPoWyl2xIZHjbRp6mm4M7aPhsfw"
+                src="https://hoatuoionline.net/wp-content/uploads/2024/06/z2482687689180_97a7f86dbc0b8fe8cf800dcab84b8196.jpg"
                 alt="Bouquet No.3"
                 className="w-3/4 h-auto object-cover rounded-lg"
               />
             </div>
             <div className="flex items-center justify-center rounded-lg overflow-hidden gap-4 mt-10">
               <img
-                src="https://lh5.googleusercontent.com/proxy/5zcQXR2SJ2IX2ouF_fMsypmkdAAno2VwGqGzE3kbpZuJa6JEDVYRxR6H9EJUynA_M_PJZNBoLbmA6rlO0xBxwJikx2FO67ur43zTN6QbGhLUeX-yiIRJupDzPoWyl2xIZHjbRp6mm4M7aPhsfw"
+                src="https://hoatuoionline.net/wp-content/uploads/2024/06/z2482687689180_97a7f86dbc0b8fe8cf800dcab84b8196.jpg"
                 alt="Thumbnail 1"
                 className="w-20 h-20 object-cover rounded-lg border-2 border-pink-400"
               />
               <img
-                src="https://lh5.googleusercontent.com/proxy/5zcQXR2SJ2IX2ouF_fMsypmkdAAno2VwGqGzE3kbpZuJa6JEDVYRxR6H9EJUynA_M_PJZNBoLbmA6rlO0xBxwJikx2FO67ur43zTN6QbGhLUeX-yiIRJupDzPoWyl2xIZHjbRp6mm4M7aPhsfw"
+                src="https://hoatuoionline.net/wp-content/uploads/2024/06/z2482687689180_97a7f86dbc0b8fe8cf800dcab84b8196.jpg"
                 alt="Thumbnail 2"
                 className="w-20 h-20 object-cover rounded-lg"
               />
               <img
-                src="https://lh5.googleusercontent.com/proxy/5zcQXR2SJ2IX2ouF_fMsypmkdAAno2VwGqGzE3kbpZuJa6JEDVYRxR6H9EJUynA_M_PJZNBoLbmA6rlO0xBxwJikx2FO67ur43zTN6QbGhLUeX-yiIRJupDzPoWyl2xIZHjbRp6mm4M7aPhsfw"
+                src="https://hoatuoionline.net/wp-content/uploads/2024/06/z2482687689180_97a7f86dbc0b8fe8cf800dcab84b8196.jpg"
                 alt="Thumbnail 3"
                 className="w-20 h-20 object-cover rounded-lg"
               />
