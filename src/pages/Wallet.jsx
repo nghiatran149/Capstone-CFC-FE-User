@@ -64,29 +64,35 @@ const WalletPage = () => {
                     <div className="bg-blue-500 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
                         <div className="absolute right-0 top-0 w-24 h-24 bg-blue-400 rounded-full transform translate-x-8 -translate-y-8"></div>
                         <h3 className="text-xl font-medium mb-2">Total Orders</h3>
-                        <p className="text-3xl font-bold">2</p>
-                    </div>
-
-                    <div className="bg-green-500 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
-                        <div className="absolute right-0 top-0 w-24 h-24 bg-green-400 rounded-full transform translate-x-8 -translate-y-8"></div>
-                        <h3 className="text-xl font-medium mb-2">Total Transactions</h3>
-                        <p className="text-3xl font-bold">3</p>
+                        <p className="text-3xl font-bold">5</p>
                     </div>
 
                     <div className="bg-purple-500 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
                         <div className="absolute right-0 top-0 w-24 h-24 bg-purple-400 rounded-full transform translate-x-8 -translate-y-8"></div>
-                        <h3 className="text-xl font-medium mb-2">Wallet Balance</h3>
+                        <h3 className="text-xl font-medium mb-2">Total Transactions</h3>
+                        <p className="text-3xl font-bold">3</p>
+                    </div>
+
+                    <div className="bg-green-500 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
+                        <div className="absolute right-0 top-0 w-24 h-24 bg-green-400 rounded-full transform translate-x-8 -translate-y-8"></div>
+                        <h3 className="text-xl font-medium mb-2">Successful Orders</h3>
+                        <p className="text-3xl font-bold">4</p>
+                    </div>
+
+                    <div className="bg-red-500 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
+                        <div className="absolute right-0 top-0 w-24 h-24 bg-red-400 rounded-full transform translate-x-8 -translate-y-8"></div>
+                        <h3 className="text-xl font-medium mb-2">Failed Orders</h3>
                         <p className="text-3xl font-bold">$125</p>
                     </div>
 
-                    <div className="flex flex-col gap-4">
+                    {/* <div className="flex flex-col gap-4">
                         <button className="bg-pink-400 text-white text-xl py-4 mx-10 rounded-3xl hover:bg-pink-600 transition-colors">
                             + Add Balance
                         </button>
                         <button className="bg-pink-400 text-white text-xl py-4 mx-10 rounded-3xl hover:bg-pink-600 transition-colors">
                             Withdraw
                         </button>
-                    </div>
+                    </div> */}
                 </div>
 
                 <div className="grid mt-10">
