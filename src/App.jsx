@@ -9,6 +9,8 @@ import UserProfile from "./pages/UserProfile"
 import WalletPage from "./pages/Wallet"
 import ShoppingCart from "./pages/ShoppingCart"
 import Checkout from "./pages/Checkout"
+import Customize from "./pages/Customize"
+import Customize2 from "./pages/Customize2"
 
 function App() {
     return (
@@ -27,6 +29,8 @@ function App() {
                 <Route path="/cart" element={<ShoppingCart />} />
                 <Route path="/checkout" element={<Checkout />} />
 
+                <Route path="/customize" element={<Customize />} />
+                <Route path="/customize2" element={<Customize2 />} />
             </Routes>
         </BrowserRouter>
     );
