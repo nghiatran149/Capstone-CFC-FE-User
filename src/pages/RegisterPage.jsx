@@ -15,20 +15,16 @@ const RegisterPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Simple validation
         if (password !== confirmPassword) {
             message.error("Passwords do not match!");
             return;
         }
 
         try {
-            // Gửi request đăng ký đến API
-            const response = await axios.post('http://localhost:5243/api/auth/register-customer-account', {
+            const response = await axios.post('https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/auth/register-customer-account', {
                 email: email,
                 password: password
             });
-
-            // Nếu đăng ký thành công
             if (response.data.resultStatus === 'Success') {
                 message.success("Register successfully!");
                 setEmail('');
@@ -38,7 +34,6 @@ const RegisterPage = () => {
                 message.error("Error: " + response.data.messages.join(' '));
             }
         } catch (error) {
-            // Xử lý lỗi nếu có
             console.error("Error during registration:", error);
             message.error("Registration failed. Please try again.");
         }

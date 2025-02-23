@@ -22,7 +22,7 @@ const LoginPage = () => {
         }
 
         try {
-            const response = await axios.post('http://localhost:5243/api/auth/login', {
+            const response = await axios.post('https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/auth/login', {
                 email: email,
                 password: password
             });

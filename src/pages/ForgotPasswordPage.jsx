@@ -22,7 +22,7 @@ const ForgotPasswordPage = () => {
         try {
             // Gửi yêu cầu đến API forgot-password
             const response = await axios.post(
-                `http://localhost:5243/api/auth/forgot-password-by-customer?email=${encodeURIComponent(email)}`
+                `https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/auth/forgot-password-by-customer?email=${encodeURIComponent(email)}`
             );
     
             if (response.status === 200) {
