@@ -11,6 +11,7 @@ import ShoppingCart from "./pages/ShoppingCart"
 import Checkout from "./pages/Checkout"
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
+import Customize from "./pages/Customize"
 
 function App() {
     return (
@@ -34,6 +35,7 @@ function App() {
                 <Route path="/cart" element={<ShoppingCart />} />
                 <Route path="/checkout" element={<Checkout />} />
 
+                <Route path="/customize" element={<Customize />} />
             </Routes>
         </BrowserRouter>
     );
