@@ -14,7 +14,6 @@ const ProductDetail = () => {
   const [text, setText] = useState('');
   const [rating, setRating] = useState(0);
 
-  
   useEffect(() => {
     const fetchProductDetail = async () => {
       try {
@@ -24,14 +23,52 @@ const ProductDetail = () => {
         console.error("Error fetching product details:", error);
       }
     };
-    fetchProductDetail();
-  }, [id]);
 
-  const handleSubmit = () => {
+    const fetchComments = async () => {
+      try {
+        const response = await axios.get(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/comment/get-comments-by-productId?productId=${id}`);
+        setComments(response.data.data); 
+      } catch (error) {
+        console.error("Error fetching comments:", error);
+      }
+    };
+
+    fetchProductDetail();
+    fetchComments();
+  }, [id]);
+  const fetchCustomer = async () => {
+    try {
+      const response = await axios.get('https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/customers');
+      const currentCustomer = response.data[0]; 
+      return currentCustomer.customerId;  
+    } catch (error) {
+      console.error("Error fetching customer info:", error);
+    }
+  };
+
+  const handleSubmit = async () => {
     if (text.trim() !== '') {
-      setComments([{ text, rating, id: Date.now() }, ...comments]);
-      setText('');
-      setRating(0);
+      try {
+        
+        const customerId = await fetchCustomer();
+  
+        const newComment = {
+          productId: id,
+          customerId: customerId,  
+          rating: rating,
+          feedback: text,
+          status: true
+        };
+  
+        const response = await axios.post('https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/comment/create-comment', newComment);
+  
+        
+        setComments([...comments, response.data.data]);
+        setText('');
+        setRating(0);
+      } catch (error) {
+        console.error("Error submitting comment:", error);
+      }
     }
   };
 
@@ -59,13 +96,12 @@ const ProductDetail = () => {
           <div>
             <div className="w-full h-auto flex items-center justify-center rounded-lg overflow-hidden">
               <img
-                src={product.productImages[0].imageUrl} 
+                src={product.productImages[0]?.imageUrl} 
                 alt={product.productName}
                 className="w-3/4 h-auto object-cover rounded-lg"
               />
             </div>
             <div className="flex items-center justify-center rounded-lg overflow-hidden gap-4 mt-10">
-              {}
               {product.productImages.map((image, index) => (
                 <img
                   key={index}
@@ -91,10 +127,6 @@ const ProductDetail = () => {
             <div className="flex items-center gap-4 mt-5">
               <h2 className="text-left text-lg font-bold">Date:</h2>
               <DatePicker className="border-pink-400 rounded-md px-2 py-2" suffixIcon={<CalendarOutlined className="text-black text-lg" />} />
-            </div>
-            <div className="flex items-center gap-4 mt-5">
-              <h2 className="text-left text-lg font-bold">Time:</h2>
-              <input type="time" className="border border-pink-400 rounded-md px-2 py-1" />
             </div>
             <div className="flex items-center gap-4 mt-5">
               <h2 className="text-left text-lg font-bold">Quantity:</h2>
@@ -128,8 +160,8 @@ const ProductDetail = () => {
               <List.Item>
                 <List.Item.Meta
                   avatar={<UserOutlined className="text-2xl" />}
-                  title={<Rate disabled defaultValue={item.rating} />}
-                  description={item.text}
+                  title={<>{item.customerName || "Anonymous"} <Rate disabled defaultValue={item.rating} /></>}
+                  description={item.feedback}
                 />
               </List.Item>
             )}

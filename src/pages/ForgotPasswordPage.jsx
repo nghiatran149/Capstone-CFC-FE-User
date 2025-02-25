@@ -13,34 +13,26 @@ const ForgotPasswordPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
     
-        // Kiểm tra nếu email hợp lệ
         if (!email) {
             message.error("Please enter your email.");
             return;
         }
-    
         try {
-            // Gửi yêu cầu đến API forgot-password
             const response = await axios.post(
                 `https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/auth/forgot-password-by-customer?email=${encodeURIComponent(email)}`
             );
     
             if (response.status === 200) {
-                // Nếu yêu cầu thành công
                 message.success("Password reset link sent to your email.");
             } else {
-                // Nếu có lỗi khi gửi yêu cầu
                 message.error("Failed to send password reset link.");
             }
-    
-            // Reset form
             setEmail('');
         } catch (error) {
             console.error('Error during password reset request:', error);
             message.error("An error occurred. Please try again later.");
         }
     };
-
     return (
         <div className="bg-pink-50 w-full min-h-screen">
             <Header />

@@ -28,21 +28,17 @@ const ChangePasswordPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        // Kiểm tra nếu mật khẩu xác nhận trùng khớp
         if (password !== confirmPassword) {
             message.error("Passwords do not match!");
             return;
         }
 
-        // Kiểm tra nếu email hoặc token không có
         if (!email || !token) {
             message.error("Invalid reset request.");
             return;
         }
 
         try {
-            // Gửi yêu cầu POST đến API để thay đổi mật khẩu
             const response = await axios.post(
                 `http://localhost:5243/api/auth/set-password-by-customer`,
                 null,
@@ -57,15 +53,13 @@ const ChangePasswordPage = () => {
 
             if (response.status === 200) {
                 message.success("Password reset successfully.");
-                // Điều hướng người dùng đến trang đăng nhập
                 setTimeout(() => {
-                    window.location.href = "/login";  // Hoặc dùng React Router để chuyển hướng
+                    window.location.href = "/login";  
                 }, 2000);
             } else {
                 message.error("Failed to reset password.");
             }
 
-            // Reset form
             setPassword('');
             setConfirmPassword('');
         } catch (error) {
