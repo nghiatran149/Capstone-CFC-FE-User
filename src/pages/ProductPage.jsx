@@ -57,8 +57,12 @@ const ProductPage = () => {
                     product.productImages && product.productImages.length > 0 ? (
                         <img 
                             alt={product.productName} 
-                            src={product.productImages[0].imageUrl} 
-                            className="w-full h-60 object-cover" 
+                            src={product.productImages[0].productImage1}
+                            className="w-full h-60 object-cover"
+                            onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = 'https://via.placeholder.com/300x200?text=No+Image';
+                            }}
                         />
                     ) : (
                         <div className="w-full h-60 flex items-center justify-center bg-gray-200">

@@ -28,9 +28,9 @@ const handleLogout = () => {
   return (
     <header className="w-full border-b border-gray-200 px-4 py-3 bg-pink-50 shadow-md">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <div className="text-3xl font-bold text-pink-500">
+        <Link to="/home" className="text-3xl font-bold text-pink-500">
           CustomFlowerChain
-        </div>
+        </Link>
 
         <nav className="hidden md:flex space-x-8">
           {navItems.map((item) => (

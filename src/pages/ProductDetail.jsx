@@ -132,9 +132,20 @@ const ProductDetail = () => {
               <h2 className="text-left text-lg font-bold">Quantity:</h2>
               <InputNumber min={1} defaultValue={1} className="border-pink-400 rounded-md" />
             </div>
-            <Button type="primary" className="bg-pink-400 text-white text-xl px-10 py-6 mt-10 rounded-md">
-              ADD TO CART
-            </Button>
+            <div className="flex items-center gap-4 mt-10">
+              <Button 
+                type="primary" 
+                className="bg-pink-400 text-white text-xl px-10 py-6 rounded-md"
+              >
+                ADD TO CART
+              </Button>
+              <Button 
+                type="primary" 
+                className="bg-pink-600 text-white text-xl px-10 py-6 rounded-md hover:bg-pink-800"
+              >
+                BUY NOW
+              </Button>
+            </div>
           </div>
         </div>
 
