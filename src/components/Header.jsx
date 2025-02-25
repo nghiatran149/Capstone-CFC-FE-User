@@ -20,6 +20,11 @@ useEffect(() => {
 
 const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
+const handleLogout = () => {
+  localStorage.removeItem("accessToken");
+  window.location.href = "/login";
+};
+
   return (
     <header className="w-full border-b border-gray-200 px-4 py-3 bg-pink-50 shadow-md">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -82,13 +87,13 @@ const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
                   <WalletOutlined className="text-lg mr-4" />
                   Wallet
                 </Link>
-                <Link
-                  to="/logout"
-                  className="flex items-center px-4 py-2 text-red-600 hover:bg-pink-200"
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center w-full px-4 py-2 text-red-600 hover:bg-pink-200"
                 >
                   <LogoutOutlined className="text-lg mr-4" />
                   Log Out
-                </Link>
+                </button>
               </div>
             )}
           </div>
