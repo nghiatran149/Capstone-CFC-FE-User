@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { Button, Slider } from 'antd';
@@ -16,23 +16,78 @@ const FlowerCustomization = () => {
     const [totalFlowers, setTotalFlowers] = useState(0);
     const [flowerQuantity, setFlowerQuantity] = useState(1);
 
+    const [baskets, setBaskets] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const [flowers, setFlowers] = useState([]);
+    const [loadingFlowers, setLoadingFlowers] = useState(true);
+    const [errorFlowers, setErrorFlowers] = useState(null);
+
     const navigate = useNavigate();
 
-    const baskets = [
-        { id: 1, name: 'Classic Basket', category: 'Rose', price: 29.99, minFlowers: 10, maxFlowers: 20, images: ['https://storage.googleapis.com/cdn_dlhf_vn/public/products/APF0/APF06AK217/DSC_2243wm_800x800.jpg', 'https://img.poemflowers.com/zFRzF4ELGFxzMk4GqFjHWIogcZeY4rvC_gPOt7GW6rw/rs:fill:1200:1200:0/aHR0cHM6Ly9wb2VtZmxvd2Vycy5zZ3AxLmRpZ2l0YWxvY2VhbnNwYWNlcy5jb20vd2ViZWNvbS8yMDI0LzAyLzZkZmYzZDFhN2Q5Mjc2MGExNTM4YjQxZDA2ODU1MDg5LmpwZw.jpg', 'https://stc.hoatuoihoangnga.com/data/uploads/products/44/he-rang-ro.1.jpg?v=1701666967'] },
-        { id: 2, name: 'Premium Basket', category: 'Lily', price: 39.99, minFlowers: 15, maxFlowers: 25, images: ['https://inkythuatso.com/uploads/thumbnails/800/2023/02/hinh-anh-lang-hoa-dep-chuc-mung-sinh-nhat-1-08-09-31-09.jpg'] },
-        { id: 3, name: 'Luxury Basket', category: 'Sunflower', price: 49.99, minFlowers: 20, maxFlowers: 30, images: ['https://tiemhoachumap.vn/wp-content/uploads/2022/12/G-010.jpg'] },
-        { id: 4, name: 'Royal Basket', category: 'Orchid', price: 59.99, minFlowers: 25, maxFlowers: 35, images: ['https://thegioihoatuoi.com.vn/img/photos/gio_hoa_chuc_mung_8_3_7.jpg'] },
-        { id: 5, name: 'Elite Basket', category: 'Tulip', price: 69.99, minFlowers: 30, maxFlowers: 40, images: ['https://andy.vn/image/data/product/gio-hoa-dep01032019.jpg'] },
-    ];
+    useEffect(() => {
+        const fetchBaskets = async () => {
+            try {
+                setLoading(true);
+                const response = await fetch('https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/flowerBaskets');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch baskets');
+                }
+                const data = await response.json();
+                const transformedBaskets = data.map(basket => ({
+                    id: basket.flowerBasketId,
+                    name: basket.flowerBasketName,
+                    category: basket.categoryName,
+                    price: basket.price,
+                    minFlowers: basket.minQuantity,
+                    maxFlowers: basket.maxQuantity,
+                    images: [basket.image],
+                    description: basket.decription,
+                    quantity: basket.quantity
+                }));
+                setBaskets(transformedBaskets);
+            } catch (error) {
+                setError(error.message);
+                console.error('Error fetching baskets:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    const flowers = [
-        { id: 1, name: 'Red Rose', price: 4.99, color: 'Red', description: 'Hoa Hồng Đẹp', images: ['https://cdn.tgdd.vn/Files/2021/01/19/1321035/hieu-ro-y-nghia-hoa-hong-giup-ban-chinh-phuc-nang-.jpg'] },
-        { id: 2, name: 'White Lily', price: 3.99, color: 'White', description: 'Hoa Ly Đẹp', images: ['https://images.stockcake.com/public/6/4/8/6487ce67-195e-4bff-940b-42d0fd40d732_large/dewy-white-lily-stockcake.jpg'] },
-        { id: 3, name: 'Sunflower', price: 2.99, color: 'Yellow', description: 'Hoa Hướng Dương Đẹp', images: ['https://upload.wikimedia.org/wikipedia/commons/4/40/Sunflower_sky_backdrop.jpg'] },
-        { id: 4, name: 'Orchid', price: 6.99, color: 'White', description: 'Hoa Lan Đẹp', images: ['https://images.prismic.io/orchidweb/8f2a9f8c-ea23-412a-9285-d7524d9f88b9_Phalaenopsis.jpeg?auto=compress,format'] },
-        { id: 5, name: 'Tulip', price: 3.49, color: 'Purple', description: 'Hoa Tulip Đẹp', images: ['https://bizweb.dktcdn.net/thumb/1024x1024/100/442/027/products/img-3670-jpg.jpg?v=1723713087120'] },
-    ];
+        fetchBaskets();
+    }, []);
+
+    useEffect(() => {
+        const fetchFlowers = async () => {
+            try {
+                setLoadingFlowers(true);
+                const response = await fetch('https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/flowers');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch flowers');
+                }
+                const data = await response.json();
+                const transformedFlowers = data.map(flower => ({
+                    id: flower.flowerId,
+                    name: flower.flowerName,
+                    price: flower.price,
+                    color: flower.color,
+                    description: flower.description,
+                    images: [flower.image],
+                    quantity: flower.quantity,
+                    category: flower.categoryName
+                }));
+                setFlowers(transformedFlowers);
+            } catch (error) {
+                setErrorFlowers(error.message);
+                console.error('Error fetching flowers:', error);
+            } finally {
+                setLoadingFlowers(false);
+            }
+        };
+
+        fetchFlowers();
+    }, []);
 
     const styles = [
         { id: 1, name: 'Classic Style', description: 'Symmetric and traditional design with flowers arranged in a round shape', images: ['https://hips.hearstapps.com/hmg-prod/images/closeup-jpg-1614830517.jpg?crop=0.670xw:1.00xh;0.0801xw,0&resize=1200:*'] },
@@ -126,6 +181,14 @@ const FlowerCustomization = () => {
 
         return (basketPrice + flowersPrice).toFixed(2);
     };
+
+    if (loading || loadingFlowers) {
+        return <div className="text-center py-10">Loading...</div>;
+    }
+
+    if (error || errorFlowers) {
+        return <div className="text-center py-10 text-red-500">Error: {error || errorFlowers}</div>;
+    }
 
     return (
         <div className="w-full">
@@ -236,24 +299,33 @@ const FlowerCustomization = () => {
                             <div className="space-y-2">
                                 <p className="font-semibold text-xl">{selectedBasket.name}</p>
                                 <p className="text-gray-600">Category: {selectedBasket.category}</p>
-                                <p className="text-gray-600">Price: {selectedBasket.price}$</p>
+                                <p className="text-gray-600">Price: ${selectedBasket.price}</p>
                                 <p className="text-gray-600">
                                     Basket Capacity: {selectedBasket.minFlowers} - {selectedBasket.maxFlowers} Flowers
                                 </p>
+                                <p className="text-gray-600">Available Quantity: {selectedBasket.quantity}</p>
+                                {selectedBasket.description && (
+                                    <p className="text-gray-600">Description: {selectedBasket.description}</p>
+                                )}
                             </div>
                         )}
 
                         {currentStep === 'flowers' && selectedFlower && selectedBasket && (
                             <div className="space-y-2">
                                 <p className="font-semibold text-xl">{selectedFlower.name}</p>
-                                <p className="text-gray-600">Price: {selectedFlower.price}$</p>
+                                <p className="text-gray-600">Price: ${selectedFlower.price}</p>
                                 <p className="text-gray-600">Color: {selectedFlower.color}</p>
+                                <p className="text-gray-600">Category: {selectedFlower.category}</p>
+                                <p className="text-gray-600">Available Quantity: {selectedFlower.quantity}</p>
                                 <p className="text-gray-600">Description: {selectedFlower.description}</p>
                                 <div className="mt-4">
                                     <p className="text-gray-700 font-bold mb-2">Select Quantity:</p>
                                     <Slider
                                         min={1}
-                                        max={selectedBasket.maxFlowers - totalFlowers + (selectedFlowers[selectedFlower.id]?.quantity || 0)}
+                                        max={Math.min(
+                                            selectedFlower.quantity,
+                                            selectedBasket.maxFlowers - totalFlowers + (selectedFlowers[selectedFlower.id]?.quantity || 0)
+                                        )}
                                         defaultValue={1}
                                         onChange={handleQuantityChange}
                                         value={flowerQuantity}
@@ -309,8 +381,6 @@ const FlowerCustomization = () => {
                             <p className="font-medium mt-2">Total Flowers: {totalFlowers}</p>
                         </div>
                     )}
-
-
 
                     <div className="bg-white rounded-lg p-4 border border-gray-200">
                         <h3 className="text-2xl text-pink-500 font-bold mb-4">Price Calculation</h3>
