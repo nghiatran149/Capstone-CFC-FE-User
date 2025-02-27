@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Input, Rate, List, DatePicker, InputNumber, Tag, Card, Row, Col, Empty } from 'antd';
-import { ArrowLeftOutlined, CalendarOutlined, UserOutlined, ShoppingCartOutlined, WalletOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, UserOutlined, ShoppingCartOutlined, WalletOutlined, FileImageOutlined, CameraOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Divider } from 'antd';
+import ProductCommitment from "../components/ProductCommitment";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import axios from 'axios';
@@ -24,7 +26,6 @@ const ProductDetail = () => {
         console.log("Product data:", response.data.data);
         setProduct(response.data.data);
 
-        // Lấy thông tin category để tìm sản phẩm liên quan
         if (response.data.data) {
           fetchRelatedProducts(response.data.data.categoryName, response.data.data.productId);
         }
@@ -47,16 +48,13 @@ const ProductDetail = () => {
     fetchComments();
   }, [id]);
 
-  // Hàm lấy danh sách sản phẩm liên quan theo category
   const fetchRelatedProducts = async (categoryName, currentProductId) => {
     setLoading(true);
     try {
-      // Gọi API GetAllProduct để lấy tất cả sản phẩm
       const response = await axios.get(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Product/GetAllProduct`);
       console.log("All products:", response.data.data);
 
       if (categoryName) {
-        // Lọc sản phẩm cùng category và loại bỏ sản phẩm hiện tại
         const filtered = response.data.data.filter(prod =>
           prod.categoryName === categoryName && prod.productId !== currentProductId
         );
@@ -151,7 +149,7 @@ const ProductDetail = () => {
       </div>
 
       <div className="mx-20 my-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-20 mb-10">
           <div>
             <div className="w-full h-auto flex items-center justify-center rounded-lg overflow-hidden">
               <img
@@ -174,63 +172,102 @@ const ProductDetail = () => {
             </div>
           </div>
 
-          <div>
-            <h1 className="text-5xl text-left font-bold mb-8">{product.productName}</h1>
-            <div className="flex gap-2 mb-5">
-              <Tag color="pink">Category: {product.categoryName || "Uncategorized"}</Tag>
+          <div className="bg-pink-50 rounded-lg p-6 border border-pink-200 h-full overflow-y-auto">
+            <div className="flex items-center mb-6">
+              <div className="w-1 h-6 bg-pink-500 mr-3"></div>
+              <h2 className="text-xl font-bold text-left">Product Information</h2>
             </div>
-            <div className="flex items-center gap-5 mb-5">
-              <Rate disabled defaultValue={0} />
-              <span>(No reviews)</span>
-            </div>
-            <div className="flex gap-5 mb-3 ">
-              <h2 className="text-lg font-bold">Price:</h2>
-              <span className="text-lg text-pink-600 font-semibold">{product.price} VNĐ</span>
-            </div>
-            <div className="flex gap-5 mb-3">
-              <h2 className="text-lg font-bold">Size:</h2>
-              <span className="text-lg text-gray-600">{product.size}</span>
-            </div>
-            <div className="flex gap-5 mb-3">
-              <h2 className="text-lg font-bold">Weight:</h2>
-              <span className="text-lg text-gray-600">{product.weight || "N/A"}</span>
-            </div>
-            <div className="flex gap-5 mb-3">
-              <h2 className="text-lg font-bold">In Stock:</h2>
-              <span className="text-lg text-gray-600">{product.quantity}</span>
-            </div>
-            <div className="flex gap-5 mb-3">
-              <h2 className="text-lg font-bold">Sold:</h2>
-              <span className="text-lg text-gray-600">{product.sold}</span>
-            </div>
-            <h2 className="text-left text-lg font-bold mb-1">Description:</h2>
-            <p className="text-left text-gray-600 mb-3">{product.description}</p>
-            <div className="flex items-center gap-5">
-              <h2 className="text-left text-lg font-bold">Quantity:</h2>
-              <InputNumber min={1} defaultValue={1} className="border-pink-400 rounded-md" />
-            </div>
-            <div className="flex items-center gap-4 mt-10">
-              <Button
-                type="primary"
-                className="bg-pink-400 text-white text-xl px-10 py-6 rounded-md"
-              >
-                ADD TO CART <ShoppingCartOutlined />
-              </Button>
-              <Button
-                type="primary"
-                className="bg-pink-600 text-white text-xl px-10 py-6 rounded-md hover:bg-pink-800"
-              >
-                BUY NOW <WalletOutlined />
-              </Button>
+            <div className="px-10">
+              <h1 className="text-5xl text-left font-bold mb-8">{product.productName}</h1>
+              <div className="flex gap-2 mb-8">
+                <Tag color="green">Category: {product.categoryName || "Uncategorized"}</Tag>
+              </div>
+              <div className="flex items-center gap-5 mb-8">
+                <Rate disabled defaultValue={0} />
+                <span>(No reviews)</span>
+              </div>
+              <div className="flex gap-5 mb-4">
+                <h2 className="text-xl font-bold">Price:</h2>
+                <div className="text-left flex flex-col">
+                  <span className="text-xl text-pink-600 font-semibold">
+                    {Math.round(product.price * (1 - product.discount / 100)).toLocaleString()} VNĐ
+                  </span>
+                  <div className="flex flex-row gap-2">
+                    <span className="text-sm text-gray-500 line-through">{product.price.toLocaleString()} VNĐ</span>
+                    <span className="text-sm text-pink-600 font-semibold">{product.discount}%</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-5 mb-4">
+                <h2 className="text-xl font-bold">Size:</h2>
+                <span className="text-xl text-gray-600">{product.size}</span>
+              </div>
+              <div className="flex gap-5 mb-4">
+                <h2 className="text-xl font-bold">Weight:</h2>
+                <span className="text-xl text-gray-600">{product.weight || "N/A"}</span>
+              </div>
+              <div className="flex gap-5 mb-4">
+                <h2 className="text-xl font-bold">In Stock:</h2>
+                <span className="text-xl text-gray-600">{product.quantity}</span>
+              </div>
+              <div className="flex gap-5 mb-4">
+                <h2 className="text-xl font-bold">Sold:</h2>
+                <span className="text-xl text-gray-600">{product.sold}</span>
+              </div>
+              <div className="flex items-center gap-5">
+                <h2 className="text-left text-xl font-bold">Quantity:</h2>
+                <InputNumber min={1} defaultValue={1} className="border-pink-400 rounded-md" />
+              </div>
+              <div className="flex items-center gap-4 mt-10">
+                <Button
+                  type="primary"
+                  className="bg-pink-400 text-white text-xl px-10 py-6 rounded-md"
+                >
+                  ADD TO CART <ShoppingCartOutlined />
+                </Button>
+                <Button
+                  type="primary"
+                  className="bg-pink-600 text-white text-xl px-10 py-6 rounded-md hover:bg-pink-800"
+                >
+                  BUY NOW <WalletOutlined />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="mt-16 px-20">
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
+          <ProductCommitment />
+
+          <div className="bg-pink-50 rounded-lg p-6 border border-pink-200 h-full overflow-y-auto">
+            <div className="flex items-center mb-3">
+              <div className="w-1 h-6 bg-pink-500 mr-3"></div>
+              <h2 className="text-xl font-bold text-left">Product Description</h2>
+            </div>
+
+            <div className="text-left">
+              <p className="text-left text-gray-600 mb-3">{product.description}</p>
+
+
+              <Divider className="my-4 border-pink-500" />
+              <div className="bg-pink-200 p-3 rounded-md flex items-start">
+                <FileImageOutlined className="text-lg mr-2 text-pink-600 mt-1" />
+                <span className="text-gray-700">Commitment to product images are real photos.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-10">
           <h2 className="text-3xl text-left font-bold mb-4">Customer Reviews</h2>
-          <div className="mb-6 p-4 text-left border rounded-md">
-            <h3 className="text-xl text-left font-semibold mb-1">Rating: <Rate onChange={setRating} value={rating} className="mb-2" /></h3>
-            <h3 className="text-xl font-semibold mb-3">Comment:</h3>
+          <div className="mb-6 p-6 bg-pink-50 text-left border rounded-md">
+            <div className="flex items-center mb-3">
+              <div className="w-1 h-6 bg-pink-500 mr-3"></div>
+              <h2 className="text-xl font-bold text-left">Leave your feedback about this product</h2>
+            </div>
+            <h3 className="text-lg text-left font-semibold mb-1">Rating: <Rate onChange={setRating} value={rating} className="mb-2" /></h3>
+            <h3 className="text-lg font-semibold mb-3">Comment:</h3>
             <Input.TextArea
               rows={4}
               value={text}
@@ -255,9 +292,9 @@ const ProductDetail = () => {
               </List.Item>
             )}
           />
-        </div> 
- 
-        <div className="mt-16 px-20">
+        </div>
+
+        <div className="mt-10">
           <h2 className="text-3xl text-left font-bold mb-8">Related Products</h2>
           {loading ? (
             <div className="flex justify-center py-10">
@@ -270,7 +307,12 @@ const ProductDetail = () => {
                   <Card
                     hoverable
                     cover={
-                      <div className="h-48 overflow-hidden">
+                      <div className="h-48 overflow-hidden relative">
+                        {relatedProduct.featured && (
+                          <div className="absolute top-0 right-0 bg-red-600 text-white px-2 py-1 z-10 text-sm font-semibold">
+                            BEST SELLER
+                          </div>
+                        )}
                         {relatedProduct.productImages && relatedProduct.productImages.length > 0 ? (
                           <img
                             alt={relatedProduct.productName}
@@ -293,10 +335,20 @@ const ProductDetail = () => {
                       }
                       description={
                         <div>
-                          <p className="text-pink-600 font-semibold">{relatedProduct.price.toLocaleString()} VNĐ</p>
                           <div className="flex justify-between text-gray-500">
-                            <span>Size: {relatedProduct.size || "N/A"}</span>
-                            <span>{relatedProduct.sold} sold</span>
+                            <div className="text-left flex flex-col">
+                              <span>Size: {relatedProduct.size || "N/A"}</span>
+                              <span>{relatedProduct.sold} sold</span>
+                            </div>
+                            <div className="text-left flex flex-col">
+                              <span className="text-pink-600 font-semibold">
+                                {Math.round(relatedProduct.price * (1 - relatedProduct.discount / 100)).toLocaleString()} VNĐ
+                              </span>
+                              <div className="flex flex-row gap-2">
+                                <span className="text-gray-500 line-through">{relatedProduct.price.toLocaleString()} VNĐ</span>
+                                <span className="text-pink-600 font-semibold">{relatedProduct.discount}%</span>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       }
