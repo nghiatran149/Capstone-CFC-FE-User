@@ -24,7 +24,7 @@ const ProductPage = () => {
         const fetchData = async () => {
             try {
                 const productsResponse = await axios.get('https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Product/GetAllProduct');
-                
+
                 if (productsResponse.data && productsResponse.data.data && Array.isArray(productsResponse.data.data)) {
                     const mappedProducts = productsResponse.data.data.map(product => ({
                         id: product.productId,
@@ -32,15 +32,15 @@ const ProductPage = () => {
                         price: product.price,
                         category: product.categoryName,
                         size: product.size,
-                        image: product.productImages && product.productImages.length > 0 
-                            ? product.productImages[0].productImage1 
+                        image: product.productImages && product.productImages.length > 0
+                            ? product.productImages[0].productImage1
                             : 'https://via.placeholder.com/300',
                         quantity: product.quantity,
                         discount: product.discount,
                         description: product.description,
                         popularity: product.featured ? 'bestseller' : null,
                     }));
-                    
+
                     setProducts(mappedProducts);
                 } else {
                     console.error("Unexpected product data format:", productsResponse.data);
@@ -50,13 +50,13 @@ const ProductPage = () => {
 
                 // CATEGORY
                 const categoriesResponse = await axios.get('https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/categories');
-                
+
                 if (categoriesResponse.data && Array.isArray(categoriesResponse.data)) {
                     // Type: "Product"
                     const productCategories = categoriesResponse.data.filter(
                         category => category.type === "Product"
                     );
-                    
+
                     // "All"
                     setCategories(["All", ...productCategories.map(cat => cat.categoryName)]);
                 } else {
@@ -86,11 +86,11 @@ const ProductPage = () => {
             const matchesPrice = selectedPrice === 'all' ||
                 (selectedPrice === 'low' ? product.price < 100000 : product.price >= 100000);
             const matchesSize = selectedSize === 'all' || product.size === selectedSize;
-            const matchesPopularity = selectedPopularity === 'all' || 
+            const matchesPopularity = selectedPopularity === 'all' ||
                 (selectedPopularity === 'bestseller' && product.popularity === 'bestseller');
 
-            return matchesCategory && matchesSearch && matchesColor && 
-                   matchesPrice && matchesSize && matchesPopularity;
+            return matchesCategory && matchesSearch && matchesColor &&
+                matchesPrice && matchesSize && matchesPopularity;
         });
     };
 
@@ -98,11 +98,24 @@ const ProductPage = () => {
         <Link to={`/productdetail/${product.id}`}>
             <Card
                 hoverable
-                cover={<img alt={product.name} src={product.image} className="w-full h-60 object-cover" />}
+                cover={
+                    <div className="relative">
+                        {product.popularity === 'bestseller' && (
+                            <div className="absolute top-0 right-0 bg-red-600 text-white px-3 py-2 z-10 text-sm font-semibold">
+                                BEST SELLER
+                            </div>
+                        )}
+                        <img alt={product.name} src={product.image} className="w-full h-60 object-cover" />
+                    </div>
+                }
             >
                 <div className="text-center">
-                    <h3 className="text-lg font-medium">{product.name}</h3>
-                    <p className="text-gray-500">${(product.price).toLocaleString()} VND</p>
+                    <h3 className="text-xl font-medium mb-2">{product.name}</h3>
+                    <p className="text-lg text-pink-600 font-semibold">{Math.round(product.price * (1 - product.discount / 100)).toLocaleString()} VND</p>
+                    <p className="flex-row mb-2">
+                        <span className="text-sm text-gray-500 line-through">{product.price.toLocaleString()} VNĐ</span>
+                        <span className="text-sm ml-3 text-pink-600 font-semibold">{product.discount}%</span>
+                    </p>
                     <button className="mt-4 bg-pink-500 hover:bg-pink-600 text-white font-medium py-2 px-4 rounded">
                         Shop Now
                     </button>
@@ -114,7 +127,7 @@ const ProductPage = () => {
     const sizes = ['all', ...new Set((Array.isArray(products) ? products : [])
         .map(product => product.size)
         .filter(Boolean))];
-    
+
     // Popularity: "featured"
     const popularityValues = ['all', 'bestseller'];
 
@@ -139,18 +152,18 @@ const ProductPage = () => {
 
                 <div className="flex justify-between items-center mb-8">
                     <div className="flex gap-4">
-                        <Select 
-                            defaultValue="all" 
-                            className="w-32" 
+                        <Select
+                            defaultValue="all"
+                            className="w-32"
                             onChange={(value) => setSelectedPrice(value)}
                         >
                             <Option value="all">All Prices</Option>
                             <Option value="low">Below 100,000 VND</Option>
                             <Option value="high">100,000 VND & Above</Option>
                         </Select>
-                        <Select 
-                            defaultValue="all" 
-                            className="w-32" 
+                        <Select
+                            defaultValue="all"
+                            className="w-32"
                             onChange={(value) => setSelectedSize(value)}
                         >
                             <Option value="all">All Sizes</Option>
@@ -158,9 +171,9 @@ const ProductPage = () => {
                                 <Option key={size} value={size}>{size}</Option>
                             ))}
                         </Select>
-                        <Select 
-                            defaultValue="all" 
-                            className="w-40" 
+                        <Select
+                            defaultValue="all"
+                            className="w-40"
                             onChange={(value) => setSelectedPopularity(value)}
                         >
                             <Option value="all">All Products</Option>
