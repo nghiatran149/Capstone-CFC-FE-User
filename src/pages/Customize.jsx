@@ -10,6 +10,8 @@ const FlowerCustomization = () => {
     const [selectedBasket, setSelectedBasket] = useState(null);
     const [selectedFlower, setSelectedFlower] = useState(null);
     const [selectedStyle, setSelectedStyle] = useState(null);
+    const [selectedAccessory, setSelectedAccessory] = useState(null);
+    const [selectedAccessories, setSelectedAccessories] = useState({});
     const [mainImage, setMainImage] = useState('');
 
     const [selectedFlowers, setSelectedFlowers] = useState({});
@@ -25,6 +27,8 @@ const FlowerCustomization = () => {
     const [errorFlowers, setErrorFlowers] = useState(null);
 
     const navigate = useNavigate();
+
+
 
     useEffect(() => {
         const fetchBaskets = async () => {
@@ -96,6 +100,14 @@ const FlowerCustomization = () => {
         { id: 4, name: 'Romantic Style', description: 'Soft and elegant arrangement with curved lines and full blooms', images: ['https://fraicheliving.com/wp-content/uploads/2019/02/nV0buMkg-scaled.jpeg'] }
     ];
 
+    const accessories = [
+        { id: 1, name: 'Ribbon', description: 'Elegant satin ribbon for decoration', price: 5.99, images: ['https://as2.ftcdn.net/jpg/01/92/51/47/1000_F_192514739_aGk120cYyRntM1xuU8JywWjh4w10qQSG.jpg'] },
+        { id: 2, name: 'Greeting Card', description: 'Personalized message card', price: 3.99, images: ['https://cdn11.bigcommerce.com/s-7f9rxjod7c/images/stencil/1280x1280/products/357334/882343/CARD22JLY271__80685.1658751885.jpg?c=2&imbypass=on'] },
+        { id: 3, name: 'Gift Box', description: 'Premium gift box for special occasions', price: 8.99, images: ['https://afterrainflorist.com/wp-content/uploads/2020/06/AFTERRAINFLORIST_PJ_Florist_KL_Florist_Charming_Mix_Flowers_with_Chocolate_Square_Flower_Box_2-1024x1024.jpg'] },
+    ];
+
+
+    //Basket Function
     const handleBasketSelect = (basket) => {
         setSelectedBasket(basket);
         setMainImage(basket.images[0]);
@@ -104,41 +116,25 @@ const FlowerCustomization = () => {
         setFlowerQuantity(1);
     };
 
+
+    //Style Function
+    const handleStyleSelect = (style) => {
+        setSelectedStyle(style);
+        setMainImage(style.images[0]);
+    };
+
+
+    //Flower Function
     const handleFlowerSelect = (flower) => {
         setSelectedFlower(flower);
         setMainImage(flower.images[0]);
         setFlowerQuantity(1);
     };
 
-    const handleStyleSelect = (style) => {
-        setSelectedStyle(style);
-        setMainImage(style.images[0]);
-    };
-
     const handleResetFlowers = () => {
         setSelectedFlowers({});
         setTotalFlowers(0);
         alert('All selected flowers have been reset.');
-    };
-
-    const handleNext = () => {
-        setCurrentStep('flowers');
-    };
-
-    const handleNextToStyle = () => {
-        setCurrentStep('style');
-    };
-
-    const handleBackToBaskets = () => {
-        setCurrentStep('basket');
-    };
-
-    const handleBackToFlowers = () => {
-        setCurrentStep('flowers');
-    };
-
-    const handleQuantityChange = (value) => {
-        setFlowerQuantity(value);
     };
 
     const handleSaveFlowerQuantity = () => {
@@ -156,6 +152,58 @@ const FlowerCustomization = () => {
         }
     };
 
+    const handleQuantityChange = (value) => {
+        setFlowerQuantity(value);
+    };
+
+
+    // Accessory Function
+    const handleAccessorySelect = (accessory) => {
+        setSelectedAccessory(accessory);
+        setMainImage(accessory.images[0]);
+    };
+
+    const handleSaveAccessory = () => {
+        if (selectedAccessory) {
+            setSelectedAccessories(prev => ({
+                ...prev,
+                [selectedAccessory.id]: { ...selectedAccessory }
+            }));
+            alert(`Added ${selectedAccessory.name} to your arrangement`);
+        }
+    };
+
+    const handleResetAccessories = () => {
+        setSelectedAccessories({});
+        alert('All selected accessories have been reset.');
+    };
+
+
+    //Next & Back
+    const handleNext = () => {
+        setCurrentStep('style');
+    };
+
+    const handleNextToFlowers = () => {
+        setCurrentStep('flowers');
+    };
+
+    const handleNextToAccessories = () => {
+        setCurrentStep('accessories');
+    };
+
+    const handleBackToBaskets = () => {
+        setCurrentStep('basket');
+    };
+
+    const handleBackToStyle = () => {
+        setCurrentStep('style');
+    };
+
+    const handleBackToFlowers = () => {
+        setCurrentStep('flowers');
+    };
+
     const handleCheckout = () => {
         if (!selectedBasket || !selectedStyle) {
             alert('Please select both basket and style before checkout.');
@@ -170,25 +218,25 @@ const FlowerCustomization = () => {
         alert('Thank you for your order! Proceeding to payment...');
     };
 
+
+    //Price Calculation
     const calculateTotalPrice = () => {
         const basketPrice = selectedBasket ? selectedBasket.price : 0;
         let flowersPrice = 0;
+        let accessoriesPrice = 0;
 
         for (const flowerId in selectedFlowers) {
             const flower = selectedFlowers[flowerId];
             flowersPrice += flower.price * flower.quantity;
         }
 
-        return (basketPrice + flowersPrice).toFixed(2);
+        for (const accessoryId in selectedAccessories) {
+            const accessory = selectedAccessories[accessoryId];
+            accessoriesPrice += accessory.price;
+        }
+
+        return (basketPrice + flowersPrice + accessoriesPrice).toFixed(2);
     };
-
-    if (loading || loadingFlowers) {
-        return <div className="text-center py-10">Loading...</div>;
-    }
-
-    if (error || errorFlowers) {
-        return <div className="text-center py-10 text-red-500">Error: {error || errorFlowers}</div>;
-    }
 
     return (
         <div className="w-full">
@@ -208,8 +256,11 @@ const FlowerCustomization = () => {
 
             <div className="flex gap-8 mx-8 my-10 min-h-screen">
                 <div className="w-1/4 p-6 bg-white rounded-xl shadow-lg">
-                    <h2 className="text-2xl text-pink-500 font-bold mb-6">
-                        {currentStep === 'basket' ? 'Select Flower Basket' : 'Select Flowers'}
+                    <h2 className="text-2xl text-pink-500 font-bold mb-3">
+                        {currentStep === 'basket' ? 'Choose Basket'
+                            : currentStep === 'style' ? 'Choose Style'
+                                : currentStep === 'flowers' ? 'Choose Flowers'
+                                    : 'Choose Accessories'}
                     </h2>
                     <div className="grid grid-cols-2 gap-4">
                         {currentStep === 'basket'
@@ -229,28 +280,12 @@ const FlowerCustomization = () => {
                                     </div>
                                 </div>
                             ))
-                            : currentStep === 'flowers'
-                                ? flowers.map((flower) => (
-                                    <div
-                                        key={flower.id}
-                                        className={`cursor-pointer transition-all rounded-lg shadow-sm hover:shadow-md overflow-hidden
-                ${selectedFlower?.id === flower.id ? 'ring-2 ring-blue-500' : 'border border-gray-200'}`}
-                                        onClick={() => handleFlowerSelect(flower)}
-                                    >
-                                        <div className="p-2">
-                                            <img
-                                                src={flower.images[0]}
-                                                alt={flower.name}
-                                                className="w-full aspect-square object-cover rounded"
-                                            />
-                                        </div>
-                                    </div>
-                                ))
-                                : styles.map((style) => (
+                            : currentStep === 'style'
+                                ? styles.map((style) => (
                                     <div
                                         key={style.id}
                                         className={`cursor-pointer transition-all rounded-lg shadow-sm hover:shadow-md overflow-hidden
-                ${selectedStyle?.id === style.id ? 'ring-2 ring-blue-500' : 'border border-gray-200'}`}
+                    ${selectedStyle?.id === style.id ? 'ring-2 ring-blue-500' : 'border border-gray-200'}`}
                                         onClick={() => handleStyleSelect(style)}
                                     >
                                         <div className="p-2">
@@ -261,7 +296,40 @@ const FlowerCustomization = () => {
                                             />
                                         </div>
                                     </div>
-                                ))}
+                                ))
+                                : currentStep === 'flowers'
+                                    ? flowers.map((flower) => (
+                                        <div
+                                            key={flower.id}
+                                            className={`cursor-pointer transition-all rounded-lg shadow-sm hover:shadow-md overflow-hidden
+                        ${selectedFlower?.id === flower.id ? 'ring-2 ring-blue-500' : 'border border-gray-200'}`}
+                                            onClick={() => handleFlowerSelect(flower)}
+                                        >
+                                            <div className="p-2">
+                                                <img
+                                                    src={flower.images[0]}
+                                                    alt={flower.name}
+                                                    className="w-full aspect-square object-cover rounded"
+                                                />
+                                            </div>
+                                        </div>
+                                    ))
+                                    : accessories.map((accessory) => (
+                                        <div
+                                            key={accessory.id}
+                                            className={`cursor-pointer transition-all rounded-lg shadow-sm hover:shadow-md overflow-hidden
+                        ${selectedAccessory?.id === accessory.id ? 'ring-2 ring-blue-500' : 'border border-gray-200'}`}
+                                            onClick={() => handleAccessorySelect(accessory)}
+                                        >
+                                            <div className="p-2">
+                                                <img
+                                                    src={accessory.images[0]}
+                                                    alt={accessory.name}
+                                                    className="w-full aspect-square object-cover rounded"
+                                                />
+                                            </div>
+                                        </div>
+                                    ))}
                     </div>
                 </div>
                 <div className="w-2/4 p-6 bg-white rounded-xl shadow-lg">
@@ -271,6 +339,55 @@ const FlowerCustomization = () => {
                             alt="Selected item"
                             className="w-full h-[500px] object-cover rounded-lg shadow-md"
                         />
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border border-gray-200">
+                        <h3 className="text-2xl text-pink-500 font-bold mb-4">Price Calculation</h3>
+                        <div className="space-y-2">
+                            {selectedBasket && (
+                                <div className="flex justify-between text-gray-700">
+                                    <span>Basket: {selectedBasket.name}</span>
+                                    <span className="font-medium">${selectedBasket.price}</span>
+                                </div>
+                            )}
+                            {selectedBasket && (
+                                <div className="flex justify-between text-gray-700">
+                                    <span>Basket Capacity:</span>
+                                    <span className="font-medium"> {selectedBasket.minFlowers} - {selectedBasket.maxFlowers} Flowers</span>
+                                </div>
+
+                            )}
+                            
+                            {selectedStyle && (
+                                <div className="flex justify-between text-gray-700">
+                                    <span>Style: {selectedStyle.name}</span>
+                                    <span className="font-medium">Free</span>
+                                </div>
+                            )}
+                            {Object.keys(selectedFlowers).map(flowerId => {
+                                const flower = selectedFlowers[flowerId];
+                                return (
+                                    <div key={flowerId} className="flex justify-between text-gray-700">
+                                        <span>Flower: {flower.name} x {flower.quantity}</span>
+                                        <span className="font-medium">${(flower.price * flower.quantity).toFixed(2)}</span>
+                                    </div>
+                                );
+                            })}
+                            {Object.keys(selectedAccessories).map(accessoryId => {
+                                const accessory = selectedAccessories[accessoryId];
+                                return (
+                                    <div key={accessoryId} className="flex justify-between text-gray-700">
+                                        <span>Accessory: {accessory.name}</span>
+                                        <span className="font-medium">${accessory.price.toFixed(2)}</span>
+                                    </div>
+                                );
+                            })}
+                            <div className="border-t pt-3 font-semibold flex justify-between text-lg">
+                                <span>Total:</span>
+                                <span className="text-pink-600">
+                                    ${calculateTotalPrice()}
+                                </span>
+                            </div>
+                        </div>
                     </div>
 
                     {selectedBasket && currentStep === 'basket' && selectedBasket.images.length > 1 && (
@@ -288,11 +405,12 @@ const FlowerCustomization = () => {
                         </div>
                     )}
                 </div>
-
+                
+                {/* Details */}
                 <div className="w-1/4 p-6 bg-white rounded-xl shadow-lg space-y-6">
                     <div className="bg-white rounded-lg p-4 border border-gray-200">
                         <h2 className="text-2xl text-pink-500 font-bold mb-3">
-                            {currentStep === 'basket' ? 'Basket Details' : currentStep === 'flowers' ? 'Flower Details' : 'Style Details'}
+                            {currentStep === 'basket' ? 'Basket Details' : currentStep === 'style' ? 'Style Details' : currentStep === 'flowers' ? 'Flower Details' : 'Accessory Details'}
                         </h2>
 
                         {currentStep === 'basket' && selectedBasket && (
@@ -361,8 +479,35 @@ const FlowerCustomization = () => {
                                 <p className="text-gray-600">Description: {selectedStyle.description}</p>
                             </div>
                         )}
+
+                        {currentStep === 'accessories' && selectedAccessory && (
+                            <div className="space-y-2">
+                                <p className="font-semibold text-xl">{selectedAccessory.name}</p>
+                                <p className="text-gray-600">Price: ${selectedAccessory.price}</p>
+                                <p className="text-gray-600">Description: {selectedAccessory.description}</p>
+                                <div className="flex justify-between gap-4 mt-3">
+                                    <button
+                                        className="w-1/2 bg-green-500 hover:bg-green-600 text-white text-lg font-medium py-2 px-2 rounded-lg
+                   disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2
+                   transition-colors duration-200 shadow-md"
+                                        onClick={handleSaveAccessory}
+                                    >
+                                        Add
+                                    </button>
+                                    <button
+                                        className="w-1/2 bg-red-500 hover:bg-red-600 text-white text-lg font-medium py-2 px-2 rounded-lg
+                   disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2
+                   transition-colors duration-200 shadow-md"
+                                        onClick={handleResetAccessories}
+                                    >
+                                        Reset
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
+                    {/* Selected Item */}
                     {currentStep === 'flowers' && (
                         <div className="bg-white rounded-lg p-4 border border-gray-200">
                             <h3 className="text-2xl text-pink-500 font-bold mb-2">Selected Flowers:</h3>
@@ -382,74 +527,32 @@ const FlowerCustomization = () => {
                         </div>
                     )}
 
-                    <div className="bg-white rounded-lg p-4 border border-gray-200">
-                        <h3 className="text-2xl text-pink-500 font-bold mb-4">Price Calculation</h3>
-                        <div className="space-y-2">
-                            {selectedBasket && (
-                                <div className="flex justify-between text-gray-700">
-                                    <span>Basket: {selectedBasket.name}</span>
-                                    <span className="font-medium">${selectedBasket.price}</span>
-                                </div>
+                    {currentStep === 'accessories' && (
+                        <div className="bg-white rounded-lg p-4 border border-gray-200">
+                            <h3 className="text-2xl text-pink-500 font-bold mb-2">Selected Accessories:</h3>
+                            {Object.keys(selectedAccessories).length > 0 ? (
+                                <ul>
+                                    {Object.entries(selectedAccessories).map(([accessoryId, accessory]) => (
+                                        <li key={accessoryId} className="flex justify-between items-center py-1 border-b border-gray-200">
+                                            <span>{accessory.name}</span>
+                                            <span>${accessory.price}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p>No accessories selected yet.</p>
                             )}
-                            {Object.keys(selectedFlowers).map(flowerId => {
-                                const flower = selectedFlowers[flowerId];
-                                return (
-                                    <div key={flowerId} className="flex justify-between text-gray-700">
-                                        <span>Flower: {flower.name} x {flower.quantity}</span>
-                                        <span className="font-medium">${(flower.price * flower.quantity).toFixed(2)}</span>
-                                    </div>
-                                );
-                            })}
-                            {selectedStyle && (
-                                <div className="flex justify-between text-gray-700">
-                                    <span>Style: {selectedStyle.name}</span>
-                                    <span className="font-medium">Free</span>
-                                </div>
-                            )}
-                            <div className="border-t pt-3 font-semibold flex justify-between text-lg">
-                                <span>Total:</span>
-                                <span className="text-pink-600">
-                                    ${calculateTotalPrice()}
-                                </span>
-                            </div>
                         </div>
-                    </div>
+                    )}
 
+                    {/* Step Button */}
                     {currentStep === 'basket' && (
                         <button
                             className="w-full bg-pink-500 hover:bg-pink-600 text-white font-medium py-3 px-4 rounded-lg
-                                 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2
-                                 transition-colors duration-200"
+                 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2
+                 transition-colors duration-200"
                             onClick={handleNext}
                             disabled={!selectedBasket}
-                        >
-                            Next Step: Choose Flowers
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                        </button>
-                    )}
-
-                    {currentStep === 'flowers' && (
-                        <button
-                            className="w-full border border-gray-300 hover:bg-gray-50 font-medium py-3 px-4 rounded-lg
-                                 flex items-center justify-center gap-2 transition-colors duration-200"
-                            onClick={handleBackToBaskets}
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                            </svg>
-                            Back to Choose Basket Step
-                        </button>
-                    )}
-
-                    {currentStep === 'flowers' && (
-                        <button
-                            className="w-full bg-pink-500 hover:bg-pink-600 text-white font-medium py-3 px-4 rounded-lg
-               disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2
-               transition-colors duration-200"
-                            onClick={handleNextToStyle}
-                            disabled={totalFlowers < selectedBasket.minFlowers || totalFlowers > selectedBasket.maxFlowers}
                         >
                             Next Step: Choose Style
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -459,6 +562,60 @@ const FlowerCustomization = () => {
                     )}
 
                     {currentStep === 'style' && (
+                        <>
+                            <button
+                                className="w-full border border-gray-300 hover:bg-gray-50 font-medium py-3 px-4 rounded-lg
+                 flex items-center justify-center gap-2 transition-colors duration-200 mb-4"
+                                onClick={handleBackToBaskets}
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                </svg>
+                                Back to Choose Basket Step
+                            </button>
+                            <button
+                                className="w-full bg-pink-500 hover:bg-pink-600 text-white font-medium py-3 px-4 rounded-lg
+               disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2
+               transition-colors duration-200"
+                                onClick={handleNextToFlowers}
+                                disabled={!selectedStyle}
+                            >
+                                Next Step: Choose Flowers
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </>
+                    )}
+
+                    {currentStep === 'flowers' && (
+                        <>
+                            <button
+                                className="w-full border border-gray-300 hover:bg-gray-50 font-medium py-3 px-4 rounded-lg
+                 flex items-center justify-center gap-2 transition-colors duration-200 mb-4"
+                                onClick={handleBackToStyle}
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                </svg>
+                                Back to Choose Style Step
+                            </button>
+                            <button
+                                className="w-full bg-pink-500 hover:bg-pink-600 text-white font-medium py-3 px-4 rounded-lg
+               disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2
+               transition-colors duration-200"
+                                onClick={handleNextToAccessories}
+                                disabled={totalFlowers < selectedBasket.minFlowers || totalFlowers > selectedBasket.maxFlowers}
+                            >
+                                Next Step: Choose Accessories
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </>
+                    )}
+
+                    {currentStep === 'accessories' && (
                         <>
                             <button
                                 className="w-full border border-gray-300 hover:bg-gray-50 font-medium py-3 px-4 rounded-lg
@@ -474,7 +631,6 @@ const FlowerCustomization = () => {
                                 className="w-full bg-pink-500 hover:bg-pink-600 text-white font-medium py-3 px-4 rounded-lg
                 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2
                 transition-colors duration-200 shadow-md"
-                                disabled={!selectedStyle}
                                 onClick={handleCheckout}
                             >
                                 Proceed to Checkout
