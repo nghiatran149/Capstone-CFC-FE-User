@@ -21,7 +21,8 @@ useEffect(() => {
 const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
 const handleLogout = () => {
-  localStorage.removeItem("accessToken");
+  localStorage.clear();
+  sessionStorage.clear();
   window.location.href = "/login";
 };
 

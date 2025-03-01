@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Input, Rate, List, DatePicker, InputNumber, Tag, Card, Row, Col, Empty } from 'antd';
-import { ArrowLeftOutlined, UserOutlined, ShoppingCartOutlined, WalletOutlined, FileImageOutlined, CameraOutlined } from '@ant-design/icons';
+import { Button, Input, Rate, List, InputNumber, Tag, Card, Row, Col, Empty, message } from 'antd';
+import { ArrowLeftOutlined, UserOutlined, ShoppingCartOutlined, WalletOutlined, FileImageOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Divider } from 'antd';
 import ProductCommitment from "../components/ProductCommitment";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -18,6 +19,7 @@ const ProductDetail = () => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     const fetchProductDetail = async () => {
@@ -114,6 +116,50 @@ const ProductDetail = () => {
 
   const handleThumbnailClick = (index) => {
     setSelectedImageIndex(index);
+  };
+
+  const handleAddToCart = async () => {
+    try {
+      // Kiểm tra đăng nhập và lấy token
+      const token = sessionStorage.getItem('accessToken');
+      if (!token) {
+        message.error('Please login to add items to cart');
+        navigate('/login');
+        return;
+      }
+
+      // Decode JWT để lấy customerId
+      const decodedToken = jwtDecode(token);
+      const customerId = decodedToken.Id;
+
+      if (!customerId) {
+        message.error('User information not found. Please login again');
+        navigate('/login');
+        return;
+      }
+
+      // Gọi API thêm vào giỏ hàng
+      const response = await axios.post(
+        `https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Cart/CreateCart?customerID=${customerId}&ProductID=${id}&Quantity=${quantity}`,
+        {},  // empty body
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      console.log('Cart response:', response.data); // Để debug
+
+      if (response.status === 200) {
+        message.success('Product added to cart successfully!');
+      } else {
+        message.error('Failed to add product to cart');
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error.response?.data || error);
+      message.error(error.response?.data?.messages?.join(', ') || 'Failed to add product to cart. Please try again.');
+    }
   };
 
   // Navigate to other product
@@ -216,18 +262,36 @@ const ProductDetail = () => {
               </div>
               <div className="flex items-center gap-5">
                 <h2 className="text-left text-xl font-bold">Quantity:</h2>
-                <InputNumber min={1} defaultValue={1} className="border-pink-400 rounded-md" />
+                <InputNumber 
+                  min={1} 
+                  defaultValue={1} 
+                  value={quantity}
+                  onChange={(value) => setQuantity(value)}
+                  className="border-pink-400 rounded-md" 
+                />
               </div>
               <div className="flex items-center gap-4 mt-10">
                 <Button
                   type="primary"
                   className="bg-pink-400 text-white text-xl px-10 py-6 rounded-md"
+                  onClick={handleAddToCart}
                 >
                   ADD TO CART <ShoppingCartOutlined />
                 </Button>
                 <Button
                   type="primary"
                   className="bg-pink-600 text-white text-xl px-10 py-6 rounded-md hover:bg-pink-800"
+                  onClick={() => navigate('/checkout', {
+                    state: {
+                      product: {
+                        ...product,
+                        productId: id,
+                        selectedQuantity: quantity,
+                        finalPrice: Math.round(product.price * (1 - product.discount / 100)),
+                        totalPrice: Math.round(product.price * (1 - product.discount / 100)) * quantity
+                      }
+                    }
+                  })}
                 >
                   BUY NOW <WalletOutlined />
                 </Button>
