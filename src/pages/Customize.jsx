@@ -26,9 +26,15 @@ const FlowerCustomization = () => {
     const [loadingFlowers, setLoadingFlowers] = useState(true);
     const [errorFlowers, setErrorFlowers] = useState(null);
 
+    const [accessories, setAccessories] = useState([]);
+    const [loadingAccessories, setLoadingAccessories] = useState(true);
+    const [errorAccessories, setErrorAccessories] = useState(null);
+
+    const [styles, setStyles] = useState([]);
+    const [loadingStyles, setLoadingStyles] = useState(true);
+    const [errorStyles, setErrorStyles] = useState(null);
+
     const navigate = useNavigate();
-
-
 
     useEffect(() => {
         const fetchBaskets = async () => {
@@ -93,19 +99,65 @@ const FlowerCustomization = () => {
         fetchFlowers();
     }, []);
 
-    const styles = [
-        { id: 1, name: 'Classic Style', description: 'Symmetric and traditional design with flowers arranged in a round shape', images: ['https://hips.hearstapps.com/hmg-prod/images/closeup-jpg-1614830517.jpg?crop=0.670xw:1.00xh;0.0801xw,0&resize=1200:*'] },
-        { id: 2, name: 'Modern Style', description: 'Contemporary design with clean lines and geometric patterns', images: ['https://asset.bloomnation.com/c_fill,d_vendor:global:catalog:product:image.png,f_auto,fl_preserve_transparency,h_2000,q_auto,w_2000/v1705560133/vendor/6363/catalog/product/2/0/20180510062901_file_5af48f6da781d.jpg'] },
-        { id: 3, name: 'Rustic Style', description: 'Natural and wild arrangement with a loose, garden-picked look', images: ['https://i.etsystatic.com/19655563/r/il/38b87a/3445823231/il_fullxfull.3445823231_tm5h.jpg'] },
-        { id: 4, name: 'Romantic Style', description: 'Soft and elegant arrangement with curved lines and full blooms', images: ['https://fraicheliving.com/wp-content/uploads/2019/02/nV0buMkg-scaled.jpeg'] }
-    ];
+    useEffect(() => {
+        const fetchAccessories = async () => {
+            try {
+                setLoadingAccessories(true);
+                const response = await fetch('https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/accessory/GetAllAccessory');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch accessories');
+                }
+                const data = await response.json();
+                const transformedAccessories = data.data.map(accessory => ({
+                    id: accessory.accessoryId,
+                    name: accessory.name,
+                    description: accessory.description,
+                    price: accessory.price,
+                    images: [accessory.image],
+                    category: accessory.categoryName,
+                    note: accessory.note
+                }));
+                setAccessories(transformedAccessories);
+            } catch (error) {
+                setErrorAccessories(error.message);
+                console.error('Error fetching accessories:', error);
+            } finally {
+                setLoadingAccessories(false);
+            }
+        };
 
-    const accessories = [
-        { id: 1, name: 'Ribbon', description: 'Elegant satin ribbon for decoration', price: 5.99, images: ['https://as2.ftcdn.net/jpg/01/92/51/47/1000_F_192514739_aGk120cYyRntM1xuU8JywWjh4w10qQSG.jpg'] },
-        { id: 2, name: 'Greeting Card', description: 'Personalized message card', price: 3.99, images: ['https://cdn11.bigcommerce.com/s-7f9rxjod7c/images/stencil/1280x1280/products/357334/882343/CARD22JLY271__80685.1658751885.jpg?c=2&imbypass=on'] },
-        { id: 3, name: 'Gift Box', description: 'Premium gift box for special occasions', price: 8.99, images: ['https://afterrainflorist.com/wp-content/uploads/2020/06/AFTERRAINFLORIST_PJ_Florist_KL_Florist_Charming_Mix_Flowers_with_Chocolate_Square_Flower_Box_2-1024x1024.jpg'] },
-    ];
+        fetchAccessories();
+    }, []);
 
+    useEffect(() => {
+        const fetchStyles = async () => {
+            try {
+                setLoadingStyles(true);
+                const response = await fetch('https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/style/GetAllStyle');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch styles');
+                }
+                const data = await response.json();
+                const transformedStyles = data.data.map(style => ({
+                    id: style.styleId,
+                    name: style.name,
+                    description: style.description,
+                    images: [style.image],
+                    category: style.categoryName,
+                    note: style.note,
+                    feature: style.feature
+                }));
+                setStyles(transformedStyles);
+            } catch (error) {
+                setErrorStyles(error.message);
+                console.error('Error fetching styles:', error);
+            } finally {
+                setLoadingStyles(false);
+            }
+        };
+
+        fetchStyles();
+    }, []);
 
     //Basket Function
     const handleBasketSelect = (basket) => {
