@@ -1,21 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeftOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Menu, Input, Button, Form, Checkbox, Select } from 'antd';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import axios from 'axios';
 
 const Checkout = () => {
     const [shippingMethod, setShippingMethod] = useState('store-pickup');
     const [isAddressDisabled, setIsAddressDisabled] = useState(true);
     const [selectedVoucher, setSelectedVoucher] = useState(null);
     const [selectedStore, setSelectedStore] = useState(null);
+    const [promotions, setPromotions] = useState([]);
+    const [stores, setStores] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [loadingStores, setLoadingStores] = useState(true);
 
     const navigate = useNavigate();
     const location = useLocation();
     const cartItems = location.state?.cartItems;
     const totalAmount = location.state?.totalAmount;
     const productInfo = location.state?.product;
+
+    useEffect(() => {
+        fetchPromotions();
+        fetchStores();
+    }, []);
+
+    const fetchPromotions = async () => {
+        try {
+            const response = await axios.get('https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/promotions');
+            setPromotions(response.data);
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching promotions:', error);
+            setLoading(false);
+        }
+    };
+
+    const fetchStores = async () => {
+        try {
+            const response = await axios.get('https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Store/GetAllStore');
+            if (response.data && response.data.data) {
+                setStores(response.data.data);
+            }
+            setLoadingStores(false);
+        } catch (error) {
+            console.error('Error fetching stores:', error);
+            setLoadingStores(false);
+        }
+    };
 
     // Redirect if no items to checkout
     if (!cartItems && !productInfo) {
@@ -36,13 +70,14 @@ const Checkout = () => {
         setSelectedVoucher(voucherId);
     };
 
-    const storeMenu = (
-        <Menu>
-            <Menu.Item key="1">Store 1</Menu.Item>
-            <Menu.Item key="2">Store 2</Menu.Item>
-            <Menu.Item key="3">Store 3</Menu.Item>
-        </Menu>
-    );
+    const calculateDiscount = () => {
+        if (!selectedVoucher) return 0;
+        const promotion = promotions.find(p => p.promotionId === selectedVoucher);
+        if (!promotion) return 0;
+        
+        const subtotal = cartItems ? totalAmount : productInfo.totalPrice;
+        return Math.round((subtotal * promotion.promotionDiscount) / 100);
+    };
 
     const OptionCard = ({ id, title, description, price, icon, selected, onClick, discount }) => (
         <div
@@ -170,10 +205,26 @@ const Checkout = () => {
                                     onChange={handleStoreChange}
                                     className="w-full"
                                     placeholder="Select Store"
+                                    loading={loadingStores}
+                                    optionLabelProp="label"
                                 >
-                                    <Select.Option value="Store 1">Store 1</Select.Option>
-                                    <Select.Option value="Store 2">Store 2</Select.Option>
-                                    <Select.Option value="Store 3">Store 3</Select.Option>
+                                    {stores.map(store => (
+                                        <Select.Option 
+                                            key={store.storeId} 
+                                            value={store.storeId}
+                                            label={store.storeName}
+                                        >
+                                            <div className="py-2">
+                                                <div className="font-medium">{store.storeName}</div>
+                                                <div className="text-gray-500 text-sm">
+                                                    {store.city}, {store.district}
+                                                </div>
+                                                <div className="text-gray-500 text-sm">
+                                                    {store.address}
+                                                </div>
+                                            </div>
+                                        </Select.Option>
+                                    ))}
                                 </Select>
                             </div>
                         </div>
@@ -182,33 +233,26 @@ const Checkout = () => {
                             <h3 className="text-xl font-semibold text-left text-black bg-pink-200 p-2 rounded">Available Vouchers</h3>
                             <p className="text-base p-3 text-gray-500 text-left">Select a voucher to apply</p>
                             <div className="p-4">
-                                <OptionCard
-                                    id="new-customer"
-                                    title="New Customer Discount"
-                                    description="15% off for first-time customers"
-                                    discount="15%"
-                                    icon="https://res.cloudinary.com/teepublic/image/private/s--SsGBkQkb--/c_crop,x_10,y_10/c_fit,w_830/c_crop,g_north_west,h_1038,w_1038,x_-104,y_-297/l_upload:v1565806151:production:blanks:vdbwo35fw6qtflw9kezw/fl_layer_apply,g_north_west,x_-215,y_-408/b_rgb:000000/c_limit,f_jpg,h_630,q_90,w_630/v1574270323/production/designs/6813989_0.jpg"
-                                    selected={selectedVoucher === 'new-customer'}
-                                    onClick={handleVoucherChange}
-                                />
-                                <OptionCard
-                                    id="valentine"
-                                    title="Valentine's Special"
-                                    description="10% off on orders above 500,000 VND"
-                                    discount="10%"
-                                    icon="https://lh5.googleusercontent.com/6gWO2T8L4xqoWgMcXRh_H-oLJ5vLyXHFcQUKJv36cZgQVjDVpFRN3Ezyr5zqPhljR4jiFkLgOK9JOU-0PbreGnYzwGtKrNMlhrdZqmJvhuqgg_vne9x9CqD7S5aeIDSoNRn4RzQrhJPIcE637ud6j1i_-j8uPazgTMl0Ayt8adlV1iZcUJnNTWpJ3g"
-                                    selected={selectedVoucher === 'valentine'}
-                                    onClick={handleVoucherChange}
-                                />
-                                <OptionCard
-                                    id="free-shipping"
-                                    title="Free Shipping"
-                                    description="Free shipping on orders above 300,000 VND"
-                                    discount="30,000 đ"
-                                    icon="https://lamha.com.vn/image/cache/catalog/blog/khuyen-mai/free_shipping_PNG2-640x360.png"
-                                    selected={selectedVoucher === 'free-shipping'}
-                                    onClick={handleVoucherChange}
-                                />
+                                {loading ? (
+                                    <div className="flex justify-center py-4">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-pink-500"></div>
+                                    </div>
+                                ) : promotions.length > 0 ? (
+                                    promotions.map((promotion) => (
+                                        <OptionCard
+                                            key={promotion.promotionId}
+                                            id={promotion.promotionId}
+                                            title={promotion.promotionName}
+                                            description={`Valid until ${new Date(promotion.endDate).toLocaleDateString()}`}
+                                            discount={`${promotion.promotionDiscount}%`}
+                                            icon={promotion.image}
+                                            selected={selectedVoucher === promotion.promotionId}
+                                            onClick={handleVoucherChange}
+                                        />
+                                    ))
+                                ) : (
+                                    <p className="text-center text-gray-500">No promotions available</p>
+                                )}
                             </div>
                         </div>
 
@@ -216,12 +260,12 @@ const Checkout = () => {
                             <h2 className="text-xl font-semibold text-left text-black bg-pink-200 p-2 rounded">Order Summary</h2>
                             <div className="p-4">
                                 <p className="mb-2 text-left">Subtotal: {cartItems ? totalAmount.toLocaleString() : productInfo.totalPrice.toLocaleString()} VND</p>
-                                <p className="mb-2 text-left">Discount (Voucher): {selectedVoucher === 'free-shipping' ? '-30,000' : '0'} VND</p>
+                                <p className="mb-2 text-left">Discount (Voucher): -{calculateDiscount().toLocaleString()} VND</p>
                                 <p className="mb-2 text-left">Shipping: {shippingMethod === 'store-pickup' ? '0' : '25,000'} VND</p>
                                 <p className="font-bold text-left">Total: {(
-                                    (cartItems ? totalAmount : productInfo.totalPrice) + 
-                                    (shippingMethod === 'store-pickup' ? 0 : 25000) - 
-                                    (selectedVoucher === 'free-shipping' ? 30000 : 0)
+                                    (cartItems ? totalAmount : productInfo.totalPrice) - 
+                                    calculateDiscount() +
+                                    (shippingMethod === 'store-pickup' ? 0 : 25000)
                                 ).toLocaleString()} VND</p>
                             </div>
                         </div>
@@ -262,7 +306,31 @@ const Checkout = () => {
                             </div>
                         </div>
 
-                        {shippingMethod !== 'store-pickup' && (
+                        {shippingMethod === 'store-pickup' ? (
+                            <div className="mb-5 border border-gray-300 rounded">
+                                <h3 className="text-xl font-semibold mb-5 text-left text-black bg-pink-200 p-2 rounded">Add Information</h3>
+                                <Form className="p-5">
+                                    <Form.Item label="Recipient Name" required>
+                                        <Input />
+                                    </Form.Item>
+                                    <Form.Item label="Recipient Phone" required>
+                                        <Input />
+                                    </Form.Item>
+                                    <Form.Item label="Time" required>
+                                        <Input />
+                                    </Form.Item>
+                                    <Form.Item label="Deposit" required>
+                                        <Select
+                                            placeholder="Select deposit amount"
+                                            className="w-full"
+                                        >
+                                            <Select.Option value="50">50% deposit</Select.Option>
+                                            <Select.Option value="100">100% deposit</Select.Option>
+                                        </Select>
+                                    </Form.Item>
+                                </Form>
+                            </div>
+                        ) : (
                             <div className="mb-5 border border-gray-300 rounded">
                                 <h3 className="text-xl font-semibold mb-5 text-left text-black bg-pink-200 p-2 rounded">Shipping Address</h3>
                                 <Form className="p-5">
