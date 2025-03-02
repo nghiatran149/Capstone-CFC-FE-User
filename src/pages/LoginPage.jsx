@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import { Input, Button, message } from 'antd';
+import { Input, message } from 'antd';
 import axios from 'axios';
 import AuthPic from "../assets/authpic.jpg";
 import AuthBG from "../assets/authbg.jpg";
@@ -14,7 +14,6 @@ const LoginPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        
         if (!email || !password) {
             message.error("Email and password are required!");
             return;
@@ -25,10 +24,25 @@ const LoginPage = () => {
                 email: email,
                 password: password
             });
+            
             if (response.data.resultStatus === 'Success') {
-                message.success("Login successfully! Welcome Customer");
-                localStorage.setItem("accessToken", response.data.data.accessToken);
-                window.location.href = "/home";
+                const { accessToken, id, email } = response.data.data;
+                const { roleName } = response.data;
+
+                // Lưu thông tin vào sessionStorage
+                sessionStorage.setItem("accessToken", accessToken);
+                sessionStorage.setItem("userId", id);
+                sessionStorage.setItem("userRole", roleName);
+                sessionStorage.setItem("userEmail", email);
+
+                // Kiểm tra role
+                if (roleName === "Customer") {
+                    message.success("Login successfully! Welcome Customer");
+                    window.location.href = "/home";
+                } else {
+                    message.error("Access denied: Customer role required");
+                    sessionStorage.clear(); // Xóa thông tin nếu không phải customer
+                }
             } else {
                 message.error("Login failed: " + response.data.messages.join(' '));
             }

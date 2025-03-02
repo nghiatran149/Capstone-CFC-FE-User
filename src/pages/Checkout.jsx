@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeftOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Menu, Input, Button, Form, Checkbox, Select } from 'antd';
 import Header from "../components/Header";
@@ -12,6 +12,16 @@ const Checkout = () => {
     const [selectedStore, setSelectedStore] = useState(null);
 
     const navigate = useNavigate();
+    const location = useLocation();
+    const cartItems = location.state?.cartItems;
+    const totalAmount = location.state?.totalAmount;
+    const productInfo = location.state?.product;
+
+    // Redirect if no items to checkout
+    if (!cartItems && !productInfo) {
+        navigate('/');
+        return null;
+    }
 
     const handleStoreChange = (value) => {
         setSelectedStore(value);
@@ -76,40 +86,52 @@ const Checkout = () => {
                 <div className="mb-6 border border-gray-300 rounded">
                     <h2 className="text-xl font-semibold text-left text-black bg-pink-200 p-2 rounded">Order Information</h2>
                     <div className="space-y-4 py-5 px-10">
-
-                        <div className="flex items-center border-b border-gray-200 pb-4">
-                            <div className="w-24 h-24 flex-shrink-0">
-                                <img
-                                    src="https://storage.googleapis.com/cdn_dlhf_vn/public/products/APF0/APF06AK217/DSC_2243wm_800x800.jpg"
-                                    alt="product"
-                                    className="w-full h-full object-cover rounded"
-                                />
+                        {cartItems ? (
+                            // Display multiple items from cart
+                            cartItems.map((item) => (
+                                <div key={item.cartId} className="flex items-center border-b border-gray-200 pb-4">
+                                    <div className="w-24 h-24 flex-shrink-0">
+                                        <img
+                                            src={item.productImage}
+                                            alt={item.productName}
+                                            className="w-full h-full object-cover rounded"
+                                        />
+                                    </div>
+                                    <div className="flex flex-1 items-center justify-between ml-6">
+                                        <div className="flex flex-col">
+                                            <h3 className="text-lg font-semibold text-gray-900">{item.productName}</h3>
+                                            <p className="text-sm text-gray-500">Size: {item.size}</p>
+                                            <p className="text-sm text-gray-500">Category: {item.categoryName}</p>
+                                        </div>
+                                        <p className="text-pink-600 font-medium">{item.productPrice.toLocaleString()} VND</p>
+                                        <p className="text-gray-600">x{item.quantity}</p>
+                                        <p className="text-lg font-semibold text-pink-600">{item.totalPrice.toLocaleString()} VND</p>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            // Display single item from direct checkout
+                            <div className="flex items-center border-b border-gray-200 pb-4">
+                                <div className="w-24 h-24 flex-shrink-0">
+                                    <img
+                                        src={productInfo.productImages[0]?.productImage1}
+                                        alt={productInfo.productName}
+                                        className="w-full h-full object-cover rounded"
+                                    />
+                                </div>
+                                <div className="flex flex-1 items-center justify-between ml-6">
+                                    <div className="flex flex-col">
+                                        <h3 className="text-lg font-semibold text-gray-900">{productInfo.productName}</h3>
+                                        <p className="text-sm text-gray-500">Size: {productInfo.size}</p>
+                                        <p className="text-sm text-gray-500">Category: {productInfo.categoryName}</p>
+                                    </div>
+                                    <p className="text-pink-600 font-medium">{productInfo.finalPrice.toLocaleString()} VND</p>
+                                    <p className="text-gray-600">x{productInfo.selectedQuantity}</p>
+                                    <p className="text-lg font-semibold text-pink-600">{productInfo.totalPrice.toLocaleString()} VND</p>
+                                </div>
                             </div>
-                            <div className="flex flex-1 items-center justify-between ml-6">
-                                <h3 className="text-lg font-semibold text-gray-900">BOUQUET NO-1</h3>
-                                <p className="text-pink-600 font-medium">100,000 VND</p>
-                                <p className="text-gray-600">x2</p>
-                                <p className="text-lg font-semibold text-pink-600">200,000 VND</p>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center">
-                            <div className="w-24 h-24 flex-shrink-0">
-                                <img
-                                    src="https://storage.googleapis.com/cdn_dlhf_vn/public/products/APF0/APF06AK217/DSC_2243wm_800x800.jpg"
-                                    alt="product"
-                                    className="w-full h-full object-cover rounded"
-                                />
-                            </div>
-                            <div className="flex flex-1 items-center justify-between ml-6">
-                                <h3 className="text-lg font-semibold text-gray-900">BOUQUET NO-2</h3>
-                                <p className="text-pink-600 font-medium">150,000 VND</p>
-                                <p className="text-gray-600">x1</p>
-                                <p className="text-lg font-semibold text-pink-600">150,000 VND</p>
-                            </div>
-                        </div>
+                        )}
                     </div>
-
                 </div>
 
                 <div className="mb-5 border border-gray-300 rounded">
@@ -193,10 +215,14 @@ const Checkout = () => {
                         <div className="mb-6 border border-gray-300 rounded">
                             <h2 className="text-xl font-semibold text-left text-black bg-pink-200 p-2 rounded">Order Summary</h2>
                             <div className="p-4">
-                                <p className="mb-2 text-left">Subtotal: 400,000 VND</p>
-                                <p className="mb-2 text-left">Discount (Voucher): -20,000 VND</p>
-                                <p className="mb-2 text-left">Shipping: 50,000 VND</p>
-                                <p className="font-bold text-left">Total: 430,000 VND</p>
+                                <p className="mb-2 text-left">Subtotal: {cartItems ? totalAmount.toLocaleString() : productInfo.totalPrice.toLocaleString()} VND</p>
+                                <p className="mb-2 text-left">Discount (Voucher): {selectedVoucher === 'free-shipping' ? '-30,000' : '0'} VND</p>
+                                <p className="mb-2 text-left">Shipping: {shippingMethod === 'store-pickup' ? '0' : '25,000'} VND</p>
+                                <p className="font-bold text-left">Total: {(
+                                    (cartItems ? totalAmount : productInfo.totalPrice) + 
+                                    (shippingMethod === 'store-pickup' ? 0 : 25000) - 
+                                    (selectedVoucher === 'free-shipping' ? 30000 : 0)
+                                ).toLocaleString()} VND</p>
                             </div>
                         </div>
                     </div>
