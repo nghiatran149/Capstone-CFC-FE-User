@@ -3,10 +3,9 @@ import { Table, Button, InputNumber, message, Empty } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { jwtDecode } from 'jwt-decode';
+import jwtDecode from 'jwt-decode';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-
 const ShoppingCart = () => {
   const navigate = useNavigate();
   const [cartItems, setCartItems] = useState([]);
