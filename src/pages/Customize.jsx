@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeftOutlined } from '@ant-design/icons';
-import { Button, Slider } from 'antd';
+import { Button, Slider, Modal, Form, Input, message } from 'antd';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import jwtDecode from 'jwt-decode';
+import axios from 'axios';
 
 const FlowerCustomization = () => {
     const [currentStep, setCurrentStep] = useState('basket');
@@ -33,6 +35,9 @@ const FlowerCustomization = () => {
     const [styles, setStyles] = useState([]);
     const [loadingStyles, setLoadingStyles] = useState(true);
     const [errorStyles, setErrorStyles] = useState(null);
+
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [form] = Form.useForm();
 
     const navigate = useNavigate();
 
@@ -79,6 +84,7 @@ const FlowerCustomization = () => {
                 const data = await response.json();
                 const transformedFlowers = data.map(flower => ({
                     id: flower.flowerId,
+                    flowerId: flower.flowerId,
                     name: flower.flowerName,
                     price: flower.price,
                     color: flower.color,
@@ -87,6 +93,7 @@ const FlowerCustomization = () => {
                     quantity: flower.quantity,
                     category: flower.categoryName
                 }));
+                console.log('Fetched flowers:', transformedFlowers);
                 setFlowers(transformedFlowers);
             } catch (error) {
                 setErrorFlowers(error.message);
@@ -191,16 +198,26 @@ const FlowerCustomization = () => {
 
     const handleSaveFlowerQuantity = () => {
         if (selectedFlower && selectedBasket) {
-            const flowerId = selectedFlower.id;
+            const flowerId = selectedFlower.flowerId;
             const currentQuantity = selectedFlowers[flowerId]?.quantity || 0;
             const newTotal = totalFlowers - currentQuantity + flowerQuantity;
 
+            // Save complete flower information
             setSelectedFlowers(prev => ({
                 ...prev,
-                [flowerId]: { ...selectedFlower, quantity: flowerQuantity }
+                [flowerId]: {
+                    id: selectedFlower.flowerId,
+                    flowerId: selectedFlower.flowerId,
+                    name: selectedFlower.name,
+                    price: selectedFlower.price,
+                    quantity: flowerQuantity,
+                    color: selectedFlower.color,
+                    category: selectedFlower.category
+                }
             }));
             setTotalFlowers(newTotal);
-            alert(`Saved ${flowerQuantity} ${selectedFlower.name} flowers`);
+            message.success(`Saved ${flowerQuantity} ${selectedFlower.name} flowers`);
+            console.log('Updated selected flowers:', selectedFlowers);
         }
     };
 
@@ -258,18 +275,108 @@ const FlowerCustomization = () => {
 
     const handleCheckout = () => {
         if (!selectedBasket || !selectedStyle) {
-            alert('Please select both basket and style before checkout.');
+            message.error('Please select both basket and style before checkout.');
             return;
         }
 
         if (totalFlowers < selectedBasket.minFlowers || totalFlowers > selectedBasket.maxFlowers) {
-            alert(`Total number of flowers must be from ${selectedBasket.minFlowers} to ${selectedBasket.maxFlowers}. Current quantity: ${totalFlowers}`);
+            message.error(`Total number of flowers must be from ${selectedBasket.minFlowers} to ${selectedBasket.maxFlowers}. Current quantity: ${totalFlowers}`);
             return;
         }
 
-        alert('Thank you for your order! Proceeding to payment...');
+        setIsModalVisible(true);
     };
 
+    const handleModalCancel = () => {
+        setIsModalVisible(false);
+        form.resetFields();
+    };
+
+    const handleModalSubmit = async () => {
+        try {
+            const values = await form.validateFields();
+            const token = sessionStorage.getItem('accessToken');
+            if (!token) {
+                message.error('Please login to proceed');
+                navigate('/login');
+                return;
+            }
+
+            const decodedToken = jwtDecode(token);
+            const customerId = decodedToken.Id;
+
+            if (!customerId) {
+                message.error('User information not found. Please login again');
+                navigate('/login');
+                return;
+            }
+
+            // Check if flowers are selected
+            if (Object.keys(selectedFlowers).length === 0) {
+                message.error('Please select at least one flower');
+                return;
+            }
+
+            // Prepare flower custom requests with proper flowerId
+            const createFlowerCustomRequests = Object.values(selectedFlowers).map(flower => ({
+                flowerId: flower.flowerId,
+                quantity: flower.quantity
+            }));
+
+            // Get the first accessory ID if any accessories are selected
+            const accessoryIds = Object.keys(selectedAccessories);
+            const accessoryId = accessoryIds.length > 0 ? accessoryIds[0] : null;
+
+            const customProductData = {
+                productName: values.productName.trim(),
+                flowerBasketId: selectedBasket.id,
+                styleId: selectedStyle.id,
+                accessoryId: accessoryId,
+                quantity: 1,
+                createFlowerCustomRequests: createFlowerCustomRequests,
+                description: values.description.trim()
+            };
+
+            console.log('Selected Flowers:', selectedFlowers);
+            console.log('Create Flower Requests:', createFlowerCustomRequests);
+            console.log('Sending data:', customProductData);
+
+            const response = await axios.post(
+                `https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/productcustoms/create-productcustom?CustomerId=${customerId}`,
+                customProductData,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            if (response.status === 200 || response.status === 201) {
+                message.success('Custom product created successfully!');
+                setIsModalVisible(false);
+                const customId = response.data.customeId;
+                navigate('/checkout-custom', { 
+                    state: { 
+                        customId: customId,
+                        statusCode: response.data.statusCode,
+                        code: response.data.code,
+                        message: response.data.message
+                    } 
+                });
+            } else {
+                throw new Error('Failed to create custom product');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Error response:', error.response?.data);
+            message.error(
+                error.response?.data?.message || 
+                error.response?.data?.title ||
+                'Failed to create custom product. Please try again.'
+            );
+        }
+    };
 
     //Price Calculation
     const calculateTotalPrice = () => {
@@ -695,6 +802,49 @@ const FlowerCustomization = () => {
                 </div>
             </div>
             <Footer />
+            
+            <Modal
+                title="Custom Product Information"
+                open={isModalVisible}
+                onOk={handleModalSubmit}
+                onCancel={handleModalCancel}
+                okText="Create Custom Product"
+                cancelText="Cancel"
+            >
+                <Form
+                    form={form}
+                    layout="vertical"
+                >
+                    <Form.Item
+                        name="productName"
+                        label="Custom Product Name"
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Please enter a name for your custom product',
+                            },
+                        ]}
+                    >
+                        <Input placeholder="Enter a name for your custom product" />
+                    </Form.Item>
+
+                    <Form.Item
+                        name="description"
+                        label="Description"
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Please enter a description',
+                            },
+                        ]}
+                    >
+                        <Input.TextArea 
+                            placeholder="Enter a description for your custom product"
+                            rows={4}
+                        />
+                    </Form.Item>
+                </Form>
+            </Modal>
         </div>
     );
 };
