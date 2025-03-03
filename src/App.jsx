@@ -16,6 +16,7 @@ import PaymentSuccess from "./pages/PaymentSuccess"
 import PaymentFailure from "./pages/PaymentFailure"
 
 import CheckoutCustom from "./pages/CheckoutCustom"
+import CheckoutCart from "./pages/CheckoutCart"
 
 
 function App() {
@@ -38,7 +39,7 @@ function App() {
                 <Route path="/checkout" element={<Checkout />} />
 
                 <Route path="/checkout-custom" element={<CheckoutCustom />} />
-
+                <Route path="/checkout-cart" element={<CheckoutCart />} />
 
 
                 <Route path="/customize" element={<Customize />} />
