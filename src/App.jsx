@@ -14,7 +14,9 @@ import ChangePasswordPage from './pages/ChangePasswordPage';
 import Customize from "./pages/Customize"
 import PaymentSuccess from "./pages/PaymentSuccess"
 import PaymentFailure from "./pages/PaymentFailure"
+
 import CheckoutCustom from "./pages/CheckoutCustom"
+
 
 function App() {
     return (
@@ -34,7 +36,10 @@ function App() {
                 <Route path="/wallet" element={<WalletPage />} />
                 <Route path="/cart" element={<ShoppingCart />} />
                 <Route path="/checkout" element={<Checkout />} />
+
                 <Route path="/checkout-custom" element={<CheckoutCustom />} />
+
+
 
                 <Route path="/customize" element={<Customize />} />
             </Routes>
