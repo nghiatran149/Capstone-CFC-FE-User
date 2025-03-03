@@ -14,10 +14,9 @@ import ChangePasswordPage from './pages/ChangePasswordPage';
 import Customize from "./pages/Customize"
 import PaymentSuccess from "./pages/PaymentSuccess"
 import PaymentFailure from "./pages/PaymentFailure"
-
 import CheckoutCustom from "./pages/CheckoutCustom"
 import CheckoutCart from "./pages/CheckoutCart"
-
+import Layout from "./components/Layout"
 
 function App() {
     return (
@@ -27,22 +26,22 @@ function App() {
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/forgotpassword" element={<ForgotPasswordPage />} />
                 <Route path="/changepassword" element={<ChangePasswordPage />} />
-                <Route path="/payment-success" element={<PaymentSuccess />} />
-                <Route path="/payment-failure" element={<PaymentFailure />} />
-                <Route path="/home" element={<Homepage />} />
-                <Route path="/product" element={<ProductPage />} />
-                <Route path="/productdetail" element={<ProductDetail />} />
-                <Route path="/productdetail/:id" element={<ProductDetail />} />
-                <Route path="/userprofile" element={<UserProfile />} />
-                <Route path="/wallet" element={<WalletPage />} />
-                <Route path="/cart" element={<ShoppingCart />} />
-                <Route path="/checkout" element={<Checkout />} />
-
-                <Route path="/checkout-custom" element={<CheckoutCustom />} />
-                <Route path="/checkout-cart" element={<CheckoutCart />} />
-
-
-                <Route path="/customize" element={<Customize />} />
+                
+                <Route path="/home" element={<Layout><Homepage /></Layout>} />
+                <Route path="/product" element={<Layout><ProductPage /></Layout>} />
+                <Route path="/productdetail" element={<Layout><ProductDetail /></Layout>} />
+                <Route path="/productdetail/:id" element={<Layout><ProductDetail /></Layout>} />
+                <Route path="/userprofile" element={<Layout><UserProfile /></Layout>} />
+                <Route path="/wallet" element={<Layout><WalletPage /></Layout>} />
+                <Route path="/cart" element={<Layout><ShoppingCart /></Layout>} />
+                <Route path="/checkout" element={<Layout><Checkout /></Layout>} />
+                <Route path="/checkout-custom" element={<Layout><CheckoutCustom /></Layout>} />
+                <Route path="/checkout-cart" element={<Layout><CheckoutCart /></Layout>} />
+                <Route path="/customize" element={<Layout><Customize /></Layout>} />
+                <Route path="/payment-success" element={<Layout><PaymentSuccess /></Layout>} />
+                <Route path="/payment-failure" element={<Layout><PaymentFailure /></Layout>} />
+                
+                <Route path="/" element={<Layout><Homepage /></Layout>} />
             </Routes>
         </BrowserRouter>
     );

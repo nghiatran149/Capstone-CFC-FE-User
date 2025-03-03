@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from 'react-router-dom';
 import { Typography } from 'antd';
 import { UserOutlined, GiftOutlined, ShopOutlined, PayCircleOutlined, ClockCircleOutlined, PictureOutlined, CustomerServiceOutlined } from '@ant-design/icons';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import BannerCarousel from "../components/BannerCarousel";
 import PromotionBanner from "../components/PromotionBanner";
+import ScrollToTop from "../components/ScrollToTop";
 import Flower1 from "../assets/homepic1.jpg";
 import Flower2 from "../assets/homepic2.jpg";
 import Flower3 from "../assets/homepic3.jpg";
@@ -15,12 +17,66 @@ import LatestDealBG from "../assets/latestdeal.jpg"
 const { Paragraph } = Typography;
 
 const Homepage = () => {
+    const [firstSectionVisible, setFirstSectionVisible] = useState(false);
+    const [secondSectionVisible, setSecondSectionVisible] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            // Get positions of sections
+            const firstSection = document.getElementById("first-section");
+            const secondSection = document.getElementById("second-section");
+            
+            if (firstSection) {
+                const firstSectionRect = firstSection.getBoundingClientRect();
+                // Check if section is in viewport (partially visible)
+                const isFirstVisible = 
+                    firstSectionRect.top < window.innerHeight - 200 && 
+                    firstSectionRect.bottom > 0;
+                
+                setFirstSectionVisible(isFirstVisible);
+            }
+            
+            if (secondSection) {
+                const secondSectionRect = secondSection.getBoundingClientRect();
+                const isSecondVisible = 
+                    secondSectionRect.top < window.innerHeight - 200 && 
+                    secondSectionRect.bottom > 0;
+                
+                setSecondSectionVisible(isSecondVisible);
+            }
+        };
+
+        // Add scroll event listener
+        window.addEventListener("scroll", handleScroll);
+        
+        // Check initial position (in case sections are already in view)
+        handleScroll();
+        
+        // Clean up event listener
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+        };
+    }, []);
+
     return (
-        <div className="bg-pink-50 w-full">
+        <div className="bg-pink-100 w-full">
             <Header />
-            <section className="py-16 bg-pink-100 relative h-auto">
-                <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center px-4">
-                    <div className="space-y-10 pl-20">
+            <BannerCarousel />
+
+            <section
+                id="first-section"
+                className="py-16 relative h-auto bg-cover bg-center"
+                style={{
+                    backgroundImage: "url('/path/to/your-background-image.jpg')",
+                }}
+            >
+                <div className="absolute inset-0 bg-pink-100 bg-opacity-80"></div>
+                <div className="relative z-10 w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center px-4">
+                    <div 
+                        className={`space-y-10 pl-20 transition-all duration-1000 transform ${
+                            firstSectionVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'
+                        }`}
+                    >
                         <h1 className="text-7xl text-left font-bold">
                             Fresh Flowers For Any Occasion
                         </h1>
@@ -45,26 +101,31 @@ const Homepage = () => {
                             </div>
                         </section>
                     </div>
-                    <div className="relative w-full h-[300px] md:h-[600px]">
-                        <div className="absolute top-[0px] left-[450px] z-10">
+                    <div 
+                        className={`relative w-full h-[300px] md:h-[600px] transition-all duration-1000 transform ${
+                            firstSectionVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'
+                        }`}
+                        style={{ transitionDelay: '200ms' }}
+                    >
+                        <div className="absolute top-[0px] left-[400px] z-10">
                             <img
                                 src={Flower1}
                                 alt="Flower 1"
-                                className="rounded-lg w-[230px] h-[230px] object-contain"
+                                className="rounded-lg w-[250px] h-[250px] object-contain"
                             />
                         </div>
-                        <div className="absolute top-[50px] left-[120px] md:top-[130px] md:left-[230px] z-0">
+                        <div className="absolute top-[50px] left-[120px] md:top-[130px] md:left-[160px] z-0">
                             <img
                                 src={Flower2}
                                 alt="Flower 2"
-                                className="rounded-lg w-[350px] h-[350px] object-contain"
+                                className="rounded-lg w-[380px] h-[380px] object-contain"
                             />
                         </div>
-                        <div className="absolute top-[180px] left-[50px] md:top-[360px] md:left-[110px] z-10">
+                        <div className="absolute top-[180px] left-[50px] md:top-[400px] md:left-[50px] z-10">
                             <img
                                 src={Flower3}
                                 alt="Flower 3"
-                                className="rounded-lg w-[230px] h-[230px] object-contain"
+                                className="rounded-lg w-[250px] h-[250px] object-contain"
                             />
                         </div>
                     </div>
@@ -72,7 +133,7 @@ const Homepage = () => {
             </section>
 
             {/* Features */}
-            <section className="py-12 bg-white grid grid-cols-1 md:grid-cols-4 gap-6 px-10">
+            <section className="py-12 mt-10 bg-white grid grid-cols-1 md:grid-cols-4 gap-6 px-10">
                 <div className="text-center">
                     <PayCircleOutlined className="text-4xl text-pink-500 mb-3" />
                     <h3 className="text-lg font-bold">Easy Payment</h3>
@@ -98,9 +159,16 @@ const Homepage = () => {
             {/* Promotion Banner */}
             <PromotionBanner />
 
-            <section className="py-16 bg-white relative h-auto">
+            <section 
+                id="second-section"
+                className="py-16 bg-white relative h-auto"
+            >
                 <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center px-4">
-                    <div className="space-y-10 pl-20">
+                    <div 
+                        className={`space-y-10 pl-20 transition-all duration-1000 transform ${
+                            secondSectionVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'
+                        }`}
+                    >
                         <h1 className="text-6xl text-left font-bold">
                             Create Your Perfect Floral Design
                         </h1>
@@ -113,7 +181,12 @@ const Homepage = () => {
                             </button>
                         </Link>
                     </div>
-                    <div className="relative w-full h-[300px] md:h-[500px]">
+                    <div 
+                        className={`relative w-full h-[300px] md:h-[500px] transition-all duration-1000 transform ${
+                            secondSectionVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'
+                        }`}
+                        style={{ transitionDelay: '200ms' }}
+                    >
                         <div className="absolute md:top-[0px] md:left-[150px] z-0">
                             <img
                                 src={Homepic4}
@@ -155,6 +228,7 @@ const Homepage = () => {
                 </div>
             </section>
             <Footer />
+            <ScrollToTop />
         </div>
     );
 };

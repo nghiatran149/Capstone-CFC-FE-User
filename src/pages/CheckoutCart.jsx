@@ -7,7 +7,7 @@ import Footer from "../components/Footer";
 import axios from 'axios';
 import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
-import jwtDecode from 'jwt-decode';
+import { jwtDecode } from "jwt-decode";
 
 const Checkout = () => {
     const [form] = Form.useForm();

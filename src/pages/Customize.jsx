@@ -4,7 +4,7 @@ import { ArrowLeftOutlined } from '@ant-design/icons';
 import { Button, Slider, Modal, Form, Input, message } from 'antd';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import jwtDecode from 'jwt-decode';
+import { jwtDecode } from "jwt-decode";
 import axios from 'axios';
 
 const FlowerCustomization = () => {
