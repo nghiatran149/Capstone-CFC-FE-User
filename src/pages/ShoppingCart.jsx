@@ -192,7 +192,7 @@ const ShoppingCart = () => {
                 type="primary"
                 size="large"
                 className="bg-pink-600 hover:bg-pink-700"
-                onClick={() => navigate('/checkout', {
+                onClick={() => navigate('/checkout-cart', {
                   state: {
                     cartItems: cartItems,
                     totalAmount: calculateTotal()
