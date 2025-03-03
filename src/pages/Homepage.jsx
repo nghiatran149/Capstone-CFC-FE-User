@@ -1,9 +1,10 @@
 import React from "react";
-import { Layout, Button, Card, Input, Typography } from 'antd';
-import { PayCircleOutlined, ClockCircleOutlined, PictureOutlined, CustomerServiceOutlined } from '@ant-design/icons';
+import { Link } from 'react-router-dom';
+import { Typography } from 'antd';
+import { UserOutlined, GiftOutlined, ShopOutlined, PayCircleOutlined, ClockCircleOutlined, PictureOutlined, CustomerServiceOutlined } from '@ant-design/icons';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import VoucherCard from "../components/VoucherCard";
+import PromotionBanner from "../components/PromotionBanner";
 import Flower1 from "../assets/homepic1.jpg";
 import Flower2 from "../assets/homepic2.jpg";
 import Flower3 from "../assets/homepic3.jpg";
@@ -14,19 +15,6 @@ import LatestDealBG from "../assets/latestdeal.jpg"
 const { Paragraph } = Typography;
 
 const Homepage = () => {
-    const vouchers = [
-        {
-            title: "Happy Wedding Anniversary",
-            description: "SALE UP TO 30% OFF",
-            buttonText: "Learn More",
-        },
-        {
-            title: "Happy New Year 2025",
-            description: "SALE UP TO 20% OFF",
-            buttonText: "Learn More",
-        },
-    ];
-
     return (
         <div className="bg-pink-50 w-full">
             <Header />
@@ -44,16 +32,16 @@ const Homepage = () => {
                         </button>
                         <section className="py-12 grid grid-cols-1 md:grid-cols-3 gap-6 px-10">
                             <div className="text-left">
-                                <h3 className="text-2xl font-bold">250+</h3>
+                                <h3 className="text-2xl font-bold"><UserOutlined /> 250+</h3>
                                 <p className="text-gray-600">Customers Reviews</p>
                             </div>
                             <div className="text-left">
-                                <h3 className="text-2xl font-bold">100+</h3>
+                                <h3 className="text-2xl font-bold"><GiftOutlined /> 100+</h3>
                                 <p className="text-gray-600">Flowers Collection</p>
                             </div>
                             <div className="text-left">
-                                <h3 className="text-2xl font-bold">5+</h3>
-                                <p className="text-gray-600">Locations</p>
+                                <h3 className="text-2xl font-bold"><ShopOutlined /> 5+</h3>
+                                <p className="text-gray-600">Stores</p>
                             </div>
                         </section>
                     </div>
@@ -107,20 +95,8 @@ const Homepage = () => {
                 </div>
             </section>
 
-
-            {/* Voucher */}
-            <section className="py-12 px-6 bg-white">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {vouchers.map((voucher, index) => (
-                        <VoucherCard
-                            key={index}
-                            title={voucher.title}
-                            description={voucher.description}
-                            buttonText={voucher.buttonText}
-                        />
-                    ))}
-                </div>
-            </section>
+            {/* Promotion Banner */}
+            <PromotionBanner />
 
             <section className="py-16 bg-white relative h-auto">
                 <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center px-4">
@@ -131,9 +107,11 @@ const Homepage = () => {
                         <Paragraph className="text-gray-600 text-left text-base leading-relaxed">
                             Craft stunning flower designs tailored to your unique preferences. Choose from a wide range of blooms, styles, and personalized touches to make your bouquet truly one of a kind.
                         </Paragraph>
-                        <button className="bg-pink-600 text-white px-10 p-2 hover:bg-pink-800">
-                            Try It!
-                        </button>
+                        <Link to="/customize">
+                            <button className="bg-pink-600 text-white px-10 mt-10 p-2 hover:bg-pink-800">
+                                Try It!
+                            </button>
+                        </Link>
                     </div>
                     <div className="relative w-full h-[300px] md:h-[500px]">
                         <div className="absolute md:top-[0px] md:left-[150px] z-0">
@@ -176,10 +154,9 @@ const Homepage = () => {
                     </button>
                 </div>
             </section>
-            <Footer/>
+            <Footer />
         </div>
     );
 };
 
 export default Homepage;
-
