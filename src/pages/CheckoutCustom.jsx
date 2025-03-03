@@ -175,23 +175,20 @@ const CheckoutCustom = () => {
                 note: fullNote,
                 storeId: selectedStore,
                 recipientName: recipientInfo.name,
-                recipientTime: formattedDateTime,
+                recipientTime: formattedDateTime ? dayjs(formattedDateTime).format('YYYY-MM-DD') : null,
                 phone: recipientInfo.phone,
                 status: "Pending",
                 transfer: selectedDeposit === "100", // 100% -> true, 50% -> false
                 delivery: shippingMethod !== 'store-pickup',
-                orderDetails: customProduct ? [{
-                    productId: customProduct.productId,
-                    quantity: customProduct.quantity
-                }] : []
+                productCustomId: customId // Sử dụng customId từ location.state
             };
 
             console.log('Order Data:', orderData);
 
-            // Create order
+            // Create order with new API endpoint
             const orderResponse = await axios.post(
-                `https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Order/CreateOrder?CustomerId=${customerId}`,
-                orderData,
+                `https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Order/CreateOrderCustom?Customer=${customerId}`,
+                JSON.stringify(orderData), // Stringify data before sending
                 {
                     headers: {
                         'Authorization': `Bearer ${token}`,
