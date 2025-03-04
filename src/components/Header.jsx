@@ -10,24 +10,24 @@ const Header = () => {
     { name: 'Contact Us', link: '/contact' }
   ];
 
-const location = useLocation();
-const [activeItem, setActiveItem] = useState(location.pathname);
-const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const location = useLocation();
+  const [activeItem, setActiveItem] = useState(location.pathname);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-useEffect(() => {
-  setActiveItem(location.pathname);
-}, [location.pathname]);
+  useEffect(() => {
+    setActiveItem(location.pathname);
+  }, [location.pathname]);
 
-const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
+  const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
-const handleLogout = () => {
-  localStorage.clear();
-  sessionStorage.clear();
-  window.location.href = "/login";
-};
+  const handleLogout = () => {
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.href = "/login";
+  };
 
   return (
-    <header className="w-full border-b border-gray-200 px-4 py-3 bg-pink-50 shadow-md">
+    <header className="w-full border-b border-gray-200 px-4 py-3 bg-pink-50 shadow-md fixed top-0 left-0 right-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link to="/home" className="text-3xl font-bold text-pink-500">
           CustomFlowerChain
@@ -115,4 +115,5 @@ const handleLogout = () => {
     </header>
   );
 };
+
 export default Header;

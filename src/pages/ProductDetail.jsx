@@ -7,7 +7,8 @@ import ProductCommitment from "../components/ProductCommitment";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import axios from 'axios';
-import jwtDecode from 'jwt-decode';
+import { jwtDecode } from "jwt-decode";
+
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
