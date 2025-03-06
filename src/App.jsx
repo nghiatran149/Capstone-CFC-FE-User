@@ -16,6 +16,8 @@ import PaymentSuccess from "./pages/PaymentSuccess"
 import PaymentFailure from "./pages/PaymentFailure"
 import CheckoutCustom from "./pages/CheckoutCustom"
 import CheckoutCart from "./pages/CheckoutCart"
+import HistoryOrder from "./pages/HistoryOrder"
+
 import Layout from "./components/Layout"
 
 function App() {
@@ -40,7 +42,8 @@ function App() {
                 <Route path="/customize" element={<Layout><Customize /></Layout>} />
                 <Route path="/payment-success" element={<Layout><PaymentSuccess /></Layout>} />
                 <Route path="/payment-failure" element={<Layout><PaymentFailure /></Layout>} />
-                
+                <Route path="/history-order" element={<Layout><HistoryOrder /></Layout>} />
+
                 <Route path="/" element={<Layout><Homepage /></Layout>} />
             </Routes>
         </BrowserRouter>

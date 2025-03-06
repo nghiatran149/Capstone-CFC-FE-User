@@ -119,7 +119,7 @@ const WalletPage = () => {
 
     const getStatusColor = (status) => {
         const colors = {
-            "Order Successfully": "text-green-600 bg-green-100", // Xanh lá cây để thể hiện thành công
+            "đặt hàng thành công": "text-green-600 bg-green-100", // Xanh lá cây để thể hiện thành công
             "đang xử lý": "text-blue-600 bg-blue-100", // Màu xanh dương để thể hiện đang xử lý
             "thất bại": "text-red-600 bg-red-100" // Màu đỏ để thể hiện thất bại
         };
