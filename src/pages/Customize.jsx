@@ -4,6 +4,7 @@ import { ArrowLeftOutlined } from '@ant-design/icons';
 import { Button, Slider, Modal, Form, Input, message } from 'antd';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import ProgressBar from "../components/ProgressBar";
 import { jwtDecode } from "jwt-decode";
 import axios from 'axios';
 
@@ -412,6 +413,8 @@ const FlowerCustomization = () => {
             </div>
             <h1 className="text-center text-6xl font-bold text-pink-600 p-3 rounded">Customize</h1>
             <p className="text-xl text-gray-500 mb-10 text-center">Customize Your Own Flower Basket With Your Selection</p>
+
+            <ProgressBar currentStep={currentStep} />
 
             <div className="flex gap-8 mx-8 my-10 min-h-screen">
                 <div className="w-1/4 p-6 bg-white rounded-xl shadow-lg">
