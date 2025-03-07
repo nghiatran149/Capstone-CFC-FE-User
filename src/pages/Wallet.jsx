@@ -120,6 +120,7 @@ const WalletPage = () => {
     const getStatusColor = (status) => {
         const colors = {
             "Order Successfully": "text-green-600 bg-green-100", // Xanh lá cây để thể hiện thành công
+            "Arranging & Packing" : "text-pink-600 bg-pink-100",
             "đang xử lý": "text-blue-600 bg-blue-100", // Màu xanh dương để thể hiện đang xử lý
             "thất bại": "text-red-600 bg-red-100" // Màu đỏ để thể hiện thất bại
         };
@@ -505,6 +506,7 @@ const WalletPage = () => {
                         <div className="space-y-2">
                             <h3 className="font-bold text-lg text-gray-700">Order Information</h3>
                             <p><span className="font-semibold">Created:</span> {new Date(selectedOrderDetail.createAt).toLocaleString()}</p>
+                            <p><span className="font-semibold">Updated:</span> {new Date(selectedOrderDetail.updateAt).toLocaleString()}</p>
                             <p><span className="font-semibold">Delivery Date:</span> {new Date(selectedOrderDetail.deliveryDateTime).toLocaleString()}</p>
                             <p><span className="font-semibold">Total Price:</span> <span className="text-pink-600 font-bold">{selectedOrderDetail.orderPrice.toLocaleString()} VNĐ</span></p>
                             <p><span className="font-semibold">Payment Method:</span> {selectedOrderDetail.transfer ? '100% Transfer' : '50% Deposit'}</p>
