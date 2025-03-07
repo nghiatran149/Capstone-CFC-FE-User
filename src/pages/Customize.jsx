@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeftOutlined } from '@ant-design/icons';
-import { Button, Slider, Modal, Form, Input, message } from 'antd';
+import { Button, Slider, Modal, Form, Input, message, Select, Checkbox, Radio } from 'antd';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import ProgressBar from "../components/ProgressBar";
 import { jwtDecode } from "jwt-decode";
 import axios from 'axios';
+
+const { Option } = Select;
 
 const FlowerCustomization = () => {
     const [currentStep, setCurrentStep] = useState('basket');
@@ -22,23 +24,43 @@ const FlowerCustomization = () => {
     const [flowerQuantity, setFlowerQuantity] = useState(1);
 
     const [baskets, setBaskets] = useState([]);
+    const [filteredBaskets, setFilteredBaskets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     const [flowers, setFlowers] = useState([]);
+    const [filteredFlowers, setFilteredFlowers] = useState([]);
     const [loadingFlowers, setLoadingFlowers] = useState(true);
     const [errorFlowers, setErrorFlowers] = useState(null);
 
     const [accessories, setAccessories] = useState([]);
+    const [filteredAccessories, setFilteredAccessories] = useState([]);
     const [loadingAccessories, setLoadingAccessories] = useState(true);
     const [errorAccessories, setErrorAccessories] = useState(null);
 
     const [styles, setStyles] = useState([]);
+    const [filteredStyles, setFilteredStyles] = useState([]);
     const [loadingStyles, setLoadingStyles] = useState(true);
     const [errorStyles, setErrorStyles] = useState(null);
 
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [form] = Form.useForm();
+
+    // Filter states
+    const [basketCategories, setBasketCategories] = useState([]);
+    const [styleCategories, setStyleCategories] = useState([]);
+    const [flowerCategories, setFlowerCategories] = useState([]);
+    const [accessoryCategories, setAccessoryCategories] = useState([]);
+
+    const [basketCategoryFilter, setBasketCategoryFilter] = useState('all');
+    const [styleCategoryFilter, setStyleCategoryFilter] = useState('all');
+    const [flowerCategoryFilter, setFlowerCategoryFilter] = useState('all');
+    const [accessoryCategoryFilter, setAccessoryCategoryFilter] = useState('all');
+
+    const [basketPriceFilter, setBasketPriceFilter] = useState(null);
+    const [stylePriceFilter, setStylePriceFilter] = useState(null);
+    const [flowerPriceFilter, setFlowerPriceFilter] = useState(null);
+    const [accessoryPriceFilter, setAccessoryPriceFilter] = useState(null);
 
     const navigate = useNavigate();
 
@@ -63,6 +85,11 @@ const FlowerCustomization = () => {
                     quantity: basket.quantity
                 }));
                 setBaskets(transformedBaskets);
+                setFilteredBaskets(transformedBaskets);
+                
+                // Extract unique categories
+                const uniqueCategories = [...new Set(transformedBaskets.map(basket => basket.category))];
+                setBasketCategories(uniqueCategories);
             } catch (error) {
                 setError(error.message);
                 console.error('Error fetching baskets:', error);
@@ -94,8 +121,12 @@ const FlowerCustomization = () => {
                     quantity: flower.quantity,
                     category: flower.categoryName
                 }));
-                console.log('Fetched flowers:', transformedFlowers);
                 setFlowers(transformedFlowers);
+                setFilteredFlowers(transformedFlowers);
+                
+                // Extract unique categories
+                const uniqueCategories = [...new Set(transformedFlowers.map(flower => flower.category))];
+                setFlowerCategories(uniqueCategories);
             } catch (error) {
                 setErrorFlowers(error.message);
                 console.error('Error fetching flowers:', error);
@@ -126,6 +157,11 @@ const FlowerCustomization = () => {
                     note: accessory.note
                 }));
                 setAccessories(transformedAccessories);
+                setFilteredAccessories(transformedAccessories);
+                
+                // Extract unique categories
+                const uniqueCategories = [...new Set(transformedAccessories.map(accessory => accessory.category))];
+                setAccessoryCategories(uniqueCategories);
             } catch (error) {
                 setErrorAccessories(error.message);
                 console.error('Error fetching accessories:', error);
@@ -156,6 +192,11 @@ const FlowerCustomization = () => {
                     feature: style.feature
                 }));
                 setStyles(transformedStyles);
+                setFilteredStyles(transformedStyles);
+                
+                // Extract unique categories
+                const uniqueCategories = [...new Set(transformedStyles.map(style => style.category))];
+                setStyleCategories(uniqueCategories);
             } catch (error) {
                 setErrorStyles(error.message);
                 console.error('Error fetching styles:', error);
@@ -166,6 +207,100 @@ const FlowerCustomization = () => {
 
         fetchStyles();
     }, []);
+
+    // Filter functions
+    const applyBasketFilters = () => {
+        let result = [...baskets];  
+        if (basketCategoryFilter !== 'all') {
+            result = result.filter(basket => basket.category === basketCategoryFilter);
+        }
+        if (basketPriceFilter) {
+            if (basketPriceFilter === 'lowToHigh') {
+                result.sort((a, b) => a.price - b.price);
+            } else if (basketPriceFilter === 'highToLow') {
+                result.sort((a, b) => b.price - a.price);
+            } else if (basketPriceFilter === 'under50') {
+                result = result.filter(basket => basket.price < 50);
+            } else if (basketPriceFilter === '50to100') {
+                result = result.filter(basket => basket.price >= 50 && basket.price <= 100);
+            } else if (basketPriceFilter === 'over100') {
+                result = result.filter(basket => basket.price > 100);
+            }
+        }
+        setFilteredBaskets(result);
+    };
+
+    const applyStyleFilters = () => {
+        let result = [...styles];
+        if (styleCategoryFilter !== 'all') {
+            result = result.filter(style => style.category === styleCategoryFilter);
+        }
+        if (stylePriceFilter) {
+        }
+        setFilteredStyles(result);
+    };
+
+    const applyFlowerFilters = () => {
+        let result = [...flowers];
+        if (flowerCategoryFilter !== 'all') {
+            result = result.filter(flower => flower.category === flowerCategoryFilter);
+        }
+        if (flowerPriceFilter) {
+            if (flowerPriceFilter === 'lowToHigh') {
+                result.sort((a, b) => a.price - b.price);
+            } else if (flowerPriceFilter === 'highToLow') {
+                result.sort((a, b) => b.price - a.price);
+            } else if (flowerPriceFilter === 'under5') {
+                result = result.filter(flower => flower.price < 5);
+            } else if (flowerPriceFilter === '5to10') {
+                result = result.filter(flower => flower.price >= 5 && flower.price <= 10);
+            } else if (flowerPriceFilter === 'over10') {
+                result = result.filter(flower => flower.price > 10);
+            }
+        }
+        setFilteredFlowers(result);
+    };
+
+    const applyAccessoryFilters = () => {
+        let result = [...accessories];
+        
+        if (accessoryCategoryFilter !== 'all') {
+            result = result.filter(accessory => accessory.category === accessoryCategoryFilter);
+        }
+        
+        if (accessoryPriceFilter) {
+            if (accessoryPriceFilter === 'lowToHigh') {
+                result.sort((a, b) => a.price - b.price);
+            } else if (accessoryPriceFilter === 'highToLow') {
+                result.sort((a, b) => b.price - a.price);
+            } else if (accessoryPriceFilter === 'under5') {
+                result = result.filter(accessory => accessory.price < 5);
+            } else if (accessoryPriceFilter === '5to10') {
+                result = result.filter(accessory => accessory.price >= 5 && accessory.price <= 10);
+            } else if (accessoryPriceFilter === 'over10') {
+                result = result.filter(accessory => accessory.price > 10);
+            }
+        }
+        
+        setFilteredAccessories(result);
+    };
+    
+    
+    useEffect(() => {
+        applyBasketFilters();
+    }, [basketCategoryFilter, basketPriceFilter]);
+
+    useEffect(() => {
+        applyStyleFilters();
+    }, [styleCategoryFilter, stylePriceFilter]);
+
+    useEffect(() => {
+        applyFlowerFilters();
+    }, [flowerCategoryFilter, flowerPriceFilter]);
+
+    useEffect(() => {
+        applyAccessoryFilters();
+    }, [accessoryCategoryFilter, accessoryPriceFilter]);    
 
     //Basket Function
     const handleBasketSelect = (basket) => {
@@ -218,7 +353,6 @@ const FlowerCustomization = () => {
             }));
             setTotalFlowers(newTotal);
             message.success(`Saved ${flowerQuantity} ${selectedFlower.name} flowers`);
-            console.log('Updated selected flowers:', selectedFlowers);
         }
     };
 
@@ -338,10 +472,6 @@ const FlowerCustomization = () => {
                 description: values.description.trim()
             };
 
-            console.log('Selected Flowers:', selectedFlowers);
-            console.log('Create Flower Requests:', createFlowerCustomRequests);
-            console.log('Sending data:', customProductData);
-
             const response = await axios.post(
                 `https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/productcustoms/create-productcustom?CustomerId=${customerId}`,
                 customProductData,
@@ -398,6 +528,125 @@ const FlowerCustomization = () => {
         return (basketPrice + flowersPrice + accessoriesPrice).toFixed(2);
     };
 
+    // Filter UI
+    const renderBasketFilters = () => (
+        <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
+            <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <Select
+                        className="w-full"
+                        value={basketCategoryFilter}
+                        onChange={value => setBasketCategoryFilter(value)}
+                    >
+                        <Option value="all">All Categories</Option>
+                        {basketCategories.map(category => (
+                            <Option key={category} value={category}>{category}</Option>
+                        ))}
+                    </Select>
+                </div>
+                <div>
+                    <Select
+                        className="w-full"
+                        value={basketPriceFilter}
+                        onChange={value => setBasketPriceFilter(value)}
+                    >
+                        <Option value={null}>All Prices</Option>
+                        <Option value="lowToHigh">Price: Low to High</Option>
+                        <Option value="highToLow">Price: High to Low</Option>
+                        <Option value="under50">Under $50</Option>
+                        <Option value="50to100">$50 - $100</Option>
+                        <Option value="over100">Over $100</Option>
+                    </Select>
+                </div>
+            </div>
+        </div>
+    );
+
+    const renderStyleFilters = () => (
+        <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
+            <div className="grid grid-cols-1 gap-4">
+                <div>
+                    <Select
+                        className="w-full"
+                        value={styleCategoryFilter}
+                        onChange={value => setStyleCategoryFilter(value)}
+                    >
+                        <Option value="all">All Categories</Option>
+                        {styleCategories.map(category => (
+                            <Option key={category} value={category}>{category}</Option>
+                        ))}
+                    </Select>
+                </div>
+            </div>
+        </div>
+    );
+
+    const renderFlowerFilters = () => (
+        <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
+            <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <Select
+                        className="w-full"
+                        value={flowerCategoryFilter}
+                        onChange={value => setFlowerCategoryFilter(value)}
+                    >
+                        <Option value="all">All Categories</Option>
+                        {flowerCategories.map(category => (
+                            <Option key={category} value={category}>{category}</Option>
+                        ))}
+                    </Select>
+                </div>
+                <div>
+                    <Select
+                        className="w-full"
+                        value={flowerPriceFilter}
+                        onChange={value => setFlowerPriceFilter(value)}
+                    >
+                        <Option value={null}>All Prices</Option>
+                        <Option value="lowToHigh">Price: Low to High</Option>
+                        <Option value="highToLow">Price: High to Low</Option>
+                        <Option value="under5">Under $5</Option>
+                        <Option value="5to10">$5 - $10</Option>
+                        <Option value="over10">Over $10</Option>
+                    </Select>
+                </div>
+            </div>
+        </div>
+    );
+
+    const renderAccessoryFilters = () => (
+        <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
+            <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <Select
+                        className="w-full"
+                        value={accessoryCategoryFilter}
+                        onChange={value => setAccessoryCategoryFilter(value)}
+                    >
+                        <Option value="all">All Categories</Option>
+                        {accessoryCategories.map(category => (
+                            <Option key={category} value={category}>{category}</Option>
+                        ))}
+                    </Select>
+                </div>
+                <div>
+                    <Select
+                        className="w-full"
+                        value={accessoryPriceFilter}
+                        onChange={value => setAccessoryPriceFilter(value)}
+                    >
+                        <Option value={null}>All Prices</Option>
+                        <Option value="lowToHigh">Price: Low to High</Option>
+                        <Option value="highToLow">Price: High to Low</Option>
+                        <Option value="under5">Under $5</Option>
+                        <Option value="5to10">$5 - $10</Option>
+                        <Option value="over10">Over $10</Option>
+                    </Select>
+                </div>
+            </div>
+        </div>
+    );
+
     return (
         <div className="w-full">
             <Header />
@@ -418,15 +667,22 @@ const FlowerCustomization = () => {
 
             <div className="flex gap-8 mx-8 my-10 min-h-screen">
                 <div className="w-1/4 p-6 bg-white rounded-xl shadow-lg">
-                    <h2 className="text-2xl text-pink-500 font-bold mb-3">
+                    <h2 className="text-2xl text-pink-500 font-bold">
                         {currentStep === 'basket' ? 'Choose Basket'
                             : currentStep === 'style' ? 'Choose Style'
                                 : currentStep === 'flowers' ? 'Choose Flowers'
                                     : 'Choose Accessories'}
                     </h2>
+                    
+                    {/* Add filters based on current step */}
+                    {currentStep === 'basket' && renderBasketFilters()}
+                    {currentStep === 'style' && renderStyleFilters()}
+                    {currentStep === 'flowers' && renderFlowerFilters()}
+                    {currentStep === 'accessories' && renderAccessoryFilters()}
+
                     <div className="grid grid-cols-2 gap-4">
                         {currentStep === 'basket'
-                            ? baskets.map((basket) => (
+                            ? filteredBaskets.map((basket) => (
                                 <div
                                     key={basket.id}
                                     className={`cursor-pointer transition-all rounded-lg shadow hover:shadow-lg overflow-hidden
@@ -443,7 +699,7 @@ const FlowerCustomization = () => {
                                 </div>
                             ))
                             : currentStep === 'style'
-                                ? styles.map((style) => (
+                                ? filteredStyles.map((style) => (
                                     <div
                                         key={style.id}
                                         className={`cursor-pointer transition-all rounded-lg shadow-sm hover:shadow-md overflow-hidden
@@ -460,7 +716,7 @@ const FlowerCustomization = () => {
                                     </div>
                                 ))
                                 : currentStep === 'flowers'
-                                    ? flowers.map((flower) => (
+                                    ? filteredFlowers.map((flower) => (
                                         <div
                                             key={flower.id}
                                             className={`cursor-pointer transition-all rounded-lg shadow-sm hover:shadow-md overflow-hidden
@@ -645,6 +901,7 @@ const FlowerCustomization = () => {
                         {currentStep === 'accessories' && selectedAccessory && (
                             <div className="space-y-2">
                                 <p className="font-semibold text-xl">{selectedAccessory.name}</p>
+                                <p className="text-gray-600">Category: {selectedAccessory.category}</p>
                                 <p className="text-gray-600">Price: ${selectedAccessory.price}</p>
                                 <p className="text-gray-600">Description: {selectedAccessory.description}</p>
                                 <div className="flex justify-between gap-4 mt-3">
