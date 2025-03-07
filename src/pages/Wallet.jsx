@@ -354,9 +354,18 @@ const WalletPage = () => {
                             <p className="font-semibold">Product Name:</p>
                             <p className="text-gray-700">{selectedOrderDetail.productCustomResponse.productName}</p>
                         </div>
+                      
                         <div>
                             <p className="font-semibold">Total Price:</p>
                             <p className="text-pink-600 font-bold">{selectedOrderDetail.productCustomResponse.totalPrice.toLocaleString()} VNĐ</p>
+                        </div>
+                        <div>
+                            <p className="font-semibold">Quantity:</p>
+                            <p className="text-gray-700">{selectedOrderDetail.productCustomResponse.quantity}</p>
+                        </div>
+                        <div>
+                            <p className="font-semibold">description:</p>
+                            <p className="text-gray-700">{selectedOrderDetail.productCustomResponse.description}</p>
                         </div>
                     </div>
                 </div>
@@ -504,6 +513,10 @@ const WalletPage = () => {
                             <h3 className="font-bold text-lg text-gray-700">Contact Information</h3>
                             <p><span className="font-semibold">Store:</span> {selectedOrderDetail.storeName}</p>
                             <p><span className="font-semibold">Store Address:</span> {selectedOrderDetail.storeAddress}</p>
+                            <p><span className="font-semibold">Florist ID:</span> {selectedOrderDetail.staffId}</p>
+                            <p><span className="font-semibold">Florist FullName:</span> {selectedOrderDetail.staffFullName}</p>
+                            <p><span className="font-semibold">Florist Email:</span> {selectedOrderDetail.staffEmail}</p>
+                            <p><span className="font-semibold">Florist Phone:</span> {selectedOrderDetail.staffPhone}</p>
                         </div>
                     </div>
 
