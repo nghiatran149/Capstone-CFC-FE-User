@@ -5,7 +5,9 @@ import { UserOutlined, GiftOutlined, ShopOutlined, PayCircleOutlined, ClockCircl
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import BannerCarousel from "../components/BannerCarousel";
+import IntroSection from "../components/IntroSection";
 import PromotionBanner from "../components/PromotionBanner";
+import TitleBanner from "../components/TitleBanner";
 import ScrollToTop from "../components/ScrollToTop";
 import Flower1 from "../assets/homepic1.jpg";
 import Flower2 from "../assets/homepic2.jpg";
@@ -22,37 +24,30 @@ const Homepage = () => {
 
     useEffect(() => {
         const handleScroll = () => {
-            // Get positions of sections
             const firstSection = document.getElementById("first-section");
             const secondSection = document.getElementById("second-section");
-            
+
             if (firstSection) {
                 const firstSectionRect = firstSection.getBoundingClientRect();
-                // Check if section is in viewport (partially visible)
-                const isFirstVisible = 
-                    firstSectionRect.top < window.innerHeight - 200 && 
+                const isFirstVisible =
+                    firstSectionRect.top < window.innerHeight - 200 &&
                     firstSectionRect.bottom > 0;
-                
+
                 setFirstSectionVisible(isFirstVisible);
             }
-            
+
             if (secondSection) {
                 const secondSectionRect = secondSection.getBoundingClientRect();
-                const isSecondVisible = 
-                    secondSectionRect.top < window.innerHeight - 200 && 
+                const isSecondVisible =
+                    secondSectionRect.top < window.innerHeight - 200 &&
                     secondSectionRect.bottom > 0;
-                
+
                 setSecondSectionVisible(isSecondVisible);
             }
         };
 
-        // Add scroll event listener
         window.addEventListener("scroll", handleScroll);
-        
-        // Check initial position (in case sections are already in view)
         handleScroll();
-        
-        // Clean up event listener
         return () => {
             window.removeEventListener("scroll", handleScroll);
         };
@@ -60,8 +55,10 @@ const Homepage = () => {
 
     return (
         <div className="bg-pink-100 w-full">
+
             <Header />
             <BannerCarousel />
+            <IntroSection />
 
             <section
                 id="first-section"
@@ -72,10 +69,9 @@ const Homepage = () => {
             >
                 <div className="absolute inset-0 bg-pink-100 bg-opacity-80"></div>
                 <div className="relative z-10 w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center px-4">
-                    <div 
-                        className={`space-y-10 pl-20 transition-all duration-1000 transform ${
-                            firstSectionVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'
-                        }`}
+                    <div
+                        className={`space-y-10 pl-20 transition-all duration-1000 transform ${firstSectionVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'
+                            }`}
                     >
                         <h1 className="text-7xl text-left font-bold">
                             Fresh Flowers For Any Occasion
@@ -101,10 +97,9 @@ const Homepage = () => {
                             </div>
                         </section>
                     </div>
-                    <div 
-                        className={`relative w-full h-[300px] md:h-[600px] transition-all duration-1000 transform ${
-                            firstSectionVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'
-                        }`}
+                    <div
+                        className={`relative w-full h-[300px] md:h-[600px] transition-all duration-1000 transform ${firstSectionVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'
+                            }`}
                         style={{ transitionDelay: '200ms' }}
                     >
                         <div className="absolute top-[0px] left-[400px] z-10">
@@ -156,18 +151,16 @@ const Homepage = () => {
                 </div>
             </section>
 
-            {/* Promotion Banner */}
             <PromotionBanner />
 
-            <section 
+            <section
                 id="second-section"
                 className="py-16 bg-white relative h-auto"
             >
                 <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center px-4">
-                    <div 
-                        className={`space-y-10 pl-20 transition-all duration-1000 transform ${
-                            secondSectionVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'
-                        }`}
+                    <div
+                        className={`space-y-10 pl-20 transition-all duration-1000 transform ${secondSectionVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'
+                            }`}
                     >
                         <h1 className="text-6xl text-left font-bold">
                             Create Your Perfect Floral Design
@@ -181,10 +174,9 @@ const Homepage = () => {
                             </button>
                         </Link>
                     </div>
-                    <div 
-                        className={`relative w-full h-[300px] md:h-[500px] transition-all duration-1000 transform ${
-                            secondSectionVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'
-                        }`}
+                    <div
+                        className={`relative w-full h-[300px] md:h-[500px] transition-all duration-1000 transform ${secondSectionVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'
+                            }`}
                         style={{ transitionDelay: '200ms' }}
                     >
                         <div className="absolute md:top-[0px] md:left-[150px] z-0">
@@ -204,6 +196,8 @@ const Homepage = () => {
                     </div>
                 </div>
             </section>
+
+            <TitleBanner />
 
             {/* Subscription */}
             <section
@@ -227,6 +221,7 @@ const Homepage = () => {
                     </button>
                 </div>
             </section>
+            
             <Footer />
             <ScrollToTop />
         </div>
