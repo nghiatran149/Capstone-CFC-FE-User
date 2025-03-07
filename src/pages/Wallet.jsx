@@ -11,6 +11,8 @@ const WalletPage = () => {
     const [isChatModalOpen, setIsChatModalOpen] = useState(false);
     const [orders, setOrders] = useState([]);
     const [failOrders, setFailOrders] = useState([]);
+    const [selectedStatus, setSelectedStatus] = useState('All');
+    const [filteredOrders, setFilteredOrders] = useState([]);
     const [stats, setStats] = useState({
         total: 0,
         completed: 0,
@@ -119,13 +121,36 @@ const WalletPage = () => {
 
     const getStatusColor = (status) => {
         const colors = {
-            "Order Successfully": "text-green-600 bg-green-100", // Xanh lá cây để thể hiện thành công
+            "Order Successfully": "text-green-600 bg-green-100",
             "Arranging & Packing" : "text-pink-600 bg-pink-100",
-            "đang xử lý": "text-blue-600 bg-blue-100", // Màu xanh dương để thể hiện đang xử lý
-            "thất bại": "text-red-600 bg-red-100" // Màu đỏ để thể hiện thất bại
+            "Awaiting Design Approval": "text-yellow-600 bg-yellow-100",
+            "Flower Completed"  :	"text-orange-600 bg-orange-100",
+            "Received" :"text-blue-600 bg-blue-100",
+            "đang xử lý": "text-blue-600 bg-blue-100",
+            "thất bại": "text-red-600 bg-red-100"
         };
-        return colors[status] || "text-gray-600 bg-gray-100"; // Màu xám mặc định nếu không khớp trạng thái
+        return colors[status] || "text-gray-600 bg-gray-100";
     };
+
+    const statusOptions = [
+        'All',
+        'Order Successfully',
+        'Arranging & Packing',
+        'Awaiting Design Approval',
+        'Flower Completed',
+        'Received',
+        'đang xử lý',
+        'thất bại'
+    ];
+
+    useEffect(() => {
+        if (selectedStatus === 'All') {
+            setFilteredOrders(orders);
+        } else {
+            const filtered = orders.filter(order => order.status === selectedStatus);
+            setFilteredOrders(filtered);
+        }
+    }, [selectedStatus, orders]);
 
     const openChatModal = (order) => {
         setSelectedOrder(order);
@@ -382,6 +407,7 @@ const WalletPage = () => {
                         />
                         <div className="flex-1 space-y-2">
                             <h5 className="text-xl font-semibold">{selectedOrderDetail.productCustomResponse.flowerBasketResponse.flowerBasketName}</h5>
+                            <p><span className="font-semibold">Id:</span> {selectedOrderDetail.productCustomResponse.flowerBasketResponse.flowerBasketId}</p>
                             <p><span className="font-semibold">Category:</span> {selectedOrderDetail.productCustomResponse.flowerBasketResponse.categoryName}</p>
                             <p><span className="font-semibold">Price:</span> {selectedOrderDetail.productCustomResponse.flowerBasketResponse.price.toLocaleString()} VNĐ</p>
                             <p><span className="font-semibold">Description:</span> {selectedOrderDetail.productCustomResponse.flowerBasketResponse.decription}</p>
@@ -404,6 +430,7 @@ const WalletPage = () => {
                         />
                         <div className="flex-1 space-y-2">
                             <h5 className="text-xl font-semibold">{selectedOrderDetail.productCustomResponse.styleResponse.name}</h5>
+                            <p><span className="font-semibold">Id:</span> {selectedOrderDetail.productCustomResponse.styleResponse.styleId}</p>
                             <p><span className="font-semibold">Category:</span> {selectedOrderDetail.productCustomResponse.styleResponse.categoryName}</p>
                             <p><span className="font-semibold">Note:</span> {selectedOrderDetail.productCustomResponse.styleResponse.note}</p>
                             <p><span className="font-semibold">Description:</span> {selectedOrderDetail.productCustomResponse.styleResponse.description}</p>
@@ -423,6 +450,7 @@ const WalletPage = () => {
                             />
                             <div className="flex-1 space-y-2">
                                 <h5 className="text-xl font-semibold">{selectedOrderDetail.productCustomResponse.accessoryResponse.name}</h5>
+                                <p><span className="font-semibold">Id:</span> {selectedOrderDetail.productCustomResponse.accessoryResponse.accessoryId} VNĐ</p>
                                 <p><span className="font-semibold">Price:</span> {selectedOrderDetail.productCustomResponse.accessoryResponse.price.toLocaleString()} VNĐ</p>
                                 <p><span className="font-semibold">Note:</span> {selectedOrderDetail.productCustomResponse.accessoryResponse.note}</p>
                                 <p><span className="font-semibold">Description:</span> {selectedOrderDetail.productCustomResponse.accessoryResponse.description}</p>
@@ -445,6 +473,7 @@ const WalletPage = () => {
                                 <div className="flex-1 space-y-2">
                                     <h6 className="text-lg font-semibold">{flower.flowerResponse.flowerName}</h6>
                                     <div className="grid grid-cols-2 gap-4">
+                                    <p><span className="font-semibold">Id:</span> {flower.flowerResponse.flowerId}</p>
                                         <p><span className="font-semibold">Color:</span> {flower.flowerResponse.color}</p>
                                         <p><span className="font-semibold">Category:</span> {flower.flowerResponse.categoryName}</p>
                                         <p><span className="font-semibold">Quantity:</span> {flower.quantity}</p>
@@ -538,6 +567,21 @@ const WalletPage = () => {
                         <div className="bg-yellow-50 p-6 rounded-lg">
                             <h3 className="font-bold text-lg text-yellow-700 mb-2">Order Notes</h3>
                             <p className="whitespace-pre-line">{selectedOrderDetail.note}</p>
+                        </div>
+                    )}
+                      {/* Payment Section */}
+                      {selectedOrderDetail.note && (
+                        <div className="bg-orange-50 p-6 rounded-lg">
+                            <h3 className="font-bold text-lg text-orange-700 mb-2">Payment Notes</h3>
+
+                             <div className="grid grid-cols-2 gap-4">
+                                <p><span className="font-semibold">Payment ID:</span> {selectedOrderDetail.paymentId}</p>
+                                <p><span className="font-semibold">Payment Method:</span> {selectedOrderDetail.paymentMethod}</p>
+                                <p><span className="font-semibold">Payment Price:</span> {selectedOrderDetail.paymentPrice}</p>
+                                <p><span className="font-semibold">Payment Status:</span> {selectedOrderDetail.paymentStatus}</p>
+                                <p><span className="font-semibold">Create At:</span> {selectedOrderDetail.paymentCreateAt}</p>
+
+                            </div>
                         </div>
                     )}
 
@@ -644,9 +688,80 @@ const WalletPage = () => {
 
                 <div className="grid mt-10">
                     <div className="bg-white rounded-lg shadow-lg p-6 mb-10">
-                        <h2 className="text-3xl text-left text-pink-400 font-bold mb-2">Orders</h2>
-                        <p className="text-base text-left text-gray-400 mb-8">Review and track your orders here</p>
-                        <div className="overflow-x-auto">
+                        <div className="flex flex-col gap-6">
+                            <div>
+                                <h2 className="text-3xl text-left text-pink-400 font-bold mb-2">Orders</h2>
+                                <p className="text-base text-left text-gray-400">Review and track your orders here</p>
+                            </div>
+                            <div className="flex gap-2 flex-wrap">
+                                <button
+                                    onClick={() => setSelectedStatus('All')}
+                                    className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${
+                                        selectedStatus === 'All'
+                                            ? 'bg-blue-500 text-white'
+                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    All
+                                </button>
+                                <button
+                                    onClick={() => setSelectedStatus('Order Successfully')}
+                                    className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${
+                                        selectedStatus === 'Order Successfully'
+                                            ? 'bg-green-500 text-white'
+                                            : 'bg-green-100 text-green-600 hover:bg-green-200'
+                                    }`}
+                                >
+                                    <span className="w-2 h-2 rounded-full bg-current"></span>
+                                    Order Successfully
+                                </button>
+                                <button
+                                    onClick={() => setSelectedStatus('Arranging & Packing')}
+                                    className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${
+                                        selectedStatus === 'Arranging & Packing'
+                                            ? 'bg-pink-500 text-white'
+                                            : 'bg-pink-100 text-pink-600 hover:bg-pink-200'
+                                    }`}
+                                >
+                                    <span className="w-2 h-2 rounded-full bg-current"></span>
+                                    Arranging & Packing
+                                </button>
+                                <button
+                                    onClick={() => setSelectedStatus('Awaiting Design Approval')}
+                                    className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${
+                                        selectedStatus === 'Awaiting Design Approval'
+                                            ? 'bg-yellow-500 text-white'
+                                            : 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200'
+                                    }`}
+                                >
+                                    <span className="w-2 h-2 rounded-full bg-current"></span>
+                                    Awaiting Design Approval
+                                </button>
+                                <button
+                                    onClick={() => setSelectedStatus('Flower Completed')}
+                                    className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${
+                                        selectedStatus === 'Flower Completed'
+                                            ? 'bg-orange-500 text-white'
+                                            : 'bg-orange-100 text-orange-600 hover:bg-orange-200'
+                                    }`}
+                                >
+                                    <span className="w-2 h-2 rounded-full bg-current"></span>
+                                    Flower Completed
+                                </button>
+                                <button
+                                    onClick={() => setSelectedStatus('Received')}
+                                    className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${
+                                        selectedStatus === 'Received'
+                                            ? 'bg-blue-500 text-white'
+                                            : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
+                                    }`}
+                                >
+                                    <span className="w-2 h-2 rounded-full bg-current"></span>
+                                    Received
+                                </button>
+                            </div>
+                        </div>
+                        <div className="overflow-x-auto mt-6">
                             <table className="min-w-full">
                                 <thead className="bg-pink-50">
                                     <tr>
@@ -657,11 +772,11 @@ const WalletPage = () => {
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Create Time</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">RecipientTime</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Status</th>
-                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Chat</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
-                                    {orders.map((order) => (
+                                    {filteredOrders.map((order) => (
                                         <tr key={order.orderId}>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.orderId}</td>
                                             <td className="px-6 py-4 text-left text-base">{order.details.join(", ")}</td>
