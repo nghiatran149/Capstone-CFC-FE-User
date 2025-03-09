@@ -253,10 +253,6 @@ const ProductDetail = () => {
                 <span className="text-xl text-gray-600">{product.weight || "N/A"}</span>
               </div>
               <div className="flex gap-5 mb-4">
-                <h2 className="text-xl font-bold">In Stock:</h2>
-                <span className="text-xl text-gray-600">{product.quantity}</span>
-              </div>
-              <div className="flex gap-5 mb-4">
                 <h2 className="text-xl font-bold">Sold:</h2>
                 <span className="text-xl text-gray-600">{product.sold}</span>
               </div>

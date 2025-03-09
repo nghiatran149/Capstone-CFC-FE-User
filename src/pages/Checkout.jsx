@@ -8,6 +8,15 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
 import { jwtDecode } from "jwt-decode";
+const { Option } = Select;
+
+const districts = [
+    "Quận 1", "Quận 2", "Quận 3", "Quận 4", "Quận 5", "Quận 6", "Quận 7", "Quận 8",
+    "Quận 9", "Quận 10", "Quận 11", "Quận 12", "Bình Thạnh", "Gò Vấp", "Tân Bình",
+    "Tân Phú", "Phú Nhuận", "Bình Tân", "Thủ Đức", "Nhà Bè", "Hóc Môn", "Củ Chi",
+    "Bình Chánh", "Cần Giờ"
+];
+
 
 const Checkout = () => {
     const [form] = Form.useForm();
@@ -85,7 +94,7 @@ const Checkout = () => {
         if (!selectedVoucher) return 0;
         const promotion = promotions.find(p => p.promotionId === selectedVoucher);
         if (!promotion) return 0;
-        
+
         const subtotal = cartItems ? totalAmount : productInfo.totalPrice;
         return Math.round((subtotal * promotion.promotionDiscount) / 100);
     };
@@ -158,7 +167,7 @@ const Checkout = () => {
                 status: "Pending",
                 transfer: selectedDeposit === "100", // 100% -> true, 50% -> false
                 delivery: shippingMethod !== 'store-pickup',
-                orderDetails: cartItems ? 
+                orderDetails: cartItems ?
                     cartItems.map(item => ({
                         productId: item.productId,
                         quantity: item.quantity
@@ -185,7 +194,7 @@ const Checkout = () => {
 
             if (orderResponse.status === 200) {
                 message.success('Order created successfully!');
-                
+
                 // Get the orderId from response
                 const orderId = orderResponse.data.orderId;
 
@@ -213,9 +222,9 @@ const Checkout = () => {
         } catch (error) {
             console.error('Error:', error.response?.data || error);
             message.error(
-                error.response?.data?.errors ? 
-                Object.values(error.response.data.errors).flat().join(', ') : 
-                'Failed to process. Please try again.'
+                error.response?.data?.errors ?
+                    Object.values(error.response.data.errors).flat().join(', ') :
+                    'Failed to process. Please try again.'
             );
         }
     };
@@ -257,6 +266,7 @@ const Checkout = () => {
         disabledHours: () => [...Array(24).keys()].filter(hour => hour < 8 || hour > 19),
     });
 
+
     return (
         <div className="w-full">
             <Header />
@@ -294,6 +304,7 @@ const Checkout = () => {
                                                 <h3 className="text-lg font-semibold text-gray-900">{item.productName}</h3>
                                                 <p className="text-sm text-gray-500">Size: {item.size}</p>
                                                 <p className="text-sm text-gray-500">Category: {item.categoryName}</p>
+
                                             </div>
                                             <p className="text-pink-600 font-medium">{item.productPrice.toLocaleString()} VND</p>
                                             <p className="text-gray-600">x{item.quantity}</p>
@@ -316,6 +327,8 @@ const Checkout = () => {
                                             <h3 className="text-lg font-semibold text-gray-900">{productInfo.productName}</h3>
                                             <p className="text-sm text-gray-500">Size: {productInfo.size}</p>
                                             <p className="text-sm text-gray-500">Category: {productInfo.categoryName}</p>
+                                            <p className="text-sm text-gray-500">Weght: {productInfo.weight}</p>
+
                                         </div>
                                         <p className="text-pink-600 font-medium">{productInfo.finalPrice.toLocaleString()} VND</p>
                                         <p className="text-gray-600">x{productInfo.selectedQuantity}</p>
@@ -335,7 +348,7 @@ const Checkout = () => {
                                     <Input.TextArea />
                                 </Form.Item>
                                 <Form.Item name="hideGiverName" valuePropName="checked">
-                                    <Checkbox 
+                                    <Checkbox
                                         onChange={(e) => {
                                             form.setFieldsValue({
                                                 hideGiverName: e.target.checked
@@ -370,8 +383,8 @@ const Checkout = () => {
                                         optionLabelProp="label"
                                     >
                                         {stores.map(store => (
-                                            <Select.Option 
-                                                key={store.storeId} 
+                                            <Select.Option
+                                                key={store.storeId}
                                                 value={store.storeId}
                                                 label={store.storeName}
                                             >
@@ -424,7 +437,7 @@ const Checkout = () => {
                                     <p className="mb-2 text-left">Discount (Voucher): -{calculateDiscount().toLocaleString()} VND</p>
                                     <p className="mb-2 text-left">Shipping: {shippingMethod === 'store-pickup' ? '0' : '25,000'} VND</p>
                                     <p className="font-bold text-left">Total: {(
-                                        (cartItems ? totalAmount : productInfo.totalPrice) - 
+                                        (cartItems ? totalAmount : productInfo.totalPrice) -
                                         calculateDiscount() +
                                         (shippingMethod === 'store-pickup' ? 0 : 25000)
                                     ).toLocaleString()} VND</p>
@@ -446,20 +459,12 @@ const Checkout = () => {
                                         selected={shippingMethod === 'store-pickup'}
                                         onClick={handleShippingChange}
                                     />
-                                    <OptionCard
-                                        id="ghtk"
-                                        title="Giao Hàng Tiết Kiệm"
-                                        description="Delivery by GiaoHangTietKiem"
-                                        price="25,000 đ"
-                                        icon="https://static.ybox.vn/2023/7/3/1689130943619-GHTK.jpeg"
-                                        selected={shippingMethod === 'ghtk'}
-                                        onClick={handleShippingChange}
-                                    />
+
                                     <OptionCard
                                         id="shop-shipping"
                                         title="Shop Delivery"
                                         description="We will arrange delivery ourselves."
-                                        price="30,000 đ"
+                                        price="Check"
                                         icon="https://cdn1.iconfinder.com/data/icons/logistics-transportation-vehicles/202/logistic-shipping-vehicles-002-512.png"
                                         selected={shippingMethod === 'shop-shipping'}
                                         onClick={handleShippingChange}
@@ -471,28 +476,28 @@ const Checkout = () => {
                                 <div className="mb-5 border border-gray-300 rounded">
                                     <h3 className="text-xl font-semibold mb-5 text-left text-black bg-pink-200 p-2 rounded">Add Information</h3>
                                     <Form form={form} className="p-5">
-                                        <Form.Item 
-                                            label="Recipient Name" 
+                                        <Form.Item
+                                            label="Recipient Name"
                                             required
                                             rules={[{ required: true, message: 'Please input recipient name!' }]}
                                         >
-                                            <Input 
+                                            <Input
                                                 value={recipientInfo.name}
                                                 onChange={(e) => handleRecipientInfoChange('name', e.target.value)}
                                             />
                                         </Form.Item>
-                                        <Form.Item 
-                                            label="Recipient Phone" 
+                                        <Form.Item
+                                            label="Recipient Phone"
                                             required
                                             rules={[{ required: true, message: 'Please input recipient phone!' }]}
                                         >
-                                            <Input 
+                                            <Input
                                                 value={recipientInfo.phone}
                                                 onChange={(e) => handleRecipientInfoChange('phone', e.target.value)}
                                             />
                                         </Form.Item>
-                                        <Form.Item 
-                                            label="Date and Time" 
+                                        <Form.Item
+                                            label="Date and Time"
                                             required
                                             rules={[{ required: true, message: 'Please select date and time!' }]}
                                         >
@@ -516,8 +521,8 @@ const Checkout = () => {
                                                 />
                                             </div>
                                         </Form.Item>
-                                        <Form.Item 
-                                            label="Deposit" 
+                                        <Form.Item
+                                            label="Deposit"
                                             required
                                             rules={[{ required: true, message: 'Please select deposit amount!' }]}
                                         >
@@ -534,6 +539,7 @@ const Checkout = () => {
                                     </Form>
                                 </div>
                             ) : (
+
                                 <div className="mb-5 border border-gray-300 rounded">
                                     <h3 className="text-xl font-semibold mb-5 text-left text-black bg-pink-200 p-2 rounded">Shipping Address</h3>
                                     <Form className="p-5">
@@ -544,29 +550,73 @@ const Checkout = () => {
                                             <Input disabled={isAddressDisabled} />
                                         </Form.Item>
                                         <Form.Item label="City">
-                                            <Input disabled={isAddressDisabled} />
+                                            <Select value="Hồ Chí Minh" disabled>
+                                                <Select.Option value="Hồ Chí Minh">Hồ Chí Minh</Select.Option>
+                                            </Select>
                                         </Form.Item>
+
                                         <Form.Item label="District">
-                                            <Input disabled={isAddressDisabled} />
+                                            <Select disabled={isAddressDisabled} placeholder="Chọn quận">
+                                                {districts.map((district) => (
+                                                    <Option key={district} value={district}>
+                                                        {district}
+                                                    </Option>
+                                                ))}
+                                            </Select>
                                         </Form.Item>
                                         <Form.Item label="Detailed Address">
                                             <Input disabled={isAddressDisabled} />
                                         </Form.Item>
-                                        <Form.Item label="Time">
-                                            <Input disabled={isAddressDisabled} />
+                                        <Form.Item
+                                            label="Date and Time"
+                                            required
+                                            rules={[{ required: true, message: 'Please select date and time!' }]}
+                                        >
+                                            <div className="flex gap-2">
+                                                <DatePicker
+                                                    className="flex-1"
+                                                    value={recipientInfo.date ? dayjs(recipientInfo.date) : null}
+                                                    onChange={(date) => handleRecipientInfoChange('date', date)}
+                                                    disabledDate={(current) => {
+                                                        return current && current < dayjs().startOf('day');
+                                                    }}
+                                                />
+                                                <TimePicker
+                                                    className="flex-1"
+                                                    format="HH:mm"
+                                                    value={recipientInfo.time ? dayjs(recipientInfo.time, 'HH:mm') : null}
+                                                    onChange={(time) => handleRecipientInfoChange('time', time)}
+                                                    disabledTime={disabledTime}
+                                                    minuteStep={30}
+                                                    hideDisabledOptions
+                                                />
+                                            </div>
                                         </Form.Item>
-                                        <Form.Item label="Notes">
-                                            <Input.TextArea disabled={isAddressDisabled} />
+                                        <Form.Item
+                                            label="Deposit"
+                                            required
+                                            rules={[{ required: true, message: 'Please select deposit amount!' }]}
+                                        >
+                                            <Select
+                                                value={selectedDeposit}
+                                                onChange={handleDepositChange}
+                                                placeholder="Select deposit amount"
+                                                className="w-full"
+                                            >
+                                                <Select.Option value="50">50% deposit</Select.Option>
+                                                <Select.Option value="100">100% payment</Select.Option>
+                                            </Select>
                                         </Form.Item>
+
                                     </Form>
                                 </div>
                             )}
                         </div>
                     </div>
 
-                   <div className="text-center mt-10">
-                        <Button 
-                            type="primary" 
+                    <div className="text-center mt-10">
+                        <Button
+                            type="primary"
                             className="bg-pink-400 text-white text-2xl px-10 py-8 rounded-md"
                             onClick={handleProceedToPayment}
                         >
