@@ -62,38 +62,52 @@ const Homepage = () => {
 
             <section
                 id="first-section"
-                className="py-16 relative h-auto bg-cover bg-center"
-                style={{
-                    backgroundImage: "url('/path/to/your-background-image.jpg')",
-                }}
+                className="py-16 relative h-auto overflow-hidden"
             >
-                <div className="absolute inset-0 bg-pink-100 bg-opacity-80"></div>
+                {/* Video Bg */}
+                <div className="absolute inset-0 w-full h-full">
+                    <video
+                        className="absolute inset-0 min-w-full min-h-full object-cover"
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                    >
+                        <source src="src/assets/homevid1.mp4" type="video/mp4" />
+                        Your browser does not support the video tag.
+                    </video>
+                    <div className="absolute inset-0"></div>
+                </div>
+
+                {/* Content */}
                 <div className="relative z-10 w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center px-4">
                     <div
                         className={`space-y-10 pl-20 transition-all duration-1000 transform ${firstSectionVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'
                             }`}
                     >
-                        <h1 className="text-7xl text-left font-bold">
+                        <h1 className="text-7xl text-white text-left font-bold">
                             Fresh Flowers For Any Occasion
                         </h1>
-                        <Paragraph className="text-gray-600 text-left text-base leading-relaxed">
+                        <Paragraph className=" text-white text-left text-base leading-relaxed">
                             Most flowering plants depend on animals, such as bees, moths, and butterflies, to transfer their pollen between different flowers, and have evolved to attract these pollinators.
                         </Paragraph>
-                        <button className="bg-pink-600 text-white px-10 p-2 hover:bg-pink-800">
-                            Learn More
-                        </button>
+                        <Link to="/product">
+                            <button className="bg-pink-600 text-white px-10 p-2 mt-10 hover:bg-pink-800">
+                                Learn More
+                            </button>
+                        </Link>
                         <section className="py-12 grid grid-cols-1 md:grid-cols-3 gap-6 px-10">
-                            <div className="text-left">
-                                <h3 className="text-2xl font-bold"><UserOutlined /> 250+</h3>
-                                <p className="text-gray-600">Customers Reviews</p>
+                            <div className="text-left text-white">
+                                <h3 className="text-2xl text-white font-bold"><UserOutlined /> 250+</h3>
+                                <p className="text-white">Customers Reviews</p>
                             </div>
-                            <div className="text-left">
-                                <h3 className="text-2xl font-bold"><GiftOutlined /> 100+</h3>
-                                <p className="text-gray-600">Flowers Collection</p>
+                            <div className="text-left text-white">
+                                <h3 className="text-2xl text-white font-bold"><GiftOutlined /> 100+</h3>
+                                <p className="text-white">Flowers Collection</p>
                             </div>
-                            <div className="text-left">
-                                <h3 className="text-2xl font-bold"><ShopOutlined /> 5+</h3>
-                                <p className="text-gray-600">Stores</p>
+                            <div className="text-left text-white">
+                                <h3 className="text-2xl text-white font-bold"><ShopOutlined /> 5+</h3>
+                                <p className="text-white">Stores</p>
                             </div>
                         </section>
                     </div>
@@ -128,7 +142,7 @@ const Homepage = () => {
             </section>
 
             {/* Features */}
-            <section className="py-12 mt-10 bg-white grid grid-cols-1 md:grid-cols-4 gap-6 px-10">
+            <section className="py-12  bg-pink-50 grid grid-cols-1 md:grid-cols-4 gap-6 px-10">
                 <div className="text-center">
                     <PayCircleOutlined className="text-4xl text-pink-500 mb-3" />
                     <h3 className="text-lg font-bold">Easy Payment</h3>
@@ -155,17 +169,33 @@ const Homepage = () => {
 
             <section
                 id="second-section"
-                className="py-16 bg-white relative h-auto"
+                className="py-16 relative h-auto overflow-hidden"
             >
-                <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center px-4">
+                {/* Video Bg */}
+                <div className="absolute inset-0 w-full h-full">
+                    <video
+                        className="absolute inset-0 min-w-full min-h-full object-cover"
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                    >
+                        <source src="src/assets/homevid2.mp4" type="video/mp4" />
+                        Your browser does not support the video tag.
+                    </video>
+                    <div className="absolute inset-0"></div>
+                </div>
+
+                {/* Content */}
+                <div className="relative z-10 w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center px-4">
                     <div
                         className={`space-y-10 pl-20 transition-all duration-1000 transform ${secondSectionVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'
                             }`}
                     >
-                        <h1 className="text-6xl text-left font-bold">
+                        <h1 className="text-6xl text-white text-left font-bold">
                             Create Your Perfect Floral Design
                         </h1>
-                        <Paragraph className="text-gray-600 text-left text-base leading-relaxed">
+                        <Paragraph className="text-white text-left text-base leading-relaxed">
                             Craft stunning flower designs tailored to your unique preferences. Choose from a wide range of blooms, styles, and personalized touches to make your bouquet truly one of a kind.
                         </Paragraph>
                         <Link to="/customize">
@@ -221,7 +251,7 @@ const Homepage = () => {
                     </button>
                 </div>
             </section>
-            
+
             <Footer />
             <ScrollToTop />
         </div>

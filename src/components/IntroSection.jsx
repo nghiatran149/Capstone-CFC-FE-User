@@ -39,7 +39,7 @@ const IntroSection = () => {
     return (
         <div
             ref={containerRef}
-            className="relative py-10 bg-stone-50 overflow-hidden"
+            className="relative py-10 bg-pink-50 overflow-hidden"
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
         >

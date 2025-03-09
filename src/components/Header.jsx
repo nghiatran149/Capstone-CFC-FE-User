@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { SearchOutlined, ShoppingCartOutlined, UserOutlined, LogoutOutlined, WalletOutlined, HistoryOutlined } from '@ant-design/icons';
+import { SearchOutlined, ShoppingCartOutlined, UserOutlined, LogoutOutlined, HistoryOutlined } from '@ant-design/icons';
 
 const Header = () => {
   const navItems = [
@@ -13,6 +13,7 @@ const Header = () => {
   const location = useLocation();
   const [activeItem, setActiveItem] = useState(location.pathname);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const linkElement = document.createElement('link');
@@ -21,13 +22,29 @@ const Header = () => {
     document.head.appendChild(linkElement);
 
     setActiveItem(location.pathname);
+    checkLoginStatus();
+    window.addEventListener('storage', checkLoginStatus);  
+    return () => {
+      window.removeEventListener('storage', checkLoginStatus);
+    };
   }, [location.pathname]);
+
+  useEffect(() => {
+    const interval = setInterval(checkLoginStatus, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const checkLoginStatus = () => {
+    const token = sessionStorage.getItem('accessToken');
+    setIsLoggedIn(!!token);
+  };
 
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
   const handleLogout = () => {
     localStorage.clear();
     sessionStorage.clear();
+    setIsLoggedIn(false);
     window.location.href = "/login";
   };
 
@@ -54,9 +71,9 @@ const Header = () => {
         </nav>
 
         <div className="flex items-center space-x-6">
-          <button className="text-gray-600 hover:text-pink-500 transition-colors">
+          {/* <button className="text-gray-600 hover:text-pink-500 transition-colors">
             <SearchOutlined className="text-2xl" />
-          </button>
+          </button> */}
 
           <div className="relative">
             <Link
@@ -67,40 +84,49 @@ const Header = () => {
             </Link>
           </div>
 
-          <div className="relative">
-            <button
-              onClick={toggleDropdown}
-              className="text-gray-600 hover:text-pink-500 transition-colors"
-            >
-              <UserOutlined className="text-2xl" />
-            </button>
+          {isLoggedIn ? (
+            <div className="relative">
+              <button
+                onClick={toggleDropdown}
+                className="text-gray-600 hover:text-pink-500 transition-colors"
+              >
+                <UserOutlined className="text-2xl" />
+              </button>
 
-            {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md py-2 z-50">
-                <Link
-                  to="/userprofile"
-                  className="flex items-center px-4 py-2 text-blue-600 hover:bg-pink-200"
-                >
-                  <UserOutlined className="text-lg mr-4" />
-                  Profile
-                </Link>
-                <Link
-                  to="/wallet"
-                  className="flex items-center px-4 py-2 text-yellow-600 hover:bg-pink-200"
-                >
-                  <HistoryOutlined className="text-lg mr-4" />
-                  Order History
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center w-full px-4 py-2 text-red-600 hover:bg-pink-200"
-                >
-                  <LogoutOutlined className="text-lg mr-4" />
-                  Log Out
-                </button>
-              </div>
-            )}
-          </div>
+              {isDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md py-2 z-50">
+                  <Link
+                    to="/userprofile"
+                    className="flex items-center px-4 py-2 text-blue-600 hover:bg-pink-200"
+                  >
+                    <UserOutlined className="text-lg mr-4" />
+                    Profile
+                  </Link>
+                  <Link
+                    to="/wallet"
+                    className="flex items-center px-4 py-2 text-yellow-600 hover:bg-pink-200"
+                  >
+                    <HistoryOutlined className="text-lg mr-4" />
+                    Order History
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center w-full px-4 py-2 text-red-600 hover:bg-pink-200"
+                  >
+                    <LogoutOutlined className="text-lg mr-4" />
+                    Log Out
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link 
+              to="/login" 
+              className="px-4 py-2 bg-pink-500 text-white font-medium rounded-md hover:bg-pink-600 transition-colors"
+            >
+              Login/Register
+            </Link>
+          )}
         </div>
       </div>
 
