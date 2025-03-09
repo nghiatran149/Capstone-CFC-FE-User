@@ -250,11 +250,7 @@ const ProductDetail = () => {
               </div>
               <div className="flex gap-5 mb-4">
                 <h2 className="text-xl font-bold">Weight:</h2>
-                <span className="text-xl text-gray-600">{product.weight || "N/A"}</span>
-              </div>
-              <div className="flex gap-5 mb-4">
-                <h2 className="text-xl font-bold">In Stock:</h2>
-                <span className="text-xl text-gray-600">{product.quantity}</span>
+                <span className="text-xl text-gray-600">{product.weight || "N/A"}kg</span>
               </div>
               <div className="flex gap-5 mb-4">
                 <h2 className="text-xl font-bold">Sold:</h2>
