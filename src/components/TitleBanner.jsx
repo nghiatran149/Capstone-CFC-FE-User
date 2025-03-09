@@ -21,7 +21,7 @@ const ScrollingTextBanner = () => {
   }, []);
 
   return (
-    <div className="w-full bg-white overflow-hidden py-5 relative">
+    <div className="w-full  bg-pink-50 overflow-hidden py-5 relative">
       <link 
         href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&display=swap" 
         rel="stylesheet" 

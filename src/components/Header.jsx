@@ -71,9 +71,9 @@ const Header = () => {
         </nav>
 
         <div className="flex items-center space-x-6">
-          <button className="text-gray-600 hover:text-pink-500 transition-colors">
+          {/* <button className="text-gray-600 hover:text-pink-500 transition-colors">
             <SearchOutlined className="text-2xl" />
-          </button>
+          </button> */}
 
           <div className="relative">
             <Link

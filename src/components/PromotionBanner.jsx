@@ -96,7 +96,7 @@ const PromotionBanner = () => {
     };
 
     return (
-        <section className="py-8 bg-white"
+        <section className="py-12 bg-white"
             style={{
                 backgroundImage: `url(${LatestDealBG})`,
                 backgroundSize: "cover",
