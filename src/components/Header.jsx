@@ -7,7 +7,7 @@ const Header = () => {
     { name: 'Home', link: '/home' },
     { name: 'Product', link: '/product' },
     { name: 'Customize', link: '/customize' },
-    { name: 'Contact Us', link: '/contact' }
+    { name: 'About Us', link: '/about' }
   ];
 
   const location = useLocation();

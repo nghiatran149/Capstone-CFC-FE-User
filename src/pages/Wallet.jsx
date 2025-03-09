@@ -122,10 +122,10 @@ const WalletPage = () => {
     const getStatusColor = (status) => {
         const colors = {
             "Order Successfully": "text-green-600 bg-green-100",
-            "Arranging & Packing" : "text-pink-600 bg-pink-100",
+            "Arranging & Packing": "text-pink-600 bg-pink-100",
             "Awaiting Design Approval": "text-yellow-600 bg-yellow-100",
-            "Flower Completed"  :	"text-orange-600 bg-orange-100",
-            "Received" :"text-blue-600 bg-blue-100",
+            "Flower Completed": "text-orange-600 bg-orange-100",
+            "Received": "text-blue-600 bg-blue-100",
             "đang xử lý": "text-blue-600 bg-blue-100",
             "thất bại": "text-red-600 bg-red-100"
         };
@@ -195,7 +195,7 @@ const WalletPage = () => {
             });
 
             const data = await response.json();
-            
+
             if (data.paymentUrl) {
                 // Redirect to VNPay payment URL
                 window.location.href = data.paymentUrl;
@@ -380,7 +380,7 @@ const WalletPage = () => {
                             <p className="font-semibold">Product Name:</p>
                             <p className="text-gray-700">{selectedOrderDetail.productCustomResponse.productName}</p>
                         </div>
-                      
+
                         <div>
                             <p className="font-semibold">Total Price:</p>
                             <p className="text-pink-600 font-bold">{selectedOrderDetail.productCustomResponse.totalPrice.toLocaleString()} VNĐ</p>
@@ -473,7 +473,7 @@ const WalletPage = () => {
                                 <div className="flex-1 space-y-2">
                                     <h6 className="text-lg font-semibold">{flower.flowerResponse.flowerName}</h6>
                                     <div className="grid grid-cols-2 gap-4">
-                                    <p><span className="font-semibold">Id:</span> {flower.flowerResponse.flowerId}</p>
+                                        <p><span className="font-semibold">Id:</span> {flower.flowerResponse.flowerId}</p>
                                         <p><span className="font-semibold">Color:</span> {flower.flowerResponse.color}</p>
                                         <p><span className="font-semibold">Category:</span> {flower.flowerResponse.categoryName}</p>
                                         <p><span className="font-semibold">Quantity:</span> {flower.quantity}</p>
@@ -539,6 +539,8 @@ const WalletPage = () => {
                             <p><span className="font-semibold">Delivery Date:</span> {new Date(selectedOrderDetail.deliveryDateTime).toLocaleString()}</p>
                             <p><span className="font-semibold">Total Price:</span> <span className="text-pink-600 font-bold">{selectedOrderDetail.orderPrice.toLocaleString()} VNĐ</span></p>
                             <p><span className="font-semibold">Payment Method:</span> {selectedOrderDetail.transfer ? '100% Transfer' : '50% Deposit'}</p>
+                            <p><span className="font-semibold">Delivery Method:</span> {selectedOrderDetail.delivery ? 'Shipping' : 'Pick up'}</p>
+
                         </div>
                         <div className="space-y-2">
                             <h3 className="font-bold text-lg text-gray-700">Contact Information</h3>
@@ -561,7 +563,18 @@ const WalletPage = () => {
                             </div>
                         </div>
                     )}
+                    {/* Payment Section */}
+                    {selectedOrderDetail.note && (
+                        <div className="bg-red-50 p-6 rounded-lg">
+                            <h3 className="font-bold text-lg text-red-700 mb-2">Delivery Notes</h3>
 
+                            <div className="grid grid-cols-2 gap-4">
+                                <p><span className="font-semibold">Delivery Address:</span> {selectedOrderDetail.deliveryAddress ?? "N/A"}</p>
+                                <p><span className="font-semibold">Delivery District:</span> {selectedOrderDetail.deliveryDistrict ?? "N/A"}</p>
+                                <p><span className="font-semibold">Delivery City:</span> {selectedOrderDetail.deliveryCity ?? "N/A"}</p>
+                            </div>
+                        </div>
+                    )}
                     {/* Note Section */}
                     {selectedOrderDetail.note && (
                         <div className="bg-yellow-50 p-6 rounded-lg">
@@ -569,12 +582,14 @@ const WalletPage = () => {
                             <p className="whitespace-pre-line">{selectedOrderDetail.note}</p>
                         </div>
                     )}
-                      {/* Payment Section */}
-                      {selectedOrderDetail.note && (
+
+
+                    {/* Payment Section */}
+                    {selectedOrderDetail.note && (
                         <div className="bg-orange-50 p-6 rounded-lg">
                             <h3 className="font-bold text-lg text-orange-700 mb-2">Payment Notes</h3>
 
-                             <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-4">
                                 <p><span className="font-semibold">Payment ID:</span> {selectedOrderDetail.paymentId}</p>
                                 <p><span className="font-semibold">Payment Method:</span> {selectedOrderDetail.paymentMethod}</p>
                                 <p><span className="font-semibold">Payment Price:</span> {selectedOrderDetail.paymentPrice}</p>
@@ -607,9 +622,9 @@ const WalletPage = () => {
                     <EyeOutlined />
                     <span>View Details</span>
                 </button>
-                
-               
-                
+
+
+
                 <button
                     onClick={() => {
                         setSelectedOrder(order);
@@ -633,7 +648,7 @@ const WalletPage = () => {
                     <EyeOutlined />
                     <span>View Details</span>
                 </button>
-                
+
                 {/* Payment button for failed orders */}
                 <button
                     onClick={() => handlePaymentRetry(order.orderId)}
@@ -696,65 +711,59 @@ const WalletPage = () => {
                             <div className="flex gap-2 flex-wrap">
                                 <button
                                     onClick={() => setSelectedStatus('All')}
-                                    className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${
-                                        selectedStatus === 'All'
+                                    className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${selectedStatus === 'All'
                                             ? 'bg-blue-500 text-white'
                                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                    }`}
+                                        }`}
                                 >
                                     All
                                 </button>
                                 <button
                                     onClick={() => setSelectedStatus('Order Successfully')}
-                                    className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${
-                                        selectedStatus === 'Order Successfully'
+                                    className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${selectedStatus === 'Order Successfully'
                                             ? 'bg-green-500 text-white'
                                             : 'bg-green-100 text-green-600 hover:bg-green-200'
-                                    }`}
+                                        }`}
                                 >
                                     <span className="w-2 h-2 rounded-full bg-current"></span>
                                     Order Successfully
                                 </button>
                                 <button
                                     onClick={() => setSelectedStatus('Arranging & Packing')}
-                                    className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${
-                                        selectedStatus === 'Arranging & Packing'
+                                    className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${selectedStatus === 'Arranging & Packing'
                                             ? 'bg-pink-500 text-white'
                                             : 'bg-pink-100 text-pink-600 hover:bg-pink-200'
-                                    }`}
+                                        }`}
                                 >
                                     <span className="w-2 h-2 rounded-full bg-current"></span>
                                     Arranging & Packing
                                 </button>
                                 <button
                                     onClick={() => setSelectedStatus('Awaiting Design Approval')}
-                                    className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${
-                                        selectedStatus === 'Awaiting Design Approval'
+                                    className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${selectedStatus === 'Awaiting Design Approval'
                                             ? 'bg-yellow-500 text-white'
                                             : 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200'
-                                    }`}
+                                        }`}
                                 >
                                     <span className="w-2 h-2 rounded-full bg-current"></span>
                                     Awaiting Design Approval
                                 </button>
                                 <button
                                     onClick={() => setSelectedStatus('Flower Completed')}
-                                    className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${
-                                        selectedStatus === 'Flower Completed'
+                                    className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${selectedStatus === 'Flower Completed'
                                             ? 'bg-orange-500 text-white'
                                             : 'bg-orange-100 text-orange-600 hover:bg-orange-200'
-                                    }`}
+                                        }`}
                                 >
                                     <span className="w-2 h-2 rounded-full bg-current"></span>
                                     Flower Completed
                                 </button>
                                 <button
                                     onClick={() => setSelectedStatus('Received')}
-                                    className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${
-                                        selectedStatus === 'Received'
+                                    className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${selectedStatus === 'Received'
                                             ? 'bg-blue-500 text-white'
                                             : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
-                                    }`}
+                                        }`}
                                 >
                                     <span className="w-2 h-2 rounded-full bg-current"></span>
                                     Received

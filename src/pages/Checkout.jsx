@@ -35,6 +35,8 @@ const Checkout = () => {
         date: '',
         time: '',
     });
+    const [deliveryCheckResult, setDeliveryCheckResult] = useState(null);
+    const [isCheckingDelivery, setIsCheckingDelivery] = useState(false);
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -46,7 +48,83 @@ const Checkout = () => {
         fetchPromotions();
         fetchStores();
     }, []);
+    const handleCheck = async () => {
+        try {
+            setIsCheckingDelivery(true);
+            
+            // Validate form fields
+            const formValues = await form.validateFields(['district', 'detailedAddress']);
+            
+            if (!selectedStore) {
+                message.error('Please select a store first');
+                return;
+            }
 
+            if (!formValues.district || !formValues.detailedAddress) {
+                message.error('Please fill in all address information');
+                return;
+            }
+
+            // Lấy thông tin sản phẩm
+            let productsToCheck = [];
+            if (cartItems) {
+                productsToCheck = cartItems.map(item => ({
+                    productId: item.productId,
+                    quantity: item.quantity
+                }));
+            } else if (productInfo) {
+                productsToCheck = [{
+                    productId: productInfo.productId,
+                    quantity: productInfo.selectedQuantity
+                }];
+            } else {
+                message.error('No products found');
+                return;
+            }
+
+            // Tạo dữ liệu gửi đi theo đúng format API yêu cầu
+            const checkData = {
+                checkQuantityAndWeightProducts: productsToCheck,
+                city: formValues.detailedAddress,
+                district: formValues.district,
+                detailedAddress: "Hồ Chí Minh"
+            };
+
+            console.log('Sending data:', checkData);
+
+            const response = await fetch(
+                `https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Check/CheckDelivery?storeId=${selectedStore}`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'accept': '*/*',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(checkData)
+                }
+            );
+
+            const data = await response.json();
+            console.log('Response:', data);
+
+            if (data.success) {
+                setDeliveryCheckResult(data);
+                message.success(`Có thể đặt xe giao hàng. Phí giao: ${data.distance.toLocaleString()} VNĐ`);
+            } else {
+                setDeliveryCheckResult(data);
+                message.error(data.message || 'Cân nặng và số km không phù hợp để đặt shipper');
+            }
+        } catch (error) {
+            console.error('Error checking delivery:', error);
+            if (error.errorFields) {
+                message.error('Please fill in all required fields');
+            } else {
+                message.error('Failed to check delivery availability. Please try again.');
+            }
+        } finally {
+            setIsCheckingDelivery(false);
+        }
+    };
     const fetchPromotions = async () => {
         try {
             const response = await axios.get('https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/promotions');
@@ -125,6 +203,12 @@ const Checkout = () => {
                     message.error('Please fill in all required information');
                     return;
                 }
+            } else {
+                // For delivery method, check if delivery was checked and successful
+                if (!deliveryCheckResult?.success) {
+                    message.error('Please check delivery availability first');
+                    return;
+                }
             }
 
             const token = sessionStorage.getItem('accessToken');
@@ -161,12 +245,18 @@ const Checkout = () => {
                 promotionId: selectedVoucher || null,
                 note: fullNote,
                 storeId: selectedStore,
-                recipientName: recipientInfo.name,
+                recipientName: recipientInfo.name || formValues.recipientName,
                 recipientTime: formattedDateTime,
-                phone: recipientInfo.phone,
+                phone: recipientInfo.phone || formValues.recipientPhone,
                 status: "Pending",
                 transfer: selectedDeposit === "100", // 100% -> true, 50% -> false
-                delivery: shippingMethod !== 'store-pickup',
+                delivery: shippingMethod === 'shop-shipping' && deliveryCheckResult?.success,
+                // Add delivery information if delivery method is selected
+                ...(shippingMethod === 'shop-shipping' && {
+                    deliveryDistrict: formValues.district,
+                    deliveryCity: "Hồ Chí Minh",
+                    deliveryAddress: formValues.detailedAddress,
+                }),
                 orderDetails: cartItems ?
                     cartItems.map(item => ({
                         productId: item.productId,
@@ -266,6 +356,39 @@ const Checkout = () => {
         disabledHours: () => [...Array(24).keys()].filter(hour => hour < 8 || hour > 19),
     });
 
+    const renderDeliveryCheckResult = () => {
+        if (!deliveryCheckResult) return null;
+
+        if (deliveryCheckResult.success) {
+            return (
+                <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-green-600 font-semibold flex items-center">
+                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Có thể đặt xe giao hàng
+                        </span>
+                    </div>
+                    <div className="flex items-center justify-between text-lg">
+                        <span className="text-gray-600">Phí giao hàng:</span>
+                        <span className="font-bold text-green-600">{deliveryCheckResult.distance.toLocaleString()} VNĐ</span>
+                    </div>
+                </div>
+            );
+        } else {
+            return (
+                <div className="mt-4 p-4 bg-red-50 rounded-lg border border-red-200">
+                    <div className="flex items-center text-red-600">
+                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        <span>{deliveryCheckResult.message}</span>
+                    </div>
+                </div>
+            );
+        }
+    };
 
     return (
         <div className="w-full">
@@ -435,11 +558,11 @@ const Checkout = () => {
                                 <div className="p-4">
                                     <p className="mb-2 text-left">Subtotal: {cartItems ? totalAmount.toLocaleString() : productInfo.totalPrice.toLocaleString()} VND</p>
                                     <p className="mb-2 text-left">Discount (Voucher): -{calculateDiscount().toLocaleString()} VND</p>
-                                    <p className="mb-2 text-left">Shipping: {shippingMethod === 'store-pickup' ? '0' : '25,000'} VND</p>
+                                    <p className="mb-2 text-left">Shipping: {shippingMethod === 'store-pickup' ? '0' : (deliveryCheckResult?.success ? deliveryCheckResult.distance.toLocaleString() : '0')} VND</p>
                                     <p className="font-bold text-left">Total: {(
                                         (cartItems ? totalAmount : productInfo.totalPrice) -
                                         calculateDiscount() +
-                                        (shippingMethod === 'store-pickup' ? 0 : 25000)
+                                        (shippingMethod === 'store-pickup' ? 0 : (deliveryCheckResult?.success ? deliveryCheckResult.distance : 0))
                                     ).toLocaleString()} VND</p>
                                 </div>
                             </div>
@@ -555,8 +678,15 @@ const Checkout = () => {
                                             </Select>
                                         </Form.Item>
 
-                                        <Form.Item label="District">
-                                            <Select disabled={isAddressDisabled} placeholder="Chọn quận">
+                                        <Form.Item 
+                                            name="district"
+                                            label="District"
+                                            rules={[{ required: true, message: 'Please select district!' }]}
+                                        >
+                                            <Select 
+                                                disabled={isAddressDisabled} 
+                                                placeholder="Chọn quận"
+                                            >
                                                 {districts.map((district) => (
                                                     <Option key={district} value={district}>
                                                         {district}
@@ -564,8 +694,12 @@ const Checkout = () => {
                                                 ))}
                                             </Select>
                                         </Form.Item>
-                                        <Form.Item label="Detailed Address">
-                                            <Input disabled={isAddressDisabled} />
+                                        <Form.Item 
+                                            name="detailedAddress"
+                                            label="Detailed Address"
+                                            rules={[{ required: true, message: 'Please input detailed address!' }]}
+                                        >
+                                            <Input disabled={isAddressDisabled} placeholder="Nhập địa chỉ chi tiết" />
                                         </Form.Item>
                                         <Form.Item
                                             label="Date and Time"
@@ -607,7 +741,22 @@ const Checkout = () => {
                                                 <Select.Option value="100">100% payment</Select.Option>
                                             </Select>
                                         </Form.Item>
-
+                                        <Form.Item>
+                                            <Button
+                                                type="primary"
+                                                onClick={handleCheck}
+                                                loading={isCheckingDelivery}
+                                                className="w-full"
+                                                style={{
+                                                    backgroundColor: '#FBCFE8',
+                                                    borderColor: '#FBCFE8',
+                                                    color: 'black'
+                                                }}
+                                            >
+                                                {isCheckingDelivery ? 'Checking...' : 'Check Delivery'}
+                                            </Button>
+                                        </Form.Item>
+                                        {renderDeliveryCheckResult()}
                                     </Form>
                                 </div>
                             )}
