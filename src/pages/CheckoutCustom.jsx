@@ -8,6 +8,14 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
 import { jwtDecode } from "jwt-decode";
+const { Option } = Select;
+
+const districts = [
+    "Quận 1", "Quận 2", "Quận 3", "Quận 4", "Quận 5", "Quận 6", "Quận 7", "Quận 8",
+    "Quận 9", "Quận 10", "Quận 11", "Quận 12", "Bình Thạnh", "Gò Vấp", "Tân Bình",
+    "Tân Phú", "Phú Nhuận", "Bình Tân", "Thủ Đức", "Nhà Bè", "Hóc Môn", "Củ Chi",
+    "Bình Chánh", "Cần Giờ"
+];
 
 const CheckoutCustom = () => {
     const [form] = Form.useForm();
@@ -27,6 +35,8 @@ const CheckoutCustom = () => {
         date: '',
         time: '',
     });
+    const [deliveryCheckResult, setDeliveryCheckResult] = useState(null);
+    const [isCheckingDelivery, setIsCheckingDelivery] = useState(false);
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -107,7 +117,7 @@ const CheckoutCustom = () => {
         if (!selectedVoucher) return 0;
         const promotion = promotions.find(p => p.promotionId === selectedVoucher);
         if (!promotion) return 0;
-        
+
         const subtotal = customProduct ? customProduct.totalPrice : 0;
         return Math.round((subtotal * promotion.promotionDiscount) / 100);
     };
@@ -133,11 +143,10 @@ const CheckoutCustom = () => {
                 return;
             }
 
-            if (shippingMethod === 'store-pickup') {
-                if (!recipientInfo.name || !recipientInfo.phone || !recipientInfo.date || !recipientInfo.time || !selectedDeposit) {
-                    message.error('Please fill in all required information');
-                    return;
-                }
+            // Check if delivery is selected but not checked
+            if (shippingMethod === 'shop-shipping' && !deliveryCheckResult?.success) {
+                message.error('Please check delivery availability first');
+                return;
             }
 
             const token = sessionStorage.getItem('accessToken');
@@ -174,13 +183,19 @@ const CheckoutCustom = () => {
                 promotionId: selectedVoucher || null,
                 note: fullNote,
                 storeId: selectedStore,
-                recipientName: recipientInfo.name,
-                recipientTime: formattedDateTime ? dayjs(formattedDateTime).format('YYYY-MM-DD') : null,
-                phone: recipientInfo.phone,
+                recipientName: shippingMethod === 'shop-shipping' ? formValues.recipientName : recipientInfo.name,
+                recipientTime: formattedDateTime,
+                phone: shippingMethod === 'shop-shipping' ? formValues.recipientPhone : recipientInfo.phone,
                 status: "Pending",
-                transfer: selectedDeposit === "100", // 100% -> true, 50% -> false
-                delivery: shippingMethod !== 'store-pickup',
-                productCustomId: customId // Sử dụng customId từ location.state
+                transfer: selectedDeposit === "100",
+                delivery: shippingMethod === 'shop-shipping',
+                productCustomId: customId,
+                // Add delivery information if shipping method is shop-shipping
+                ...(shippingMethod === 'shop-shipping' && {
+                    deliveryDistrict: formValues.district,
+                    deliveryCity: "Hồ Chí Minh",
+                    deliveryAddress: formValues.detailedAddress
+                })
             };
 
             console.log('Order Data:', orderData);
@@ -188,7 +203,7 @@ const CheckoutCustom = () => {
             // Create order with new API endpoint
             const orderResponse = await axios.post(
                 `https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Order/CreateOrderCustom?Customer=${customerId}`,
-                JSON.stringify(orderData), // Stringify data before sending
+                JSON.stringify(orderData),
                 {
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -234,15 +249,104 @@ const CheckoutCustom = () => {
         }
     };
 
+    const handleCheck = async () => {
+        try {
+            setIsCheckingDelivery(true);
+
+            // Validate form fields
+            const formValues = await form.validateFields(['district', 'detailedAddress']);
+
+            if (!selectedStore) {
+                message.error('Please select a store first');
+                return;
+            }
+
+            if (!formValues.district || !formValues.detailedAddress) {
+                message.error('Please fill in all address information');
+                return;
+            }
+
+            // Get quantity from customProduct
+            if (!customProduct || !customProduct.quantity) {
+                message.error('Product quantity not available');
+                return;
+            }
+
+            const checkData = {
+                productQuantity: customProduct.quantity,
+                city: "Hồ Chí Minh",
+                district: formValues.district,
+                detailedAddress: formValues.detailedAddress
+            };
+
+            console.log('Sending data:', checkData);
+
+            const response = await fetch(
+                `https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Check/CheckDeliveryByProductCustom?storeId=${selectedStore}`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'accept': '*/*',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(checkData)
+                }
+            );
+
+            const data = await response.json();
+            console.log('Response:', data);
+
+            if (data.success) {
+                setDeliveryCheckResult(data);
+                message.success(`Có thể đặt xe giao hàng. Phí giao: ${data.distance.toLocaleString()} VNĐ`);
+            } else {
+                setDeliveryCheckResult(data);
+                message.error(data.message || 'Cân nặng và số km không phù hợp để đặt shipper');
+            }
+        } catch (error) {
+            console.error('Error checking delivery:', error);
+            if (error.errorFields) {
+                message.error('Please fill in all required fields');
+            } else {
+                message.error('Failed to check delivery availability. Please try again.');
+            }
+        } finally {
+            setIsCheckingDelivery(false);
+        }
+    };
+
     const OptionCard = ({ id, title, description, price, icon, selected, onClick, discount }) => (
         <div
             className={`border rounded-lg p-4 cursor-pointer mb-2 hover:border-pink-500 transition-all
-                ${selected ? 'border-pink-500 bg-pink-50' : 'border-gray-200'}`}
+                ${selected ? 'border-pink-500 bg-pink-50' : 'border-gray-200'}
+                @media (forced-colors: active) {
+                    forced-color-adjust: none;
+                    border-color: ButtonText;
+                    background-color: ButtonFace;
+                    color: ButtonText;
+                }`}
             onClick={() => onClick(id)}
+            style={{ 
+                '@media (forced-colors: active)': {
+                    forcedColorAdjust: 'none',
+                    borderColor: 'ButtonText',
+                    backgroundColor: 'ButtonFace',
+                    color: 'ButtonText'
+                }
+            }}
         >
             <div className="flex items-center">
                 <div className="w-12 h-12 mr-4">
-                    <img src={icon} alt={title} className="w-full h-full object-contain" />
+                    <img 
+                        src={icon} 
+                        alt={title} 
+                        className="w-full h-full object-contain"
+                        style={{ 
+                            '@media (forced-colors: active)': {
+                                forcedColorAdjust: 'none'
+                            }
+                        }} 
+                    />
                 </div>
                 <div className="flex-grow">
                     <div className="flex justify-between items-center">
@@ -270,6 +374,40 @@ const CheckoutCustom = () => {
     const disabledTime = () => ({
         disabledHours: () => [...Array(24).keys()].filter(hour => hour < 8 || hour > 19),
     });
+
+    const renderDeliveryCheckResult = () => {
+        if (!deliveryCheckResult) return null;
+
+        if (deliveryCheckResult.success) {
+            return (
+                <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-green-600 font-semibold flex items-center">
+                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Có thể đặt xe giao hàng
+                        </span>
+                    </div>
+                    <div className="flex items-center justify-between text-lg">
+                        <span className="text-gray-600">Phí giao hàng:</span>
+                        <span className="font-bold text-green-600">{deliveryCheckResult.distance.toLocaleString()} VNĐ</span>
+                    </div>
+                </div>
+            );
+        } else {
+            return (
+                <div className="mt-4 p-4 bg-red-50 rounded-lg border border-red-200">
+                    <div className="flex items-center text-red-600">
+                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        <span>{deliveryCheckResult.message || 'Không thể giao hàng đến địa chỉ này'}</span>
+                    </div>
+                </div>
+            );
+        }
+    };
 
     return (
         <div className="w-full">
@@ -346,7 +484,7 @@ const CheckoutCustom = () => {
                                     <Input.TextArea />
                                 </Form.Item>
                                 <Form.Item name="hideGiverName" valuePropName="checked">
-                                    <Checkbox 
+                                    <Checkbox
                                         onChange={(e) => {
                                             form.setFieldsValue({
                                                 hideGiverName: e.target.checked
@@ -381,8 +519,8 @@ const CheckoutCustom = () => {
                                         optionLabelProp="label"
                                     >
                                         {stores.map(store => (
-                                            <Select.Option 
-                                                key={store.storeId} 
+                                            <Select.Option
+                                                key={store.storeId}
                                                 value={store.storeId}
                                                 label={store.storeName}
                                             >
@@ -433,11 +571,11 @@ const CheckoutCustom = () => {
                                 <div className="p-4">
                                     <p className="mb-2 text-left">Subtotal: {customProduct ? customProduct.totalPrice.toLocaleString() : 'Loading...'} VND</p>
                                     <p className="mb-2 text-left">Discount (Voucher): -{calculateDiscount().toLocaleString()} VND</p>
-                                    <p className="mb-2 text-left">Shipping: {shippingMethod === 'store-pickup' ? '0' : '25,000'} VND</p>
+                                    <p className="mb-2 text-left">Shipping: {shippingMethod === 'store-pickup' ? '0' : (deliveryCheckResult?.success ? deliveryCheckResult.distance.toLocaleString() : '0')} VND</p>
                                     <p className="font-bold text-left">Total: {(
-                                        (customProduct ? customProduct.totalPrice : 0) - 
+                                        (customProduct ? customProduct.totalPrice : 0) -
                                         calculateDiscount() +
-                                        (shippingMethod === 'store-pickup' ? 0 : 25000)
+                                        (shippingMethod === 'store-pickup' ? 0 : (deliveryCheckResult?.success ? deliveryCheckResult.distance : 0))
                                     ).toLocaleString()} VND</p>
                                 </div>
                             </div>
@@ -457,20 +595,12 @@ const CheckoutCustom = () => {
                                         selected={shippingMethod === 'store-pickup'}
                                         onClick={handleShippingChange}
                                     />
-                                    <OptionCard
-                                        id="ghtk"
-                                        title="Giao Hàng Tiết Kiệm"
-                                        description="Delivery by GiaoHangTietKiem"
-                                        price="25,000 đ"
-                                        icon="https://static.ybox.vn/2023/7/3/1689130943619-GHTK.jpeg"
-                                        selected={shippingMethod === 'ghtk'}
-                                        onClick={handleShippingChange}
-                                    />
+
                                     <OptionCard
                                         id="shop-shipping"
                                         title="Shop Delivery"
                                         description="We will arrange delivery ourselves."
-                                        price="30,000 đ"
+                                        price="Check"
                                         icon="https://cdn1.iconfinder.com/data/icons/logistics-transportation-vehicles/202/logistic-shipping-vehicles-002-512.png"
                                         selected={shippingMethod === 'shop-shipping'}
                                         onClick={handleShippingChange}
@@ -482,28 +612,28 @@ const CheckoutCustom = () => {
                                 <div className="mb-5 border border-gray-300 rounded">
                                     <h3 className="text-xl font-semibold mb-5 text-left text-black bg-pink-200 p-2 rounded">Add Information</h3>
                                     <Form form={form} className="p-5">
-                                        <Form.Item 
-                                            label="Recipient Name" 
+                                        <Form.Item
+                                            label="Recipient Name"
                                             required
                                             rules={[{ required: true, message: 'Please input recipient name!' }]}
                                         >
-                                            <Input 
+                                            <Input
                                                 value={recipientInfo.name}
                                                 onChange={(e) => handleRecipientInfoChange('name', e.target.value)}
                                             />
                                         </Form.Item>
-                                        <Form.Item 
-                                            label="Recipient Phone" 
+                                        <Form.Item
+                                            label="Recipient Phone"
                                             required
                                             rules={[{ required: true, message: 'Please input recipient phone!' }]}
                                         >
-                                            <Input 
+                                            <Input
                                                 value={recipientInfo.phone}
                                                 onChange={(e) => handleRecipientInfoChange('phone', e.target.value)}
                                             />
                                         </Form.Item>
-                                        <Form.Item 
-                                            label="Date and Time" 
+                                        <Form.Item
+                                            label="Date and Time"
                                             required
                                             rules={[{ required: true, message: 'Please select date and time!' }]}
                                         >
@@ -527,8 +657,8 @@ const CheckoutCustom = () => {
                                                 />
                                             </div>
                                         </Form.Item>
-                                        <Form.Item 
-                                            label="Deposit" 
+                                        <Form.Item
+                                            label="Deposit"
                                             required
                                             rules={[{ required: true, message: 'Please select deposit amount!' }]}
                                         >
@@ -548,36 +678,113 @@ const CheckoutCustom = () => {
                                 <div className="mb-5 border border-gray-300 rounded">
                                     <h3 className="text-xl font-semibold mb-5 text-left text-black bg-pink-200 p-2 rounded">Shipping Address</h3>
                                     <Form className="p-5">
-                                        <Form.Item label="Recipient Name">
+                                        <Form.Item 
+                                            name="recipientName"
+                                            label="Recipient Name"
+                                            rules={[{ required: true, message: 'Please input recipient name!' }]}
+                                        >
                                             <Input disabled={isAddressDisabled} />
                                         </Form.Item>
-                                        <Form.Item label="Recipient Phone">
+                                        <Form.Item 
+                                            name="recipientPhone"
+                                            label="Recipient Phone"
+                                            rules={[{ required: true, message: 'Please input recipient phone!' }]}
+                                        >
                                             <Input disabled={isAddressDisabled} />
                                         </Form.Item>
                                         <Form.Item label="City">
-                                            <Input disabled={isAddressDisabled} />
+                                            <Select value="Hồ Chí Minh" disabled>
+                                                <Select.Option value="Hồ Chí Minh">Hồ Chí Minh</Select.Option>
+                                            </Select>
                                         </Form.Item>
-                                        <Form.Item label="District">
-                                            <Input disabled={isAddressDisabled} />
+                                        <Form.Item 
+                                            name="district"
+                                            label="District"
+                                            rules={[{ required: true, message: 'Please select district!' }]}
+                                        >
+                                            <Select 
+                                                disabled={isAddressDisabled} 
+                                                placeholder="Chọn quận"
+                                            >
+                                                {districts.map((district) => (
+                                                    <Option key={district} value={district}>
+                                                        {district}
+                                                    </Option>
+                                                ))}
+                                            </Select>
                                         </Form.Item>
-                                        <Form.Item label="Detailed Address">
-                                            <Input disabled={isAddressDisabled} />
+                                        <Form.Item 
+                                            name="detailedAddress"
+                                            label="Detailed Address"
+                                            rules={[{ required: true, message: 'Please input detailed address!' }]}
+                                        >
+                                            <Input disabled={isAddressDisabled} placeholder="Nhập địa chỉ chi tiết" />
                                         </Form.Item>
-                                        <Form.Item label="Time">
-                                            <Input disabled={isAddressDisabled} />
+                                        <Form.Item
+                                            label="Date and Time"
+                                            required
+                                            rules={[{ required: true, message: 'Please select date and time!' }]}
+                                        >
+                                            <div className="flex gap-2">
+                                                <DatePicker
+                                                    className="flex-1"
+                                                    value={recipientInfo.date ? dayjs(recipientInfo.date) : null}
+                                                    onChange={(date) => handleRecipientInfoChange('date', date)}
+                                                    disabledDate={(current) => {
+                                                        return current && current < dayjs().startOf('day');
+                                                    }}
+                                                />
+                                                <TimePicker
+                                                    className="flex-1"
+                                                    format="HH:mm"
+                                                    value={recipientInfo.time ? dayjs(recipientInfo.time, 'HH:mm') : null}
+                                                    onChange={(time) => handleRecipientInfoChange('time', time)}
+                                                    disabledTime={disabledTime}
+                                                    minuteStep={30}
+                                                    hideDisabledOptions
+                                                />
+                                            </div>
                                         </Form.Item>
-                                        <Form.Item label="Notes">
-                                            <Input.TextArea disabled={isAddressDisabled} />
+                                        <Form.Item
+                                            label="Deposit"
+                                            required
+                                            rules={[{ required: true, message: 'Please select deposit amount!' }]}
+                                        >
+                                            <Select
+                                                value={selectedDeposit}
+                                                onChange={handleDepositChange}
+                                                placeholder="Select deposit amount"
+                                                className="w-full"
+                                            >
+                                                <Select.Option value="50">50% deposit</Select.Option>
+                                                <Select.Option value="100">100% payment</Select.Option>
+                                            </Select>
                                         </Form.Item>
+                                        <Form.Item>
+                                            <Button
+                                                type="primary"
+                                                onClick={handleCheck}
+                                                loading={isCheckingDelivery}
+                                                className="w-full"
+                                                style={{
+                                                    backgroundColor: '#FBCFE8',
+                                                    borderColor: '#FBCFE8',
+                                                    color: 'black'
+                                                }}
+                                            >
+                                                {isCheckingDelivery ? 'Checking...' : 'Check Delivery'}
+                                            </Button>
+                                        </Form.Item>
+                                        {renderDeliveryCheckResult()}
                                     </Form>
                                 </div>
                             )}
                         </div>
                     </div>
 
-                   <div className="text-center mt-10">
-                        <Button 
-                            type="primary" 
+                    <div className="text-center mt-10">
+                        <Button
+                            type="primary"
                             className="bg-pink-400 text-white text-2xl px-10 py-8 rounded-md"
                             onClick={handleProceedToPayment}
                         >

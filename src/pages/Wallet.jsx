@@ -58,7 +58,8 @@ const WalletPage = () => {
                     date: new Date(order.deliveryDateTime).toLocaleString(),
                     status: order.status,
                     note: order.note,
-                    phone: order.phone
+                    phone: order.phone,
+                    delivery : order.delivery? "Shipping" : "Pickup",
                 }));
 
                 setOrders(formattedOrders);
@@ -105,7 +106,9 @@ const WalletPage = () => {
                     date: new Date(order.deliveryDateTime).toLocaleString(),
                     status: order.status,
                     note: order.note,
-                    phone: order.phone
+                    phone: order.phone,
+                    delivery : order.delivery? "Shipping" : "Pickup",
+
                 }));
 
                 setFailOrders(formattedOrders);
@@ -302,6 +305,7 @@ const WalletPage = () => {
                                 <p className="font-semibold text-gray-700">Payment:</p>
                                 <p className="text-gray-600">{selectedOrder.payment}</p>
                             </div>
+                            
                             <div>
                                 <p className="font-semibold text-gray-700">Date:</p>
                                 <p className="text-gray-600">{selectedOrder.date}</p>
@@ -778,6 +782,7 @@ const WalletPage = () => {
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Details</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Price</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Payment</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Delivery</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Create Time</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">RecipientTime</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Status</th>
@@ -791,6 +796,7 @@ const WalletPage = () => {
                                             <td className="px-6 py-4 text-left text-base">{order.details.join(", ")}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">${order.price}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.payment}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.delivery}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.createAt}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.date}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap">
@@ -820,6 +826,7 @@ const WalletPage = () => {
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Details</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Price</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Payment</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Delivery</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Create Time</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">RecipientTime</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Status</th>
@@ -833,6 +840,7 @@ const WalletPage = () => {
                                             <td className="px-6 py-4 text-left text-base">{order.details.join(", ")}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">${order.price}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.payment}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.delivery}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.createAt}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.date}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap">
