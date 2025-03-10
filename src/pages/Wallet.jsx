@@ -59,7 +59,7 @@ const WalletPage = () => {
                     status: order.status,
                     note: order.note,
                     phone: order.phone,
-                    delivery : order.delivery? "Shipping" : "Pickup",
+                    delivery: order.delivery ? "Shipping" : "Pickup",
                 }));
 
                 setOrders(formattedOrders);
@@ -107,7 +107,7 @@ const WalletPage = () => {
                     status: order.status,
                     note: order.note,
                     phone: order.phone,
-                    delivery : order.delivery? "Shipping" : "Pickup",
+                    delivery: order.delivery ? "Shipping" : "Pickup",
 
                 }));
 
@@ -128,7 +128,10 @@ const WalletPage = () => {
             "Arranging & Packing": "text-pink-600 bg-pink-100",
             "Awaiting Design Approval": "text-yellow-600 bg-yellow-100",
             "Flower Completed": "text-orange-600 bg-orange-100",
+            "Delivery": "text-purple-600 bg-purple-100",
+
             "Received": "text-blue-600 bg-blue-100",
+
             "đang xử lý": "text-blue-600 bg-blue-100",
             "thất bại": "text-red-600 bg-red-100"
         };
@@ -305,7 +308,7 @@ const WalletPage = () => {
                                 <p className="font-semibold text-gray-700">Payment:</p>
                                 <p className="text-gray-600">{selectedOrder.payment}</p>
                             </div>
-                            
+
                             <div>
                                 <p className="font-semibold text-gray-700">Date:</p>
                                 <p className="text-gray-600">{selectedOrder.date}</p>
@@ -569,13 +572,49 @@ const WalletPage = () => {
                     )}
                     {/* Payment Section */}
                     {selectedOrderDetail.note && (
-                        <div className="bg-red-50 p-6 rounded-lg">
-                            <h3 className="font-bold text-lg text-red-700 mb-2">Delivery Notes</h3>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <p><span className="font-semibold">Delivery Address:</span> {selectedOrderDetail.deliveryAddress ?? "N/A"}</p>
-                                <p><span className="font-semibold">Delivery District:</span> {selectedOrderDetail.deliveryDistrict ?? "N/A"}</p>
-                                <p><span className="font-semibold">Delivery City:</span> {selectedOrderDetail.deliveryCity ?? "N/A"}</p>
+                        <div className="bg-red-50 p-6 rounded-lg shadow-md">
+                            <h3 className="font-bold text-lg text-red-700 mb-4">Delivery Notes</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="flex justify-between">
+                                    <span className="font-semibold">Delivery Address:</span>
+                                    <span>{selectedOrderDetail.deliveryAddress ?? "N/A"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="font-semibold">Delivery District:</span>
+                                    <span>{selectedOrderDetail.deliveryDistrict ?? "N/A"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="font-semibold">Delivery City:</span>
+                                    <span>{selectedOrderDetail.deliveryCity ?? "N/A"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="font-semibold">Delivery Id:</span>
+                                    <span>{selectedOrderDetail.deliveryId ?? "N/A"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="font-semibold">Shipper Id:</span>
+                                    <span>{selectedOrderDetail.shipperId ?? "N/A"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="font-semibold">Shipper Email:</span>
+                                    <span>{selectedOrderDetail.shipperEmail ?? "N/A"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="font-semibold">Delivery Phone:</span>
+                                    <span>{selectedOrderDetail.shipperPhone ?? "N/A"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="font-semibold">NumberMoto:</span>
+                                    <span>{selectedOrderDetail.NumberMoto ?? "N/A"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="font-semibold">ColorMoto:</span>
+                                    <span>{selectedOrderDetail.ColorMoto ?? "N/A"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="font-semibold">MotoType:</span>
+                                    <span>{selectedOrderDetail.MotoType ?? "N/A"}</span>
+                                </div>
                             </div>
                         </div>
                     )}
@@ -716,8 +755,8 @@ const WalletPage = () => {
                                 <button
                                     onClick={() => setSelectedStatus('All')}
                                     className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${selectedStatus === 'All'
-                                            ? 'bg-blue-500 text-white'
-                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                        ? 'bg-blue-500 text-white'
+                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                         }`}
                                 >
                                     All
@@ -725,8 +764,8 @@ const WalletPage = () => {
                                 <button
                                     onClick={() => setSelectedStatus('Order Successfully')}
                                     className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${selectedStatus === 'Order Successfully'
-                                            ? 'bg-green-500 text-white'
-                                            : 'bg-green-100 text-green-600 hover:bg-green-200'
+                                        ? 'bg-green-500 text-white'
+                                        : 'bg-green-100 text-green-600 hover:bg-green-200'
                                         }`}
                                 >
                                     <span className="w-2 h-2 rounded-full bg-current"></span>
@@ -735,8 +774,8 @@ const WalletPage = () => {
                                 <button
                                     onClick={() => setSelectedStatus('Arranging & Packing')}
                                     className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${selectedStatus === 'Arranging & Packing'
-                                            ? 'bg-pink-500 text-white'
-                                            : 'bg-pink-100 text-pink-600 hover:bg-pink-200'
+                                        ? 'bg-pink-500 text-white'
+                                        : 'bg-pink-100 text-pink-600 hover:bg-pink-200'
                                         }`}
                                 >
                                     <span className="w-2 h-2 rounded-full bg-current"></span>
@@ -745,28 +784,39 @@ const WalletPage = () => {
                                 <button
                                     onClick={() => setSelectedStatus('Awaiting Design Approval')}
                                     className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${selectedStatus === 'Awaiting Design Approval'
-                                            ? 'bg-yellow-500 text-white'
-                                            : 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200'
+                                        ? 'bg-yellow-500 text-white'
+                                        : 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200'
                                         }`}
                                 >
                                     <span className="w-2 h-2 rounded-full bg-current"></span>
                                     Awaiting Design Approval
                                 </button>
+
                                 <button
                                     onClick={() => setSelectedStatus('Flower Completed')}
                                     className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${selectedStatus === 'Flower Completed'
-                                            ? 'bg-orange-500 text-white'
-                                            : 'bg-orange-100 text-orange-600 hover:bg-orange-200'
+                                        ? 'bg-orange-500 text-white'
+                                        : 'bg-orange-100 text-orange-600 hover:bg-orange-200'
                                         }`}
                                 >
                                     <span className="w-2 h-2 rounded-full bg-current"></span>
                                     Flower Completed
                                 </button>
                                 <button
+                                    onClick={() => setSelectedStatus('Delivery')}
+                                    className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${selectedStatus === 'Delivery'
+                                        ? 'bg-purple-500 text-white' // Màu tím khi được chọn
+                                        : 'bg-purple-100 text-purple-600 hover:bg-purple-200' // Màu tím nhạt khi chưa chọn
+                                        }`}
+                                >
+                                    <span className="w-2 h-2 rounded-full bg-current"></span>
+                                    Delivery
+                                </button>
+                                <button
                                     onClick={() => setSelectedStatus('Received')}
                                     className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${selectedStatus === 'Received'
-                                            ? 'bg-blue-500 text-white'
-                                            : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
+                                        ? 'bg-blue-500 text-white'
+                                        : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
                                         }`}
                                 >
                                     <span className="w-2 h-2 rounded-full bg-current"></span>
