@@ -21,6 +21,7 @@ const districts = [
 const Checkout = () => {
     const [form] = Form.useForm();
     const [shippingMethod, setShippingMethod] = useState('store-pickup');
+    const [paymentMethod, setPaymentMethod] = useState('vnpay');
     const [isAddressDisabled, setIsAddressDisabled] = useState(true);
     const [selectedVoucher, setSelectedVoucher] = useState(null);
     const [selectedStore, setSelectedStore] = useState(null);
@@ -29,6 +30,8 @@ const Checkout = () => {
     const [loading, setLoading] = useState(true);
     const [loadingStores, setLoadingStores] = useState(true);
     const [selectedDeposit, setSelectedDeposit] = useState(null);
+    const [checkwallet, setCheckWallet] = useState(null);
+
     const [recipientInfo, setRecipientInfo] = useState({
         name: '',
         phone: '',
@@ -37,6 +40,7 @@ const Checkout = () => {
     });
     const [deliveryCheckResult, setDeliveryCheckResult] = useState(null);
     const [isCheckingDelivery, setIsCheckingDelivery] = useState(false);
+    const [isWalletAvailable, setIsWalletAvailable] = useState(false);
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -47,14 +51,42 @@ const Checkout = () => {
     useEffect(() => {
         fetchPromotions();
         fetchStores();
+        checkWallet();
     }, []);
+
+    const checkWallet = async () => {
+        try {
+            const token = sessionStorage.getItem('accessToken');
+            if (!token) {
+                message.error('Please login to continue');
+                navigate('/login');
+                return;
+            }
+
+            const decodedToken = jwtDecode(token);
+            const customerId = decodedToken.Id;
+
+            const response = await fetch(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Wallet/CheckWallet?CustomerId=${customerId}`);
+            const data = await response.json();
+
+            if (data.statusCode === 200) {
+                setIsWalletAvailable(data.data);
+            } else {
+                message.error(data.message || 'Failed to check wallet status');
+            }
+        } catch (error) {
+            console.error("Error checking wallet:", error);
+            message.error('Failed to check wallet status');
+        }
+    };
+
     const handleCheck = async () => {
         try {
             setIsCheckingDelivery(true);
-            
+
             // Validate form fields
             const formValues = await form.validateFields(['district', 'detailedAddress']);
-            
+
             if (!selectedStore) {
                 message.error('Please select a store first');
                 return;
@@ -147,6 +179,34 @@ const Checkout = () => {
             console.error('Error fetching stores:', error);
             setLoadingStores(false);
         }
+        const fetchCheckWallet = async () => {
+            try {
+                const token = sessionStorage.getItem('accessToken');
+                if (!token) {
+                    message.error('Please login to view orders');
+                    navigate('/login');
+                    return;
+                }
+
+                // Decode token to get customer ID
+                const decodedToken = jwtDecode(token);
+                const customerId = decodedToken.Id;
+                const response = await fetch(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Wallet/CheckWallet?CustomerId=${customerId}`);
+                const data = await response.json();
+
+                console.log("Check Wallet Response:", data); // Thêm log để kiểm tra phản hồi
+
+                if (data.statusCode === 200) {
+                    setCheckWallet(data);
+
+
+                }
+            } catch (error) {
+                console.error("Error fetching wallet data:", error);
+                message.error('Failed to load wallet');
+            }
+        };
+        fetchCheckWallet()
     };
 
     // Redirect if no items to checkout
@@ -566,6 +626,32 @@ const Checkout = () => {
                                     ).toLocaleString()} VND</p>
                                 </div>
                             </div>
+
+                            {isWalletAvailable && (
+                                <div className="mb-5 border border-gray-300 rounded">
+                                    <h3 className="text-xl font-semibold text-left text-black bg-pink-200 p-2 rounded">Payment Method</h3>
+                                    <p className="text-base p-3 text-gray-500 text-left">Choose Payment method</p>
+                                    <div className="p-4">
+                                        <OptionCard
+                                            id="vn-pay"
+                                            title="VNPAY"
+                                            description="Pick up your order at our store"
+                                            icon="https://i.gyazo.com/4914b35ab9381a3b5a1e7e998ee9550c.png"
+                                            selected={paymentMethod === 'vn-pay'}
+                                            // onClick={handlePaymentChange}
+                                        />
+
+                                        <OptionCard
+                                            id="flower-wallet"
+                                            title="Flower Wallet"
+                                            description="Pick up your order at our store"
+                                            icon="https://img.freepik.com/premium-psd/pink-flowers-transparent-background_84443-15455.jpg"
+                                            selected={paymentMethod === 'flower-wallet'}
+                                            // onClick={handlePaymentChange}
+                                        />
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div className="w-1/2 pl-2">
@@ -678,13 +764,13 @@ const Checkout = () => {
                                             </Select>
                                         </Form.Item>
 
-                                        <Form.Item 
+                                        <Form.Item
                                             name="district"
                                             label="District"
                                             rules={[{ required: true, message: 'Please select district!' }]}
                                         >
-                                            <Select 
-                                                disabled={isAddressDisabled} 
+                                            <Select
+                                                disabled={isAddressDisabled}
                                                 placeholder="Chọn quận"
                                             >
                                                 {districts.map((district) => (
@@ -694,7 +780,7 @@ const Checkout = () => {
                                                 ))}
                                             </Select>
                                         </Form.Item>
-                                        <Form.Item 
+                                        <Form.Item
                                             name="detailedAddress"
                                             label="Detailed Address"
                                             rules={[{ required: true, message: 'Please input detailed address!' }]}
