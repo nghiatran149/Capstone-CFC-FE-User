@@ -12,6 +12,8 @@ const WalletPage = () => {
     const [isChatModalOpen, setIsChatModalOpen] = useState(false);
     const [orders, setOrders] = useState([]);
     const [failOrders, setFailOrders] = useState([]);
+    const [cancelOrders, setCancelOrders] = useState([]);
+
     const [selectedStatus, setSelectedStatus] = useState('All');
     const [filteredOrders, setFilteredOrders] = useState([]);
     const [stats, setStats] = useState({
@@ -28,6 +30,7 @@ const WalletPage = () => {
     useEffect(() => {
         fetchOrders();
         fetchFailOrders();
+        fetchCancelOrders();
     }, []);
 
     const fetchOrders = async () => {
@@ -72,7 +75,8 @@ const WalletPage = () => {
                     processing: formattedOrders.filter(o => 
                         ["Arranging & Packing", "Awaiting Design Approval", "Flower Completed", "Delivery"].includes(o.status)
                     ).length,
-                    failed: formattedOrders.filter(o => o.status === "thất bại").length
+
+                    failed: formattedOrders.filter(o => o.status === "Cancel").length
                 });
             }
         } catch (error) {
@@ -123,6 +127,48 @@ const WalletPage = () => {
             message.error('Failed to load orders');
         }
     };
+    const fetchCancelOrders = async () => {
+        try {
+            // Get token from sessionStorage like in ShoppingCart
+            const token = sessionStorage.getItem('accessToken');
+            if (!token) {
+                message.error('Please login to view orders');
+                navigate('/login');
+                return;
+            }
+            // Decode token to get customer ID
+            const decodedToken = jwtDecode(token);
+            const customerId = decodedToken.Id;  // Using Id from token like in ShoppingCart
+
+            const response = await fetch(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Order/GetCancelOrderByCustomer?CusomterId=${customerId}`);
+            const data = await response.json();
+
+            if (data.statusCode === 200) {
+                const formattedOrders = data.data.map(order => ({
+                    orderId: order.orderId,
+                    details: order.productCustomResponse ?
+                        [order.productCustomResponse.productName] :
+                        order.orderDetails.map(detail => detail.productName),
+                    price: order.orderPrice,
+                    payment: order.transfer ? "100% payment" : "50% deposit",
+                    createAt: new Date(order.createAt).toLocaleString(),
+                    date: new Date(order.deliveryDateTime).toLocaleString(),
+                    status: order.status,
+                    note: order.note,
+                    phone: order.phone,
+                    delivery: order.delivery ? "Shipping" : "Pickup",
+
+                }));
+
+                setCancelOrders(formattedOrders);
+               
+
+            }
+        } catch (error) {
+            console.error("Error fetching orders:", error);
+            message.error('Failed to load orders');
+        }
+    };
 
 
     const getStatusColor = (status) => {
@@ -132,11 +178,10 @@ const WalletPage = () => {
             "Awaiting Design Approval": "text-yellow-600 bg-yellow-100",
             "Flower Completed": "text-orange-600 bg-orange-100",
             "Delivery": "text-purple-600 bg-purple-100",
-
+            "Cancel": "text-red-600 bg-red-100",
             "Received": "text-blue-600 bg-blue-100",
 
             "đang xử lý": "text-blue-600 bg-blue-100",
-            "thất bại": "text-red-600 bg-red-100"
         };
         return colors[status] || "text-gray-600 bg-gray-100";
     };
@@ -219,36 +264,26 @@ const WalletPage = () => {
 
     const handleDelete = async (orderId) => {
         try {
-            // Show confirmation dialog
-            Modal.confirm({
-                title: 'Are you sure you want to delete this order?',
-                content: 'This action cannot be undone.',
-                okText: 'Yes, delete',
-                okType: 'danger',
-                cancelText: 'No',
-                async onOk() {
-                    const response = await fetch(
-                        `https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Order/DeleteOrder/${orderId}`,
-                        {
-                            method: 'DELETE',
-                            headers: {
-                                'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`
-                            }
-                        }
-                    );
-
-                    if (response.ok) {
-                        message.success('Order deleted successfully');
-                        // Reload the entire page
-                        window.location.reload();
-                    } else {
-                        message.error('Failed to delete order');
-                    }
+            const response = await fetch(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Refund/CancelOrder?OrderId=${orderId}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`,
+                    'Content-Type': 'application/json',
                 },
             });
+
+            const data = await response.json();
+
+            if (data.statusCode === 200) {
+                message.success('Order canceled successfully');
+                // Reload orders to reflect the changes
+                fetchOrders();
+            } else {
+                message.error(data.message || 'Failed to cancel order');
+            }
         } catch (error) {
-            console.error('Delete order error:', error);
-            message.error('Failed to delete order');
+            console.error('Cancel order error:', error);
+            message.error('Failed to cancel order');
         }
     };
 
@@ -671,23 +706,13 @@ const WalletPage = () => {
                 </button>
 
                 {/* Nút Hủy Đơn - Gradient Đỏ-Cam */}
-                {order.status !== "Received" && (
+                {order.status !== "Received" && order.status !== "Delivery" && (
                     <button
                         onClick={() => handleDelete(order.orderId)}
                         className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-600 hover:to-orange-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
                     >
                         <XCircle className="w-5 h-5 text-white" />
                         <span>Cancel</span>
-                    </button>
-                )}
-                  {/* Nút Hủy Đơn - Gradient Đỏ-Cam */}
-                  {order.status === "Received" && (
-                    <button
-                        onClick={() => handleDelete(order.orderId)}
-                        className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-green-500 to-orange-400 hover:from-green-600 hover:to-green-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
-                    >
-                        <XCircle className="w-5 h-5 text-white" />
-                        <span>Feedback</span>
                     </button>
                 )}
 
@@ -738,7 +763,23 @@ const WalletPage = () => {
             </div>
         );
     };
+    const renderCancelOrderActions = (order) => {
+        return (
+            <div className="flex space-x-2">
+                <button
+                    onClick={() => fetchOrderDetail(order.orderId)}
+                    className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-lg shadow-md transition-all duration-300 gap-2"
+                >
+                    <EyeOutlined />
+                    <span>View Details</span>
+                </button>
 
+
+
+               
+            </div>
+        );
+    };
     return (
         <div className="w-full">
             <Header />
@@ -882,6 +923,50 @@ const WalletPage = () => {
                                             </td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap">
                                                 {renderActionButtons(order)}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div className="grid mt-10">
+                    <div className="bg-white rounded-lg shadow-lg p-6 mb-10">
+                        <h2 className="text-3xl text-left text-pink-400 font-bold mb-2">Cancel Orders</h2>
+                        <p className="text-base text-left text-gray-400 mb-8">Review and track your Cancel orders here</p>
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full">
+                                <thead className="bg-pink-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Order ID</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Details</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Price</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Payment</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Delivery</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Create Time</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">RecipientTime</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Status</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Chat</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                    {cancelOrders.map((order) => (
+                                        <tr key={order.orderId}>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.orderId}</td>
+                                            <td className="px-6 py-4 text-left text-base">{order.details.join(", ")}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">${order.price}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.payment}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.delivery}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.createAt}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.date}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap">
+                                                <span className={`px-2 py-1 text-base rounded-full ${getStatusColor(order.status)}`}>
+                                                    {order.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap">
+                                                {renderCancelOrderActions(order)}
                                             </td>
                                         </tr>
                                     ))}
