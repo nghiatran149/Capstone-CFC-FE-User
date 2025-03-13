@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { jwtDecode } from "jwt-decode";
-import { message, Modal, Divider, Tag } from 'antd';
+import { message, Modal, Divider, Tag, Select } from 'antd';
 import { useNavigate } from 'react-router-dom';
 
 const WalletPage = () => {
@@ -21,6 +21,7 @@ const WalletPage = () => {
     const [reason, setReason] = useState('');
     const [otp, setOtp] = useState('');
     const [withdrawalHistory, setWithdrawalHistory] = useState([]);
+    const [depositHistory, setDepositHistory] = useState([]);
 
     const token = localStorage.getItem('token'); // Lấy token từ localStorage
 
@@ -109,6 +110,31 @@ const WalletPage = () => {
         }
     }, [wallet]);
 
+    useEffect(() => {
+        const fetchDepositHistory = async () => {
+            try {
+                const walletId = wallet?.walletId; // Lấy walletId từ state
+                if (!walletId) return;
+
+                const response = await fetch(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/IncomeWallet/GetInComWalletByWalletId?WalletId=${walletId}`);
+                const data = await response.json();
+
+                if (data.statusCode === 200) {
+                    setDepositHistory(data.data); // Lưu dữ liệu vào state
+                } else {
+                    message.error(data.message || 'Failed to load deposit history');
+                }
+            } catch (error) {
+                console.error("Error fetching deposit history:", error);
+                message.error('Failed to load deposit history');
+            }
+        };
+
+        if (wallet) {
+            fetchDepositHistory(); // Gọi hàm khi wallet có dữ liệu
+        }
+    }, [wallet]);
+
     const orders = [
         {
             orderId: "#ORD001",
@@ -156,6 +182,7 @@ const WalletPage = () => {
             Pending: "text-yellow-600 bg-yellow-100",
             Failed: "text-red-600 bg-red-100",
             Completed: "text-green-600 bg-green-100",
+            Successfull: "text-green-600 bg-green-100",
             'request successful': "text-green-600 bg-green-100",
 
             Processing: "text-blue-600 bg-blue-100"
@@ -316,26 +343,39 @@ const WalletPage = () => {
         }
     };
 
+    const banks = [
+        { id: '1', name: 'Ngân hàng Vietcombank', logo: 'https://example.com/vietcombank-logo.png' },
+        { id: '2', name: 'Ngân hàng Techcombank', logo: 'https://example.com/techcombank-logo.png' },
+        { id: '3', name: 'Ngân hàng BIDV', logo: 'https://example.com/bidv-logo.png' },
+        { id: '4', name: 'Ngân hàng Agribank', logo: 'https://example.com/agribank-logo.png' },
+        { id: '5', name: 'Ngân hàng ACB', logo: 'https://example.com/acb-logo.png' },
+        { id: '6', name: 'Ngân hàng Sacombank', logo: 'https://example.com/sacombank-logo.png' },
+        { id: '7', name: 'Ngân hàng VPBank', logo: 'https://example.com/vpbank-logo.png' },
+        { id: '8', name: 'Ngân hàng MBBank', logo: 'https://example.com/mbbank-logo.png' },
+        { id: '9', name: 'Ngân hàng HDBank', logo: 'https://example.com/hdbank-logo.png' },
+        { id: '10', name: 'Ngân hàng Đông Á', logo: 'https://example.com/donga-logo.png' },
+    ];
+
     return (
         <div className="w-full">
             <Header />
             <div className="p-14 min-h-screen">
                 {checkwallet && checkwallet.data ? (
                     <>
-                        <div className="bg-pink-400 rounded-lg w-full px-20 py-20 text-white shadow-lg relative overflow-hidden text-center">
-                            <h3 className="text-xl font-medium mb-2">Total Money</h3>
-                            <p className="text-3xl font-bold mb-6">
+                        <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg w-full px-20 py-20 text-white shadow-lg relative overflow-hidden text-center">
+                            <h3 className="text-2xl font-bold mb-2">Total Money</h3>
+                            <p className="text-4xl font-extrabold mb-6">
                                 {wallet ? `${wallet.totalPrice.toLocaleString()} VND` : 'Loading...'}
                             </p>
                             <div className="flex justify-center gap-6">
                                 <button
                                     onClick={() => setIsDepositModalVisible(true)}
-                                    className="bg-white text-pink-500 font-bold px-6 py-3 rounded-full shadow-md hover:bg-pink-300 hover:text-white transition">
+                                    className="bg-white text-purple-500 font-bold px-6 py-3 rounded-full shadow-md hover:bg-purple-300 hover:text-white transition">
                                     + Nạp Tiền
                                 </button>
                                 <button
                                     onClick={() => setIsWithdrawModalVisible(true)}
-                                    className="bg-white text-pink-500 font-bold px-6 py-3 rounded-full shadow-md hover:bg-pink-300 hover:text-white transition">
+                                    className="bg-white text-purple-500 font-bold px-6 py-3 rounded-full shadow-md hover:bg-purple-300 hover:text-white transition">
                                     - Rút Tiền
                                 </button>
                             </div>
@@ -348,25 +388,25 @@ const WalletPage = () => {
                                     <table className="min-w-full">
                                         <thead className="bg-pink-50">
                                             <tr>
-                                                <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Order ID</th>
-                                                <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Details</th>
-                                                <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Price</th>
-                                                <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Date</th>
+                                                <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Income Wallet ID</th>
+                                                <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Amount</th>
+                                                <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Method</th>
                                                 <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Status</th>
+                                                <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Date Created</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-200">
-                                            {orders.map((order) => (
-                                                <tr key={order.orderId}>
-                                                    <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.orderId}</td>
-                                                    <td className="px-6 py-4 text-left text-base">{order.details.join(", ")}</td>
-                                                    <td className="px-6 py-4 text-left whitespace-nowrap text-base">${order.price}</td>
-                                                    <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.date}</td>
+                                            {depositHistory.map((deposit) => (
+                                                <tr key={deposit.incomeWalletID}>
+                                                    <td className="px-6 py-4 text-left whitespace-nowrap text-base">{deposit.incomeWalletID}</td>
+                                                    <td className="px-6 py-4 text-left whitespace-nowrap text-base">{deposit.incomePrice} VND</td>
+                                                    <td className="px-6 py-4 text-left whitespace-nowrap text-base">{deposit.method}</td>
                                                     <td className="px-6 py-4 text-left whitespace-nowrap">
-                                                        <span className={`px-2 py-1 text-base rounded-full ${getStatusColor(order.status)}`}>
-                                                            {order.status}
+                                                        <span className={`px-2 py-1 text-base rounded-full ${getStatusColor(deposit.status)}`}>
+                                                            {deposit.status}
                                                         </span>
                                                     </td>
+                                                    <td className="px-6 py-4 text-left whitespace-nowrap text-base">{new Date(deposit.createAt).toLocaleString()}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -478,18 +518,30 @@ const WalletPage = () => {
                         onChange={(e) => setWithdrawAmount(e.target.value)}
                         className="border rounded p-2 w-full mb-4"
                     />
+                    <Select
+                        placeholder="Chọn Ngân Hàng"
+                        onChange={(value) => setBankName(value)}
+                        className="border rounded p-2 w-full mb-4"
+                        dropdownRender={menu => (
+                            <>
+                                {menu}
+                            </>
+                        )}
+                    >
+                        {banks.map((bank) => (
+                            <Select.Option key={bank.id} value={bank.name}>
+                                <div className="flex items-center">
+                                    <img src={bank.logo} alt={bank.name} style={{ width: 20, height: 20, marginRight: 8 }} />
+                                    {bank.name}
+                                </div>
+                            </Select.Option>
+                        ))}
+                    </Select>
                     <input
                         type="text"
                         placeholder="Bank Account Name"
                         value={bankAccountName}
                         onChange={(e) => setBankAccountName(e.target.value)}
-                        className="border rounded p-2 w-full mb-4"
-                    />
-                    <input
-                        type="text"
-                        placeholder="Bank Name"
-                        value={bankName}
-                        onChange={(e) => setBankName(e.target.value)}
                         className="border rounded p-2 w-full mb-4"
                     />
                     <input
