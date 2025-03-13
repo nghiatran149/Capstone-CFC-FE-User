@@ -18,6 +18,7 @@ import PaymentFailure from "./pages/PaymentFailure"
 import CheckoutCustom from "./pages/CheckoutCustom"
 import CheckoutCart from "./pages/CheckoutCart"
 import HistoryOrder from "./pages/HistoryOrder"
+import Wallet2Page from "./pages/Wallet2"
 
 import Layout from "./components/Layout"
 
@@ -37,6 +38,8 @@ function App() {
                 <Route path="/productdetail/:id" element={<Layout><ProductDetail /></Layout>} />
                 <Route path="/userprofile" element={<Layout><UserProfile /></Layout>} />
                 <Route path="/wallet" element={<Layout><WalletPage /></Layout>} />
+                <Route path="/wallet2" element={<Layout><Wallet2Page /></Layout>} />
+
                 <Route path="/cart" element={<Layout><ShoppingCart /></Layout>} />
                 <Route path="/checkout" element={<Layout><Checkout /></Layout>} />
                 <Route path="/checkout-custom" element={<Layout><CheckoutCustom /></Layout>} />

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { SearchOutlined, ShoppingCartOutlined, UserOutlined, LogoutOutlined, HistoryOutlined } from '@ant-design/icons';
+import { SearchOutlined, ShoppingCartOutlined, UserOutlined, LogoutOutlined, HistoryOutlined, WalletOutlined } from '@ant-design/icons';
 
 const Header = () => {
   const navItems = [
@@ -108,6 +108,13 @@ const Header = () => {
                   >
                     <HistoryOutlined className="text-lg mr-4" />
                     Order History
+                  </Link>
+                  <Link
+                    to="/wallet2"
+                    className="flex items-center px-4 py-2 text-pink-600 hover:bg-pink-200"
+                  >
+                    <WalletOutlined className="text-lg mr-4" />
+                    Wallet
                   </Link>
                   <button
                     onClick={handleLogout}

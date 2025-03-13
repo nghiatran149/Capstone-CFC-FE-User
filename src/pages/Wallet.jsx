@@ -5,6 +5,7 @@ import Footer from "../components/Footer";
 import { jwtDecode } from "jwt-decode";
 import { message, Modal, Divider, Tag } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import { Eye, XCircle, MessageCircle } from "lucide-react";
 
 const WalletPage = () => {
     const [selectedOrder, setSelectedOrder] = useState(null);
@@ -67,8 +68,10 @@ const WalletPage = () => {
                 // Calculate statistics
                 setStats({
                     total: formattedOrders.length,
-                    completed: formattedOrders.filter(o => o.status === "đặt hàng thành công").length,
-                    processing: formattedOrders.filter(o => o.status === "đang xử lý").length,
+                    completed: formattedOrders.filter(o => o.status === "Received").length,
+                    processing: formattedOrders.filter(o => 
+                        ["Arranging & Packing", "Awaiting Design Approval", "Flower Completed", "Delivery"].includes(o.status)
+                    ).length,
                     failed: formattedOrders.filter(o => o.status === "thất bại").length
                 });
             }
@@ -657,25 +660,46 @@ const WalletPage = () => {
 
     const renderActionButtons = (order) => {
         return (
-            <div className="flex space-x-2">
+            <div className="flex space-x-3">
+                {/* Nút Xem Chi Tiết - Gradient Xanh Dương */}
                 <button
                     onClick={() => fetchOrderDetail(order.orderId)}
-                    className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-lg shadow-md transition-all duration-300 gap-2"
+                    className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
                 >
-                    <EyeOutlined />
-                    <span>View Details</span>
+                    <Eye className="w-5 h-5 text-white" />
+                    <span>View</span>
                 </button>
 
+                {/* Nút Hủy Đơn - Gradient Đỏ-Cam */}
+                {order.status !== "Received" && (
+                    <button
+                        onClick={() => handleDelete(order.orderId)}
+                        className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-600 hover:to-orange-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
+                    >
+                        <XCircle className="w-5 h-5 text-white" />
+                        <span>Cancel</span>
+                    </button>
+                )}
+                  {/* Nút Hủy Đơn - Gradient Đỏ-Cam */}
+                  {order.status === "Received" && (
+                    <button
+                        onClick={() => handleDelete(order.orderId)}
+                        className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-green-500 to-orange-400 hover:from-green-600 hover:to-green-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
+                    >
+                        <XCircle className="w-5 h-5 text-white" />
+                        <span>Feedback</span>
+                    </button>
+                )}
 
-
+                {/* Nút Chat - Hồng Neon */}
                 <button
                     onClick={() => {
                         setSelectedOrder(order);
                         setIsChatModalOpen(true);
                     }}
-                    className="text-pink-500 hover:text-pink-700 hover:bg-pink-100 p-2 rounded-full transition-colors"
+                    className="p-3 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-full transition-all duration-300 shadow-lg"
                 >
-                    <MessageOutlined className='text-2xl' />
+                    <MessageCircle className="w-6 h-6 text-white" />
                 </button>
             </div>
         );
@@ -691,6 +715,8 @@ const WalletPage = () => {
                     <EyeOutlined />
                     <span>View Details</span>
                 </button>
+
+
 
                 {/* Payment button for failed orders */}
                 <button
