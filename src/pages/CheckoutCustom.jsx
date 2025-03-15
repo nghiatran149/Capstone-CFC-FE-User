@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeftOutlined } from '@ant-design/icons';
-import { Input, Button, Form, Checkbox, Select, message, DatePicker, TimePicker } from 'antd';
+import { Input, Button, Form, Checkbox, Select, message, DatePicker, TimePicker, Radio, Modal } from 'antd';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import axios from 'axios';
@@ -29,6 +29,8 @@ const CheckoutCustom = () => {
     const [loadingStores, setLoadingStores] = useState(true);
     const [selectedDeposit, setSelectedDeposit] = useState(null);
     const [customProduct, setCustomProduct] = useState(null);
+    const [orderId, setOrderId] = useState(null);
+
     const [recipientInfo, setRecipientInfo] = useState({
         name: '',
         phone: '',
@@ -37,6 +39,11 @@ const CheckoutCustom = () => {
     });
     const [deliveryCheckResult, setDeliveryCheckResult] = useState(null);
     const [isCheckingDelivery, setIsCheckingDelivery] = useState(false);
+    const [paymentMethod, setPaymentMethod] = useState('vn-pay');
+    const [walletPassword, setWalletPassword] = useState('');
+    const [isPasswordDialogVisible, setIsPasswordDialogVisible] = useState(false);
+    const [isWalletAvailable, setIsWalletAvailable] = useState(false);
+    const [wallet, setWallet] = useState(null);
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -48,6 +55,8 @@ const CheckoutCustom = () => {
         if (customId) {
             fetchCustomProduct();
         }
+        checkWallet();
+        fetchWallet();
     }, [customId]);
 
     const fetchCustomProduct = async () => {
@@ -94,6 +103,62 @@ const CheckoutCustom = () => {
         }
     };
 
+    const checkWallet = async () => {
+        try {
+            const token = sessionStorage.getItem('accessToken');
+            if (!token) {
+                message.error('Please login to continue');
+                navigate('/login');
+                return;
+            }
+
+            const decodedToken = jwtDecode(token);
+            const customerId = decodedToken.Id;
+
+            const response = await fetch(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Wallet/CheckWallet?CustomerId=${customerId}`);
+            const data = await response.json();
+
+            if (data.statusCode === 200) {
+                setIsWalletAvailable(data.data);
+                if (!data.data) {
+                    setPaymentMethod('vn-pay');
+                }
+            } else {
+                message.error(data.message || 'Failed to check wallet status');
+            }
+        } catch (error) {
+            console.error("Error checking wallet:", error);
+            message.error('Failed to check wallet status');
+        }
+    };
+
+    const fetchWallet = async () => {
+        try {
+            const token = sessionStorage.getItem('accessToken');
+            if (!token) {
+                message.error('Please login to view wallet');
+                navigate('/login');
+                return;
+            }
+
+            const decodedToken = jwtDecode(token);
+            const customerId = decodedToken.Id;
+
+            const response = await fetch(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Wallet/GetWalletByCustomerId?CustomerId=${customerId}`);
+            const data = await response.json();
+
+            if (data.statusCode === 200) {
+                setWallet(data.data);
+            } else {
+                console.error("Failed to fetch wallet:", data.message);
+                message.error(data.message || 'Failed to load wallet');
+            }
+        } catch (error) {
+            console.error("Error fetching wallet data:", error);
+            message.error('Failed to load wallet');
+        }
+    };
+
     // Redirect if no customId
     if (!customId) {
         navigate('/');
@@ -132,6 +197,8 @@ const CheckoutCustom = () => {
     const handleDepositChange = (value) => {
         setSelectedDeposit(value);
     };
+
+    
 
     const handleProceedToPayment = async () => {
         try {
@@ -183,19 +250,22 @@ const CheckoutCustom = () => {
                 promotionId: selectedVoucher || null,
                 note: fullNote,
                 storeId: selectedStore,
-                recipientName: shippingMethod === 'shop-shipping' ? formValues.recipientName : recipientInfo.name,
+                recipientName: recipientInfo.name,
                 recipientTime: formattedDateTime,
-                phone: shippingMethod === 'shop-shipping' ? formValues.recipientPhone : recipientInfo.phone,
+                phone: recipientInfo.phone,
                 status: "Pending",
                 transfer: selectedDeposit === "100",
                 delivery: shippingMethod === 'shop-shipping',
                 productCustomId: customId,
+                paymentMethod,
                 // Add delivery information if shipping method is shop-shipping
                 ...(shippingMethod === 'shop-shipping' && {
                     deliveryDistrict: formValues.district,
                     deliveryCity: "Hồ Chí Minh",
                     deliveryAddress: formValues.detailedAddress
-                })
+                }),
+                wallet: paymentMethod === 'flower-wallet' // Set useWallet based on payment method
+
             };
 
             console.log('Order Data:', orderData);
@@ -214,29 +284,34 @@ const CheckoutCustom = () => {
 
             if (orderResponse.status === 200) {
                 message.success('Order created successfully!');
-                
-                // Get the orderId from response
-                const orderId = orderResponse.data.orderId;
 
-                // Call VNPay API
-                const vnpayResponse = await axios.post(
-                    'https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/VnPay/proceed-vnpay-payment',
-                    orderId,
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    }
-                );
-
-                if (vnpayResponse.data && vnpayResponse.data.paymentUrl) {
-                    // Save orderId to sessionStorage for later use
-                    sessionStorage.setItem('lastOrderId', orderId);
-                    // Redirect to VNPay payment URL
-                    window.location.href = vnpayResponse.data.paymentUrl;
+                const createdOrderId = orderResponse.data.orderId; // Get orderId from response
+                setOrderId(createdOrderId); // Cập nhật orderId trong state
+                sessionStorage.setItem('lastOrderId', createdOrderId); // Lưu orderId vào sessionStorage
+              
+                // Check payment method
+                if (paymentMethod === 'flower-wallet'&& isWalletAvailable) {
+                    setIsPasswordDialogVisible(true); // Show password dialog
                 } else {
-                    message.error('Failed to get payment URL');
+                    // Proceed with VNPAY payment
+                    const vnpayResponse = await axios.post(
+                        'https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/VnPay/proceed-vnpay-payment',
+                        createdOrderId,
+                        {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        }
+                    );
+
+                    if (vnpayResponse.data && vnpayResponse.data.paymentUrl) {
+                        sessionStorage.setItem('lastOrderId', createdOrderId);
+                        window.location.href = vnpayResponse.data.paymentUrl;
+                    } else {
+                        message.error('Failed to get payment URL');
+                        navigate('payment-failure'); // Redirect to failure page
+                    }
                 }
             }
         } catch (error) {
@@ -246,6 +321,61 @@ const CheckoutCustom = () => {
                 Object.values(error.response.data.errors).flat().join(', ') : 
                 'Failed to process. Please try again.'
             );
+        }
+    };
+    const handlePaymentMethodChange = (method) => {
+        setPaymentMethod(method);
+        // Kiểm tra nếu phương thức thanh toán là ví
+        if (method === 'flower-wallet' && !isWalletAvailable) {
+            setPaymentMethod('vn-pay'); // Chuyển sang VNPAY nếu ví không khả dụng
+        }
+    };
+    const handlePasswordSubmit = async () => {
+        if (walletPassword) {
+            await handleWalletPayment(); // Call the wallet payment function
+            setIsPasswordDialogVisible(false); // Close the dialog
+        } else {
+            message.error('Please enter your wallet password.');
+        }
+    };
+
+    const handleWalletPayment = async () => {
+        try {
+            const token = sessionStorage.getItem('accessToken');
+            const orderId = sessionStorage.getItem('lastOrderId'); // Get orderId from sessionStorage
+            console.log('OrderId:', orderId);
+            console.log('WalletPassword:', walletPassword);
+
+            const response = await axios.post(
+                `https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Wallet/PaymentByWallet?OrderId=${orderId}&PasswordWallet=${walletPassword}`,
+                {},
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            console.log('API Response:', response);
+
+            if (response.status === 200) {
+                message.success('Payment successful!');
+                navigate('/payment-success'); // Redirect to success page
+            } else {
+                message.error('Payment failed. Please check your password or try again.');
+                navigate('/payment-failure'); // Redirect to failure page
+            }
+        } catch (error) {
+            console.error('Error during wallet payment:', error);
+            if (error.response) {
+                console.error('Response data:', error.response.data);
+                message.error(error.response.data.message || 'Failed to process wallet payment. Please try again.');
+            } else {
+                message.error('Failed to process wallet payment. Please try again.');
+            }
+        } finally {
+            setIsPasswordDialogVisible(false); // Close password dialog
         }
     };
 
@@ -579,6 +709,31 @@ const CheckoutCustom = () => {
                                     ).toLocaleString()} VND</p>
                                 </div>
                             </div>
+                            {isWalletAvailable && (
+                                <div className="mb-5 border border-gray-300 rounded">
+                                    <h3 className="text-xl font-semibold text-left text-black bg-pink-200 p-2 rounded">Payment Method</h3>
+                                    <p className="text-base p-3 text-gray-500 text-left">Choose Payment method</p>
+                                    <div className="p-4">
+                                        <OptionCard
+                                            id="vn-pay"
+                                            title="VNPAY"
+                                            description="Pay using VNPAY"
+                                            icon="https://i.gyazo.com/4914b35ab9381a3b5a1e7e998ee9550c.png"
+                                            selected={paymentMethod === 'vn-pay'}
+                                            onClick={() => handlePaymentMethodChange('vn-pay')}
+                                        />
+
+                                        <OptionCard
+                                            id="flower-wallet"
+                                            title="Flower Wallet"
+                                            description={`Balance: ${wallet ? wallet.totalPrice : 'Loading...'}`}
+                                            icon="https://img.freepik.com/premium-psd/pink-flowers-transparent-background_84443-15455.jpg"
+                                            selected={paymentMethod === 'flower-wallet'}
+                                            onClick={() => handlePaymentMethodChange('flower-wallet')}
+                                        />
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div className="w-1/2 pl-2">
@@ -782,6 +937,8 @@ const CheckoutCustom = () => {
                         </div>
                     </div>
 
+                   
+
                     <div className="text-center mt-10">
                         <Button
                             type="primary"
@@ -794,6 +951,18 @@ const CheckoutCustom = () => {
                 </div>
             </Form>
             <Footer />
+            <Modal
+                title="Enter Wallet Password"
+                visible={isPasswordDialogVisible}
+                onOk={handlePasswordSubmit}
+                onCancel={() => setIsPasswordDialogVisible(false)}
+            >
+                <Input.Password
+                    placeholder="Enter your wallet password"
+                    value={walletPassword}
+                    onChange={(e) => setWalletPassword(e.target.value)}
+                />
+            </Modal>
         </div>
     );
 };
