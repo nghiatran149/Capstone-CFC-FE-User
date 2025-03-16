@@ -24,6 +24,9 @@ const WalletPage = () => {
     });
     const [detailModalVisible, setDetailModalVisible] = useState(false);
     const [selectedOrderDetail, setSelectedOrderDetail] = useState(null);
+    const [feedbackData, setFeedbackData] = useState(null);
+    const [isFeedbackModalVisible, setIsFeedbackModalVisible] = useState(false);
+    const [isFeedbackInputModalVisible, setIsFeedbackInputModalVisible] = useState(false);
 
     const navigate = useNavigate();
 
@@ -72,7 +75,7 @@ const WalletPage = () => {
                 setStats({
                     total: formattedOrders.length,
                     completed: formattedOrders.filter(o => o.status === "Received").length,
-                    processing: formattedOrders.filter(o => 
+                    processing: formattedOrders.filter(o =>
                         ["Arranging & Packing", "Awaiting Design Approval", "Flower Completed", "Delivery"].includes(o.status)
                     ).length,
 
@@ -161,7 +164,7 @@ const WalletPage = () => {
                 }));
 
                 setCancelOrders(formattedOrders);
-               
+
 
             }
         } catch (error) {
@@ -286,7 +289,33 @@ const WalletPage = () => {
             message.error('Failed to cancel order');
         }
     };
+    const handleFeedback = async (orderId) => {
+        try {
+            // Check if feedback exists for the order
+            const checkResponse = await fetch(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/feedback/CheckFeedBack?OrderId=${orderId}`);
+            const checkData = await checkResponse.json();
 
+            if (checkData === true) { // If feedback exists
+                // Fetch the feedback details
+                const feedbackResponse = await fetch(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/feedback/GetFeedBackByOrderId?OrderId=${orderId}`);
+                const feedbackData = await feedbackResponse.json();
+
+                if (feedbackResponse.status === 200) {
+                    setFeedbackData(feedbackData); // Set feedback data
+                    setIsFeedbackModalVisible(true); // Show feedback details modal
+                } else {
+                    message.error('Failed to load feedback');
+                }
+            } else if (checkData === false) { // If no feedback exists, show input dialog
+                setIsFeedbackInputModalVisible(true); // Show feedback input modal
+                setSelectedOrder({ orderId }); // Hoặc bạn có thể lưu trực tiếp orderId
+
+            }
+        } catch (error) {
+            console.error('Error handling feedback:', error);
+            message.error('Failed to process feedback');
+        }
+    };
     const ChatModal = () => {
         const [message, setMessage] = useState('');
         const [messages, setMessages] = useState([
@@ -693,6 +722,166 @@ const WalletPage = () => {
         );
     };
 
+    const FeedbackInputModal = ({ isVisible, onClose, orderId }) => {
+        console.log("OrderId nhận được:", orderId); // Kiểm tra orderId
+
+        const [feedbackText, setFeedbackText] = useState('');
+        const [videoFile, setVideoFile] = useState(null);
+        const [requestRefund, setRequestRefund] = useState(false);
+        const [rating, setRating] = useState(0);
+        
+        const renderStars = () => {
+            return Array.from({ length: 5 }, (_, index) => (
+                <span
+                    key={index}
+                    className={`cursor-pointer ${index < rating ? 'text-yellow-500' : 'text-gray-300'}`}
+                    onClick={() => setRating(index + 1)} // Cập nhật rating khi nhấp vào sao
+                >
+                    ★
+                </span>
+            ));
+        };
+
+        const handleCreateFeedback = async () => {
+            const formData = new FormData();
+            formData.append('FeedbackByCustomer', feedbackText);
+            if (videoFile) {
+                formData.append('FeedBackVideoByCustomer', videoFile);
+            }
+            formData.append('RequestRefundByCustomer', requestRefund);
+            formData.append('Rating', rating);
+            const token = sessionStorage.getItem('accessToken');
+            if (!token) {
+                message.error('Please login to view orders');
+                navigate('/login');
+                return;
+            }
+
+            const decodedToken = jwtDecode(token);
+            const customerId = decodedToken.Id;
+            try {
+                const response = await fetch(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/feedback/create-feedback?customerId=${customerId}&orderId=${orderId}`, {
+                    method: 'POST',
+                    headers: {
+                        'accept': 'text/plain',
+                    },
+                    body: formData,
+                });
+
+                const data = await response.json();
+                if (data.statusCode === 200) {
+                    message.success('Feedback created successfully');
+                    onClose(); // Close the input modal
+                } else {
+                    message.error(data.message || 'Failed to create feedback');
+                }
+            } catch (error) {
+                console.error('Error creating feedback:', error);
+                message.error('Failed to create feedback');
+            }
+        };
+
+        return (
+            <Modal
+                title="Submit Feedback"
+                open={isVisible}
+                onCancel={onClose}
+                footer={null}
+                width={600}
+                className="rounded-lg border border-pink-300 shadow-lg"
+            >
+                <div className="p-6 bg-white rounded-lg shadow-md">
+                    <h4 className="font-semibold text-lg text-pink-600">Your Feedback</h4>
+                    <textarea
+                        value={feedbackText}
+                        onChange={(e) => setFeedbackText(e.target.value)}
+                        placeholder="Enter your feedback here..."
+                        className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-300"
+                    />
+                    <input
+                        type="file"
+                        accept="video/*"
+                        onChange={(e) => setVideoFile(e.target.files[0])}
+                        className="mt-2 border rounded-lg p-2"
+                    />
+                    <div className="mt-2 flex items-center">
+                        <label className="font-semibold mr-2">Request Refund:</label>
+                        <input
+                            type="checkbox"
+                            checked={requestRefund}
+                            onChange={() => setRequestRefund(!requestRefund)}
+                        />
+                    </div>
+                    {/* Rating Section */}
+                    <div className="mb-6 mt-4">
+                        <h4 className="font-semibold">Rating:</h4>
+                        <div className="flex space-x-1">
+                            {renderStars()}
+                        </div>
+                    </div>
+                    <button
+                        onClick={handleCreateFeedback}
+                        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                    >
+                        Submit Feedback
+                    </button>
+                </div>
+                <div className="p-6 bg-white rounded-lg shadow-md">
+                   Ghi chú: nếu sản phẩm có vấn đề gì hay quay video lai và gửi cho chúng tôi
+                </div>
+            </Modal>
+        );
+    };
+    const FeedbackDetailsModal = ({ feedbackData, isVisible, onClose }) => {
+        return (
+            
+            <Modal
+                title="Feedback Details"
+                open={isVisible}
+                onCancel={onClose}
+                footer={null}
+                width={600}
+                className="rounded-lg border border-pink-300 shadow-lg"
+            >
+
+                
+                <div className="p-6 bg-white rounded-lg shadow-md">
+                    <h4 className="font-semibold text-lg text-pink-600">Feedback Information</h4>
+                    <div className="border-b pb-4 mb-4">
+                        <h5 className="font-bold text-pink-500">Customer Feedback</h5>
+                        <p><strong>Feedback ID:</strong> {feedbackData.feedbackId}</p>
+                        <p><strong>Feedback:</strong> {feedbackData.feedbackByCustomer}</p>
+                        <div className="mt-2">
+                            <strong>Video:</strong>
+                            {feedbackData.feedBackVideoByCustomer && (
+                                <video width="100%" controls className="rounded-lg border border-pink-200">
+                                    <source src={feedbackData.feedBackVideoByCustomer} type="video/mp4" />
+                                    Your browser does not support the video tag.
+                                </video>
+                            )}
+                        </div>
+                        <p><strong>Request Refund:</strong> {feedbackData.requestRefundByCustomer ? 'Yes' : 'No'}</p>
+                        <div className="flex items-center">
+                            <strong>Rating:</strong>
+                            <div className="ml-2">
+                                {Array.from({ length: 5 }, (_, index) => (
+                                    <span key={index} className={`text-${index < feedbackData.rating ? 'yellow' : 'gray'}-500`}>
+                                        ★
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                        <p><strong>Status:</strong> {feedbackData.status}</p>
+                        <p><strong>Created At:</strong> {new Date(feedbackData.createAt).toLocaleString()}</p>
+                    </div>
+                    <div>
+                        <h5 className="font-bold text-pink-500">Reply by Store</h5>
+                        <p>{feedbackData.responseFeedBackStore || "No reply from store yet."}</p>
+                    </div>
+                </div>
+            </Modal>
+        );
+    };
     const renderActionButtons = (order) => {
         return (
             <div className="flex space-x-3">
@@ -715,7 +904,15 @@ const WalletPage = () => {
                         <span>Cancel</span>
                     </button>
                 )}
-
+                {order.status === "Received" && (
+                    <button
+                        onClick={() => handleFeedback(order.orderId)}
+                        className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-600 hover:to-orange-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
+                    >
+                        <XCircle className="w-5 h-5 text-white" />
+                        <span>Feedback</span>
+                    </button>
+                )}
                 {/* Nút Chat - Hồng Neon */}
                 <button
                     onClick={() => {
@@ -726,7 +923,9 @@ const WalletPage = () => {
                 >
                     <MessageCircle className="w-6 h-6 text-white" />
                 </button>
+                
             </div>
+          
         );
     };
 
@@ -774,9 +973,6 @@ const WalletPage = () => {
                     <span>View Details</span>
                 </button>
 
-
-
-               
             </div>
         );
     };
@@ -1024,6 +1220,20 @@ const WalletPage = () => {
             <Footer />
             {isChatModalOpen && <ChatModal />}
             {detailModalVisible && <OrderDetailModal />}
+            {console.log("isFeedbackInputModalVisible:", isFeedbackInputModalVisible)}
+            {console.log("selectedOrder:", selectedOrder)}
+            {isFeedbackInputModalVisible &&
+                <FeedbackInputModal
+                    isVisible={isFeedbackInputModalVisible}
+                    onClose={() => setIsFeedbackInputModalVisible(false)}
+                    orderId={selectedOrder?.orderId} // Truyền orderId vào modal
+                />
+            }
+            {isFeedbackModalVisible && <FeedbackDetailsModal
+                feedbackData={feedbackData}
+                isVisible={isFeedbackModalVisible}
+                onClose={() => setIsFeedbackModalVisible(false)}
+            />}
         </div>
     );
 };
