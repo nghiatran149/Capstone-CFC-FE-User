@@ -122,7 +122,7 @@ const WalletPage = () => {
                 if (data.statusCode === 200) {
                     setDepositHistory(data.data); // Lưu dữ liệu vào state
                 } else {
-                    message.error(data.message || 'Failed to load deposit history');
+                    message.error(data.message || 'Failed to load Wallet history');
                 }
             } catch (error) {
                 console.error("Error fetching deposit history:", error);
@@ -383,13 +383,14 @@ const WalletPage = () => {
 
                         <div className="grid mt-10">
                             <div className="bg-white rounded-lg shadow-md p-6 mb-10">
-                                <h2 className="text-3xl text-left text-pink-400 font-bold mb-5">Deposit history</h2>
+                                <h2 className="text-3xl text-left text-pink-400 font-bold mb-5">Wallet history</h2>
                                 <div className="overflow-x-auto">
                                     <table className="min-w-full">
                                         <thead className="bg-pink-50">
                                             <tr>
                                                 <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Income Wallet ID</th>
                                                 <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Amount</th>
+                                                <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Order ID</th>
                                                 <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Method</th>
                                                 <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Status</th>
                                                 <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Date Created</th>
@@ -400,6 +401,7 @@ const WalletPage = () => {
                                                 <tr key={deposit.incomeWalletID}>
                                                     <td className="px-6 py-4 text-left whitespace-nowrap text-base">{deposit.incomeWalletID}</td>
                                                     <td className="px-6 py-4 text-left whitespace-nowrap text-base">{deposit.incomePrice} VND</td>
+                                                    <td className="px-6 py-4 text-left whitespace-nowrap text-base">{deposit.orderId}</td>
                                                     <td className="px-6 py-4 text-left whitespace-nowrap text-base">{deposit.method}</td>
                                                     <td className="px-6 py-4 text-left whitespace-nowrap">
                                                         <span className={`px-2 py-1 text-base rounded-full ${getStatusColor(deposit.status)}`}>
