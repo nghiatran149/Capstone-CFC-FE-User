@@ -12,6 +12,8 @@ const WalletPage = () => {
     const [isChatModalOpen, setIsChatModalOpen] = useState(false);
     const [orders, setOrders] = useState([]);
     const [failOrders, setFailOrders] = useState([]);
+    const [refundOrders, setRefundOrders] = useState([]);
+
     const [cancelOrders, setCancelOrders] = useState([]);
 
     const [selectedStatus, setSelectedStatus] = useState('All');
@@ -34,6 +36,7 @@ const WalletPage = () => {
         fetchOrders();
         fetchFailOrders();
         fetchCancelOrders();
+        fetchRefundOrders();
     }, []);
 
     const fetchOrders = async () => {
@@ -122,6 +125,49 @@ const WalletPage = () => {
                 }));
 
                 setFailOrders(formattedOrders);
+
+
+            }
+        } catch (error) {
+            console.error("Error fetching orders:", error);
+            message.error('Failed to load orders');
+        }
+    };
+    const fetchRefundOrders = async () => {
+        try {
+            // Get token from sessionStorage like in ShoppingCart
+            const token = sessionStorage.getItem('accessToken');
+            if (!token) {
+                message.error('Please login to view orders');
+                navigate('/login');
+                return;
+            }
+
+            // Decode token to get customer ID
+            const decodedToken = jwtDecode(token);
+            const customerId = decodedToken.Id;  // Using Id from token like in ShoppingCart
+
+            const response = await fetch(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Order/GetRefundOrderByCustomer?CusomterId=${customerId}`);
+            const data = await response.json();
+
+            if (data.statusCode === 200) {
+                const formattedOrders = data.data.map(order => ({
+                    orderId: order.orderId,
+                    details: order.productCustomResponse ?
+                        [order.productCustomResponse.productName] :
+                        order.orderDetails.map(detail => detail.productName),
+                    price: order.orderPrice,
+                    payment: order.transfer ? "100% payment" : "50% deposit",
+                    createAt: new Date(order.createAt).toLocaleString(),
+                    date: new Date(order.deliveryDateTime).toLocaleString(),
+                    status: order.status,
+                    note: order.note,
+                    phone: order.phone,
+                    delivery: order.delivery ? "Shipping" : "Pickup",
+
+                }));
+
+                setRefundOrders(formattedOrders);
 
 
             }
@@ -828,6 +874,7 @@ const WalletPage = () => {
                 </div>
                 <div className="p-6 bg-white rounded-lg shadow-md">
                    Ghi chú: nếu sản phẩm có vấn đề gì hay quay video lai và gửi cho chúng tôi
+                   <div>- Với những đon hàng hư hại trên 30% chúng tôi sẽ hoàn trả lại 70% số tiền của hoa </div>
                 </div>
             </Modal>
         );
@@ -895,7 +942,7 @@ const WalletPage = () => {
                 </button>
 
                 {/* Nút Hủy Đơn - Gradient Đỏ-Cam */}
-                {order.status !== "Received" && order.status !== "Delivery" && (
+                {order.status !== "Received" && order.status !== "Delivery" && order.status !== "Request refund"&&(
                     <button
                         onClick={() => handleDelete(order.orderId)}
                         className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-600 hover:to-orange-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
@@ -904,7 +951,7 @@ const WalletPage = () => {
                         <span>Cancel</span>
                     </button>
                 )}
-                {order.status === "Received" && (
+                {(order.status === "Received" || order.status === "Request refund") && (
                     <button
                         onClick={() => handleFeedback(order.orderId)}
                         className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-600 hover:to-orange-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
@@ -937,7 +984,7 @@ const WalletPage = () => {
                     className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-lg shadow-md transition-all duration-300 gap-2"
                 >
                     <EyeOutlined />
-                    <span>View Details</span>
+                    <span>View</span>
                 </button>
 
 
@@ -959,6 +1006,32 @@ const WalletPage = () => {
                     <DeleteOutlined className="text-xs" />
                     <span>Remove</span>
                 </button>
+            </div>
+        );
+    };
+    const renderRefundOrderActions = (order) => {
+        return (
+            <div className="flex space-x-2">
+                <button
+                    onClick={() => fetchOrderDetail(order.orderId)}
+                    className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-lg shadow-md transition-all duration-300 gap-2"
+                >
+                    <EyeOutlined />
+                    <span>View</span>
+                </button>
+
+
+
+                
+                    <button
+                        onClick={() => handleFeedback(order.orderId)}
+                        className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-600 hover:to-orange-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
+                    >
+                        <XCircle className="w-5 h-5 text-white" />
+                        <span>Feedback</span>
+                    </button>
+                
+               
             </div>
         );
     };
@@ -1119,6 +1192,50 @@ const WalletPage = () => {
                                             </td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap">
                                                 {renderActionButtons(order)}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div className="grid mt-10">
+                    <div className="bg-white rounded-lg shadow-lg p-6 mb-10">
+                        <h2 className="text-3xl text-left text-pink-400 font-bold mb-2">Refund Orders</h2>
+                        <p className="text-base text-left text-gray-400 mb-8">Review and track your Cancel orders here</p>
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full">
+                                <thead className="bg-pink-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Order ID</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Details</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Price</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Payment</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Delivery</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Create Time</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">RecipientTime</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Status</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Chat</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                    {refundOrders.map((order) => (
+                                        <tr key={order.orderId}>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.orderId}</td>
+                                            <td className="px-6 py-4 text-left text-base">{order.details.join(", ")}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">${order.price}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.payment}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.delivery}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.createAt}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.date}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap">
+                                                <span className={`px-2 py-1 text-base rounded-full ${getStatusColor(order.status)}`}>
+                                                    {order.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap">
+                                                {renderRefundOrderActions(order)}
                                             </td>
                                         </tr>
                                     ))}
