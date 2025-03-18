@@ -4,10 +4,12 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { jwtDecode } from "jwt-decode";
 import { message, Modal, Divider, Tag } from 'antd';
+import {  } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { Eye, XCircle, MessageCircle } from "lucide-react";
 
 const WalletPage = () => {
+    const [activeTab, setActiveTab] = useState('orders');
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [isChatModalOpen, setIsChatModalOpen] = useState(false);
     const [orders, setOrders] = useState([]);
@@ -1052,7 +1054,7 @@ const WalletPage = () => {
     return (
         <div className="w-full">
             <Header />
-
+    
             <div className="p-14 min-h-screen">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-20 mb-10">
                     <div className="bg-pink-500 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
@@ -1060,27 +1062,74 @@ const WalletPage = () => {
                         <h3 className="text-xl font-medium mb-2">Total Orders</h3>
                         <p className="text-3xl font-bold">{stats.total}</p>
                     </div>
-
+    
                     <div className="bg-green-500 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
                         <div className="absolute right-0 top-0 w-24 h-24 bg-green-400 rounded-full transform translate-x-8 -translate-y-8"></div>
                         <h3 className="text-xl font-medium mb-2">Completed Orders</h3>
                         <p className="text-3xl font-bold">{stats.completed}</p>
                     </div>
-
+    
                     <div className="bg-blue-500 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
                         <div className="absolute right-0 top-0 w-24 h-24 bg-blue-400 rounded-full transform translate-x-8 -translate-y-8"></div>
                         <h3 className="text-xl font-medium mb-2">Processing Orders</h3>
                         <p className="text-3xl font-bold">{stats.processing}</p>
                     </div>
-
+    
                     <div className="bg-red-500 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
                         <div className="absolute right-0 top-0 w-24 h-24 bg-red-400 rounded-full transform translate-x-8 -translate-y-8"></div>
                         <h3 className="text-xl font-medium mb-2">Failed Orders</h3>
                         <p className="text-3xl font-bold">{stats.failed}</p>
                     </div>
                 </div>
-
-                <div className="grid mt-10">
+    
+                {/* Tab Navigation */}
+                <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+                    <div className="flex border-b border-gray-200">
+                        <button
+                            onClick={() => setActiveTab('orders')}
+                            className={`py-3 px-6 font-medium text-lg transition-all border-b-2 mr-4 ${
+                                activeTab === 'orders' 
+                                ? 'border-pink-500 text-pink-500' 
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                            }`}
+                        >
+                            Orders
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('refund')}
+                            className={`py-3 px-6 font-medium text-lg transition-all border-b-2 mr-4 ${
+                                activeTab === 'refund' 
+                                ? 'border-pink-500 text-pink-500' 
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                            }`}
+                        >
+                            Refund Orders
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('cancel')}
+                            className={`py-3 px-6 font-medium text-lg transition-all border-b-2 mr-4 ${
+                                activeTab === 'cancel' 
+                                ? 'border-pink-500 text-pink-500' 
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                            }`}
+                        >
+                            Cancel Orders
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('fail')}
+                            className={`py-3 px-6 font-medium text-lg transition-all border-b-2 ${
+                                activeTab === 'fail' 
+                                ? 'border-pink-500 text-pink-500' 
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                            }`}
+                        >
+                            Failed Orders
+                        </button>
+                    </div>
+                </div>
+    
+                {/* Active Orders Tab Content */}
+                {activeTab === 'orders' && (
                     <div className="bg-white rounded-lg shadow-lg p-6 mb-10">
                         <div className="flex flex-col gap-6">
                             <div>
@@ -1127,7 +1176,7 @@ const WalletPage = () => {
                                     <span className="w-2 h-2 rounded-full bg-current"></span>
                                     Awaiting Design Approval
                                 </button>
-
+    
                                 <button
                                     onClick={() => setSelectedStatus('Flower Completed')}
                                     className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${selectedStatus === 'Flower Completed'
@@ -1141,8 +1190,8 @@ const WalletPage = () => {
                                 <button
                                     onClick={() => setSelectedStatus('Delivery')}
                                     className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${selectedStatus === 'Delivery'
-                                        ? 'bg-purple-500 text-white' // Màu tím khi được chọn
-                                        : 'bg-purple-100 text-purple-600 hover:bg-purple-200' // Màu tím nhạt khi chưa chọn
+                                        ? 'bg-purple-500 text-white'
+                                        : 'bg-purple-100 text-purple-600 hover:bg-purple-200'
                                         }`}
                                 >
                                     <span className="w-2 h-2 rounded-full bg-current"></span>
@@ -1199,11 +1248,13 @@ const WalletPage = () => {
                             </table>
                         </div>
                     </div>
-                </div>
-                <div className="grid mt-10">
+                )}
+    
+                {/* Refund Orders Tab Content */}
+                {activeTab === 'refund' && (
                     <div className="bg-white rounded-lg shadow-lg p-6 mb-10">
                         <h2 className="text-3xl text-left text-pink-400 font-bold mb-2">Refund Orders</h2>
-                        <p className="text-base text-left text-gray-400 mb-8">Review and track your Cancel orders here</p>
+                        <p className="text-base text-left text-gray-400 mb-8">Review and track your Refund orders here</p>
                         <div className="overflow-x-auto">
                             <table className="min-w-full">
                                 <thead className="bg-pink-50">
@@ -1216,7 +1267,7 @@ const WalletPage = () => {
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Create Time</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">RecipientTime</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Status</th>
-                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Chat</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
@@ -1243,8 +1294,10 @@ const WalletPage = () => {
                             </table>
                         </div>
                     </div>
-                </div>
-                <div className="grid mt-10">
+                )}
+    
+                {/* Cancel Orders Tab Content */}
+                {activeTab === 'cancel' && (
                     <div className="bg-white rounded-lg shadow-lg p-6 mb-10">
                         <h2 className="text-3xl text-left text-pink-400 font-bold mb-2">Cancel Orders</h2>
                         <p className="text-base text-left text-gray-400 mb-8">Review and track your Cancel orders here</p>
@@ -1260,7 +1313,7 @@ const WalletPage = () => {
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Create Time</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">RecipientTime</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Status</th>
-                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Chat</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
@@ -1287,10 +1340,12 @@ const WalletPage = () => {
                             </table>
                         </div>
                     </div>
-                </div>
-                <div className="grid mt-10">
+                )}
+    
+                {/* Fail Orders Tab Content */}
+                {activeTab === 'fail' && (
                     <div className="bg-white rounded-lg shadow-lg p-6 mb-10">
-                        <h2 className="text-3xl text-left text-pink-400 font-bold mb-2">Fail Orders</h2>
+                        <h2 className="text-3xl text-left text-pink-400 font-bold mb-2">Failed Orders</h2>
                         <p className="text-base text-left text-gray-400 mb-8">Review and track your fail orders here</p>
                         <div className="overflow-x-auto">
                             <table className="min-w-full">
@@ -1304,7 +1359,7 @@ const WalletPage = () => {
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Create Time</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">RecipientTime</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Status</th>
-                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Chat</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
@@ -1331,19 +1386,17 @@ const WalletPage = () => {
                             </table>
                         </div>
                     </div>
-                </div>
+                )}
             </div>
-
+    
             <Footer />
             {isChatModalOpen && <ChatModal />}
             {detailModalVisible && <OrderDetailModal />}
-            {console.log("isFeedbackInputModalVisible:", isFeedbackInputModalVisible)}
-            {console.log("selectedOrder:", selectedOrder)}
             {isFeedbackInputModalVisible &&
                 <FeedbackInputModal
                     isVisible={isFeedbackInputModalVisible}
                     onClose={() => setIsFeedbackInputModalVisible(false)}
-                    orderId={selectedOrder?.orderId} // Truyền orderId vào modal
+                    orderId={selectedOrder?.orderId}
                 />
             }
             {isFeedbackModalVisible && <FeedbackDetailsModal
