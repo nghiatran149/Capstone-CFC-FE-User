@@ -767,16 +767,6 @@ const Checkout = () => {
                                     <h3 className="text-xl font-semibold mb-5 text-left text-black bg-pink-200 p-2 rounded">Add Information</h3>
                                     <Form form={form} className="p-5">
                                         <Form.Item
-                                            label="Recipient Name"
-                                            required
-                                            rules={[{ required: true, message: 'Please input recipient name!' }]}
-                                        >
-                                            <Input
-                                                value={recipientInfo.name}
-                                                onChange={(e) => handleRecipientInfoChange('name', e.target.value)}
-                                            />
-                                        </Form.Item>
-                                        <Form.Item
                                             label="Recipient Phone"
                                             required
                                             rules={[{ required: true, message: 'Please input recipient phone!' }]}
@@ -936,9 +926,13 @@ const Checkout = () => {
                                             >
                                                 {isCheckingDelivery ? 'Checking...' : 'Check Delivery'}
                                             </Button>
+                                            <p className="italic text-gray-600 text-sm text-center mt-4">
+                                                * We only accept orders with a weight under 3 kg and a delivery distance under 5 km.
+                                            </p>
                                         </Form.Item>
                                         {renderDeliveryCheckResult()}
                                     </Form>
+
                                 </div>
                             )}
                         </div>

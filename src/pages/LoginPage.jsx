@@ -120,7 +120,7 @@ const LoginPage = () => {
                             </Link>
                         </div>
                         <div className="text-right text-gray-600 text-sm mt-5">
-                            <Link to={"/forgot"} className="hover:text-gray-800">Forgot your password?</Link>
+                            <Link to={"/forgotpassword"} className="hover:text-gray-800">Forgot your password?</Link>
                         </div>
                     </form>
                 </section>

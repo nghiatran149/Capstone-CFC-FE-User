@@ -907,6 +907,9 @@ const Checkout = () => {
                                             >
                                                 {isCheckingDelivery ? 'Checking...' : 'Check Delivery'}
                                             </Button>
+                                            <p className="italic text-gray-600 text-sm text-center mt-4">
+                                                * We only accept orders with a weight under 3 kg and a delivery distance under 5 km.
+                                            </p>
                                         </Form.Item>
                                         {renderDeliveryCheckResult()}
                                     </Form>

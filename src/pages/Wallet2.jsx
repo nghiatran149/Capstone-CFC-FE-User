@@ -371,19 +371,19 @@ const WalletPage = () => {
                                 <button
                                     onClick={() => setIsDepositModalVisible(true)}
                                     className="bg-white text-purple-500 font-bold px-6 py-3 rounded-full shadow-md hover:bg-purple-300 hover:text-white transition">
-                                    + Nạp Tiền
+                                    + Add Balance
                                 </button>
                                 <button
                                     onClick={() => setIsWithdrawModalVisible(true)}
                                     className="bg-white text-purple-500 font-bold px-6 py-3 rounded-full shadow-md hover:bg-purple-300 hover:text-white transition">
-                                    - Rút Tiền
+                                    - Withdraw
                                 </button>
                             </div>
                         </div>
 
                         <div className="grid mt-10">
                             <div className="bg-white rounded-lg shadow-md p-6 mb-10">
-                                <h2 className="text-3xl text-left text-pink-400 font-bold mb-5">Wallet history</h2>
+                                <h2 className="text-3xl text-left text-pink-400 font-bold mb-5">Wallet History</h2>
                                 <div className="overflow-x-auto">
                                     <table className="min-w-full">
                                         <thead className="bg-pink-50">
@@ -417,7 +417,7 @@ const WalletPage = () => {
                             </div>
 
                             <div className="bg-white rounded-lg shadow-md p-6">
-                                <h2 className="text-3xl text-left text-pink-400 font-bold mb-5">Withdrawal history</h2>
+                                <h2 className="text-3xl text-left text-pink-400 font-bold mb-5">Withdrawal History</h2>
                                 <div className="overflow-x-auto">
                                     <table className="min-w-full">
                                         <thead className="bg-pink-50">
