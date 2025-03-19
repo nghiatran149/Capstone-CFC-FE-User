@@ -231,6 +231,9 @@ const WalletPage = () => {
             "Delivery": "text-purple-600 bg-purple-100",
             "Cancel": "text-red-600 bg-red-100",
             "Received": "text-blue-600 bg-blue-100",
+            "Refuse refund": "text-red-600 bg-red-100",
+            "Accept refund": "text-green-600 bg-green-100",
+            "Request refund": "text-yellow-600 bg-yellow-100",
 
             "đang xử lý": "text-blue-600 bg-blue-100",
         };
@@ -777,7 +780,33 @@ const WalletPage = () => {
         const [videoFile, setVideoFile] = useState(null);
         const [requestRefund, setRequestRefund] = useState(false);
         const [rating, setRating] = useState(0);
-        
+        const [canRequestRefund, setCanRequestRefund] = useState(false); // Trạng thái cho phép request refund
+
+        useEffect(() => {
+            const checkWallet = async () => {
+                const token = sessionStorage.getItem('accessToken');
+                if (!token) return;
+
+                const decodedToken = jwtDecode(token);
+                const customerId = decodedToken.Id;
+
+                try {
+                    const response = await fetch(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Wallet/CheckWallet?CustomerId=${customerId}`);
+                    const data = await response.json();
+
+                    if (data.statusCode === 200 && data.data) {
+                        setCanRequestRefund(true); // Cho phép request refund nếu API trả về true
+                    } else {
+                        setCanRequestRefund(false); // Không cho phép nếu API trả về false
+                    }
+                } catch (error) {
+                    console.error('Error checking wallet:', error);
+                }
+            };
+
+            checkWallet();
+        }, []);
+
         const renderStars = () => {
             return Array.from({ length: 5 }, (_, index) => (
                 <span
@@ -857,9 +886,17 @@ const WalletPage = () => {
                         <input
                             type="checkbox"
                             checked={requestRefund}
-                            onChange={() => setRequestRefund(!requestRefund)}
+                            onChange={() => {
+                                if (canRequestRefund) {
+                                    setRequestRefund(!requestRefund);
+                                } else {
+                                    message.error('You cannot request a refund at this time.');
+                                }
+                            }}
+                            disabled={!canRequestRefund} // Disable checkbox if not allowed
                         />
                     </div>
+                    <div>* bạn phải kích hoạt ví mới được sử dung refund</div>
                     {/* Rating Section */}
                     <div className="mb-6 mt-4">
                         <h4 className="font-semibold">Rating:</h4>
@@ -875,8 +912,8 @@ const WalletPage = () => {
                     </button>
                 </div>
                 <div className="p-6 bg-white rounded-lg shadow-md">
-                   Ghi chú: nếu sản phẩm có vấn đề gì hay quay video lai và gửi cho chúng tôi
-                   <div>- Với những đon hàng hư hại trên 30% chúng tôi sẽ hoàn trả lại 70% số tiền của hoa </div>
+                    Ghi chú: nếu sản phẩm có vấn đề gì hay quay video lai và gửi cho chúng tôi
+                    <div>- Với những đon hàng hư hại trên 30% chúng tôi sẽ hoàn trả lại 70% số tiền của hoa </div>
                 </div>
             </Modal>
         );
