@@ -183,8 +183,8 @@ const WalletPage = () => {
             Failed: "text-red-600 bg-red-100",
             Completed: "text-green-600 bg-green-100",
             Successfull: "text-green-600 bg-green-100",
-            'request successful': "text-green-600 bg-green-100",
-
+            Failure: "text-red-600 bg-red-100",
+            'request successful': "text-yellow-600 bg-yellow-100",
             Processing: "text-blue-600 bg-blue-100"
         };
         return colors[status] || "text-gray-600 bg-gray-100";
