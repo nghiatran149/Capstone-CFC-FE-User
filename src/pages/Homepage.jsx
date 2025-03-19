@@ -8,6 +8,7 @@ import BannerCarousel from "../components/BannerCarousel";
 import IntroSection from "../components/IntroSection";
 import PromotionBanner from "../components/PromotionBanner";
 import TitleBanner from "../components/TitleBanner";
+import ChatBox from "../components/ChatBox";
 import ScrollToTop from "../components/ScrollToTop";
 import Flower1 from "../assets/homepic1.jpg";
 import Flower2 from "../assets/homepic2.jpg";
@@ -252,8 +253,9 @@ const Homepage = () => {
                 </div>
             </section>
 
-            <Footer />
+            <ChatBox />
             <ScrollToTop />
+            <Footer />
         </div>
     );
 };
