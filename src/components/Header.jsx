@@ -111,7 +111,7 @@ const Header = () => {
                   </Link>
                   <Link
                     to="/wallet2"
-                    className="flex items-center px-4 py-2 text-pink-600 hover:bg-pink-200"
+                    className="flex items-center px-4 py-2 text-green-600 hover:bg-pink-200"
                   >
                     <WalletOutlined className="text-lg mr-4" />
                     Wallet
