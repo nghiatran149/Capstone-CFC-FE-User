@@ -249,39 +249,86 @@ const WalletPage = () => {
         }
     };
 
-    const ChatModal = () => {
+    const ChatModal = ({ employeeId }) => {
         const [message, setMessage] = useState('');
         const [messages, setMessages] = useState([
-            {
-                text: "Hi, I have a question about my order.",
-                sender: 'customer',
-                timestamp: '10:00 AM'
-            },
-            {
-                text: "Hello! How can I help you today?",
-                sender: 'staff',
-                timestamp: '10:01 AM'
-            }
+          {
+            text: 'Hi, I have a question about my order.',
+            sender: 'customer',
+            timestamp: '10:00 AM',
+          },
+          {
+            text: 'Hello! How can I help you today?',
+            sender: 'staff',
+            timestamp: '10:01 AM',
+          },
         ]);
-
-        const handleSendMessage = () => {
+        const [orderDetails, setOrderDetails] = useState({});
+        const [chatRoomId, setChatRoomId] = useState('');
+      
+        // Gọi API để lấy thông tin phòng chat
+        useEffect(() => {
+            const fetchChatRoomDetails = async () => {
+                try {
+                    // Lấy thông tin phòng chat theo chatRoomId
+                    const response = await fetch(`/api/chatRooms/${selectedOrder.orderId}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        setChatRoomId(data.chatRoomId);  // Lưu chatRoomId
+                        setOrderDetails({
+                            orderId: data.orderId,
+                            customerEmail: data.customerEmail,
+                            employeeEmail: data.employeeEmail,
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error fetching chat room details:', error);
+                }
+            };
+        
+            fetchChatRoomDetails();
+        }, [selectedOrder.orderId]);
+      
+        // Gửi tin nhắn
+        const handleSendMessage = async () => {
             if (message.trim()) {
                 const newMessage = {
                     text: message,
                     sender: 'customer',
-                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 };
+        
                 setMessages([...messages, newMessage]);
                 setMessage('');
-
-                setTimeout(() => {
-                    const staffResponse = {
-                        text: "Thank you for your message. I'll help you with that shortly.",
-                        sender: 'staff',
-                        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                    };
-                    setMessages(prevMessages => [...prevMessages, staffResponse]);
-                }, 1000);
+        
+                try {
+                    // Gửi tin nhắn qua API
+                    const response = await fetch(`/api/messages/chatrooms/${chatRoomId}/send-message`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            message: message,
+                            chatRoomId: chatRoomId,
+                            senderId: selectedOrder.customerId,
+                            receiveId: selectedOrder.employeeId,
+                            messageType: 'Text',
+                        }),
+                    });
+        
+                    if (response.ok) {
+                        // Phản hồi từ nhân viên
+                        const staffResponse = {
+                            text: 'Thank you for your message. I\'ll help you with that shortly.',
+                            sender: 'staff',
+                            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                        };
+                        setMessages((prevMessages) => [...prevMessages, staffResponse]);
+                    } else {
+                        console.error('Error sending message');
+                    }
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                }
             }
         };
 
@@ -308,7 +355,6 @@ const WalletPage = () => {
                                 <p className="font-semibold text-gray-700">Payment:</p>
                                 <p className="text-gray-600">{selectedOrder.payment}</p>
                             </div>
-
                             <div>
                                 <p className="font-semibold text-gray-700">Date:</p>
                                 <p className="text-gray-600">{selectedOrder.date}</p>
@@ -321,7 +367,7 @@ const WalletPage = () => {
                             </div>
                         </div>
                     </div>
-
+        
                     {/* Chat Area */}
                     <div className="w-2/3 flex flex-col">
                         <div className="bg-pink-400 text-white p-4 flex justify-between items-center rounded-tr-2xl">
@@ -333,7 +379,7 @@ const WalletPage = () => {
                                 ✕
                             </button>
                         </div>
-
+        
                         <div className="flex-grow overflow-y-auto p-6 space-y-4">
                             {messages.map((msg, index) => (
                                 <div
@@ -352,7 +398,7 @@ const WalletPage = () => {
                                 </div>
                             ))}
                         </div>
-
+        
                         <div className="p-4 border-t flex gap-2">
                             <input
                                 type="text"
