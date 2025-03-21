@@ -4,12 +4,42 @@ import { MessageOutlined, CloseOutlined } from '@ant-design/icons';
 const ChatBox = () => {
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [showBubble, setShowBubble] = useState(true);
+    const [messages, setMessages] = useState([]);
+    const [message, setMessage] = useState('');
 
     const toggleChat = () => {
         setIsChatOpen(!isChatOpen);
         setShowBubble(false);
     };
 
+    const handleSendMessage = async () => {
+        if (message.trim()) {
+            const newMessage = { text: message, sender: 'customer', timestamp: new Date().toLocaleTimeString() };
+            setMessages([...messages, newMessage]);
+            setMessage('');
+
+            try {
+                const response = await fetch('http://localhost:5243/chat-box', { 
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'accept': 'application/json'
+                    },
+                    body: JSON.stringify({ prompt: message })
+                });
+
+                const data = await response.json();
+                const botMessage = {
+                    text: data.description, 
+                    sender: 'bot',
+                    timestamp: new Date().toLocaleTimeString()
+                };
+                setMessages((prevMessages) => [...prevMessages, botMessage]);
+            } catch (error) {
+                console.error("Error sending message:", error);
+            }
+        }
+    };
     return (
         <>
             <div className="fixed bottom-20 right-6 z-50">
@@ -49,19 +79,26 @@ const ChatBox = () => {
 
                     {/* Chat messages area */}
                     <div className="flex-1 overflow-y-auto bg-gray-50 p-3">
-                        <div className="text-center text-gray-500 pt-16">
-                            Your chatbot will be integrated here
-                        </div>
+                        {messages.map((msg, index) => (
+                            <div key={index} className={`flex ${msg.sender === 'customer' ? 'justify-end' : 'justify-start'} mb-2`}>
+                                <div className={`px-4 py-2 rounded-lg ${msg.sender === 'customer' ? 'bg-pink-600 text-white' : 'bg-gray-300 text-gray-800'}`}>
+                                    <p>{msg.text}</p>
+                                    <small className="text-xs text-gray-500">{msg.timestamp}</small>
+                                </div>
+                            </div>
+                        ))}
                     </div>
 
                     {/* Input area */}
                     <div className="flex p-3 border-t border-gray-200 bg-white">
                         <input
                             type="text"
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
                             placeholder="Type your message..."
                             className="flex-1 border border-gray-300 rounded-l px-3 py-2 focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-500"
                         />
-                        <button className="bg-pink-600 hover:bg-pink-700 text-white px-4 rounded-r">
+                        <button onClick={handleSendMessage} className="bg-pink-600 hover:bg-pink-700 text-white px-4 rounded-r">
                             Send
                         </button>
                     </div>
