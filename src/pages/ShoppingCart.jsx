@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, InputNumber, message, Empty } from 'antd';
-import { DeleteOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { jwtDecode } from "jwt-decode";
@@ -104,9 +104,9 @@ const ShoppingCart = () => {
       key: 'productImage',
       render: (image, record) => (
         <div className="flex items-center gap-4">
-          <img 
-            src={image} 
-            alt={record.productName} 
+          <img
+            src={image}
+            alt={record.productName}
             className="w-20 h-20 object-cover rounded-md"
           />
           <span className="font-medium text-lg">{record.productName}</span>
@@ -168,9 +168,20 @@ const ShoppingCart = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      
+
+      <div className="flex ml-20 mt-10">
+        <Button
+          type="primary"
+          icon={<ArrowLeftOutlined />}
+          className="bg-pink-300 text-white text-lg px-6 py-5 rounded-md shadow-md"
+          onClick={() => navigate(-1)}
+        >
+          BACK
+        </Button>
+      </div>
+
       <div className="flex-1 max-w-7xl mx-auto w-full py-8 px-4">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">Shopping Cart</h1>
+        <h1 className="text-center text-6xl font-bold text-pink-600 p-3 rounded mb-10">Shopping Cart</h1>
 
         {loading ? (
           <div className="flex justify-center py-10">
@@ -184,7 +195,7 @@ const ShoppingCart = () => {
               pagination={false}
               rowKey="cartId"
             />
-            
+
             <div className="mt-8 flex justify-end items-center gap-8">
               <div className="text-xl">
                 Total: <span className="text-pink-600 font-bold">{calculateTotal().toLocaleString()} VNĐ</span>
@@ -210,7 +221,7 @@ const ShoppingCart = () => {
               <span className="text-gray-500">Your cart is empty</span>
             }
           >
-            <Button 
+            <Button
               type="primary"
               className="bg-pink-600 hover:bg-pink-700"
               onClick={() => navigate('/')}

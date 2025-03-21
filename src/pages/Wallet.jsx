@@ -4,13 +4,20 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { jwtDecode } from "jwt-decode";
 import { message, Modal, Divider, Tag } from 'antd';
+import {  } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import { Eye, XCircle, MessageCircle } from "lucide-react";
 
 const WalletPage = () => {
+    const [activeTab, setActiveTab] = useState('orders');
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [isChatModalOpen, setIsChatModalOpen] = useState(false);
     const [orders, setOrders] = useState([]);
     const [failOrders, setFailOrders] = useState([]);
+    const [refundOrders, setRefundOrders] = useState([]);
+
+    const [cancelOrders, setCancelOrders] = useState([]);
+
     const [selectedStatus, setSelectedStatus] = useState('All');
     const [filteredOrders, setFilteredOrders] = useState([]);
     const [stats, setStats] = useState({
@@ -21,12 +28,17 @@ const WalletPage = () => {
     });
     const [detailModalVisible, setDetailModalVisible] = useState(false);
     const [selectedOrderDetail, setSelectedOrderDetail] = useState(null);
+    const [feedbackData, setFeedbackData] = useState(null);
+    const [isFeedbackModalVisible, setIsFeedbackModalVisible] = useState(false);
+    const [isFeedbackInputModalVisible, setIsFeedbackInputModalVisible] = useState(false);
 
     const navigate = useNavigate();
 
     useEffect(() => {
         fetchOrders();
         fetchFailOrders();
+        fetchCancelOrders();
+        fetchRefundOrders();
     }, []);
 
     const fetchOrders = async () => {
@@ -67,9 +79,12 @@ const WalletPage = () => {
                 // Calculate statistics
                 setStats({
                     total: formattedOrders.length,
-                    completed: formattedOrders.filter(o => o.status === "đặt hàng thành công").length,
-                    processing: formattedOrders.filter(o => o.status === "đang xử lý").length,
-                    failed: formattedOrders.filter(o => o.status === "thất bại").length
+                    completed: formattedOrders.filter(o => o.status === "Received").length,
+                    processing: formattedOrders.filter(o =>
+                        ["Arranging & Packing", "Awaiting Design Approval", "Flower Completed", "Delivery"].includes(o.status)
+                    ).length,
+
+                    failed: formattedOrders.filter(o => o.status === "Cancel").length
                 });
             }
         } catch (error) {
@@ -120,6 +135,91 @@ const WalletPage = () => {
             message.error('Failed to load orders');
         }
     };
+    const fetchRefundOrders = async () => {
+        try {
+            // Get token from sessionStorage like in ShoppingCart
+            const token = sessionStorage.getItem('accessToken');
+            if (!token) {
+                message.error('Please login to view orders');
+                navigate('/login');
+                return;
+            }
+
+            // Decode token to get customer ID
+            const decodedToken = jwtDecode(token);
+            const customerId = decodedToken.Id;  // Using Id from token like in ShoppingCart
+
+            const response = await fetch(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Order/GetRefundOrderByCustomer?CusomterId=${customerId}`);
+            const data = await response.json();
+
+            if (data.statusCode === 200) {
+                const formattedOrders = data.data.map(order => ({
+                    orderId: order.orderId,
+                    details: order.productCustomResponse ?
+                        [order.productCustomResponse.productName] :
+                        order.orderDetails.map(detail => detail.productName),
+                    price: order.orderPrice,
+                    payment: order.transfer ? "100% payment" : "50% deposit",
+                    createAt: new Date(order.createAt).toLocaleString(),
+                    date: new Date(order.deliveryDateTime).toLocaleString(),
+                    status: order.status,
+                    note: order.note,
+                    phone: order.phone,
+                    delivery: order.delivery ? "Shipping" : "Pickup",
+
+                }));
+
+                setRefundOrders(formattedOrders);
+
+
+            }
+        } catch (error) {
+            console.error("Error fetching orders:", error);
+            message.error('Failed to load orders');
+        }
+    };
+    const fetchCancelOrders = async () => {
+        try {
+            // Get token from sessionStorage like in ShoppingCart
+            const token = sessionStorage.getItem('accessToken');
+            if (!token) {
+                message.error('Please login to view orders');
+                navigate('/login');
+                return;
+            }
+            // Decode token to get customer ID
+            const decodedToken = jwtDecode(token);
+            const customerId = decodedToken.Id;  // Using Id from token like in ShoppingCart
+
+            const response = await fetch(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Order/GetCancelOrderByCustomer?CusomterId=${customerId}`);
+            const data = await response.json();
+
+            if (data.statusCode === 200) {
+                const formattedOrders = data.data.map(order => ({
+                    orderId: order.orderId,
+                    details: order.productCustomResponse ?
+                        [order.productCustomResponse.productName] :
+                        order.orderDetails.map(detail => detail.productName),
+                    price: order.orderPrice,
+                    payment: order.transfer ? "100% payment" : "50% deposit",
+                    createAt: new Date(order.createAt).toLocaleString(),
+                    date: new Date(order.deliveryDateTime).toLocaleString(),
+                    status: order.status,
+                    note: order.note,
+                    phone: order.phone,
+                    delivery: order.delivery ? "Shipping" : "Pickup",
+
+                }));
+
+                setCancelOrders(formattedOrders);
+
+
+            }
+        } catch (error) {
+            console.error("Error fetching orders:", error);
+            message.error('Failed to load orders');
+        }
+    };
 
 
     const getStatusColor = (status) => {
@@ -129,11 +229,13 @@ const WalletPage = () => {
             "Awaiting Design Approval": "text-yellow-600 bg-yellow-100",
             "Flower Completed": "text-orange-600 bg-orange-100",
             "Delivery": "text-purple-600 bg-purple-100",
-
+            "Cancel": "text-red-600 bg-red-100",
             "Received": "text-blue-600 bg-blue-100",
+            "Refuse refund": "text-red-600 bg-red-100",
+            "Accept refund": "text-green-600 bg-green-100",
+            "Request refund": "text-yellow-600 bg-yellow-100",
 
             "đang xử lý": "text-blue-600 bg-blue-100",
-            "thất bại": "text-red-600 bg-red-100"
         };
         return colors[status] || "text-gray-600 bg-gray-100";
     };
@@ -216,36 +318,53 @@ const WalletPage = () => {
 
     const handleDelete = async (orderId) => {
         try {
-            // Show confirmation dialog
-            Modal.confirm({
-                title: 'Are you sure you want to delete this order?',
-                content: 'This action cannot be undone.',
-                okText: 'Yes, delete',
-                okType: 'danger',
-                cancelText: 'No',
-                async onOk() {
-                    const response = await fetch(
-                        `https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Order/DeleteOrder/${orderId}`,
-                        {
-                            method: 'DELETE',
-                            headers: {
-                                'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`
-                            }
-                        }
-                    );
-
-                    if (response.ok) {
-                        message.success('Order deleted successfully');
-                        // Reload the entire page
-                        window.location.reload();
-                    } else {
-                        message.error('Failed to delete order');
-                    }
+            const response = await fetch(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Refund/CancelOrder?OrderId=${orderId}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`,
+                    'Content-Type': 'application/json',
                 },
             });
+
+            const data = await response.json();
+
+            if (data.statusCode === 200) {
+                message.success('Order canceled successfully');
+                // Reload orders to reflect the changes
+                fetchOrders();
+            } else {
+                message.error(data.message || 'Failed to cancel order');
+            }
         } catch (error) {
-            console.error('Delete order error:', error);
-            message.error('Failed to delete order');
+            console.error('Cancel order error:', error);
+            message.error('Failed to cancel order');
+        }
+    };
+    const handleFeedback = async (orderId) => {
+        try {
+            // Check if feedback exists for the order
+            const checkResponse = await fetch(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/feedback/CheckFeedBack?OrderId=${orderId}`);
+            const checkData = await checkResponse.json();
+
+            if (checkData === true) { // If feedback exists
+                // Fetch the feedback details
+                const feedbackResponse = await fetch(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/feedback/GetFeedBackByOrderId?OrderId=${orderId}`);
+                const feedbackData = await feedbackResponse.json();
+
+                if (feedbackResponse.status === 200) {
+                    setFeedbackData(feedbackData); // Set feedback data
+                    setIsFeedbackModalVisible(true); // Show feedback details modal
+                } else {
+                    message.error('Failed to load feedback');
+                }
+            } else if (checkData === false) { // If no feedback exists, show input dialog
+                setIsFeedbackInputModalVisible(true); // Show feedback input modal
+                setSelectedOrder({ orderId }); // Hoặc bạn có thể lưu trực tiếp orderId
+
+            }
+        } catch (error) {
+            console.error('Error handling feedback:', error);
+            message.error('Failed to process feedback');
         }
     };
 
@@ -701,29 +820,245 @@ const WalletPage = () => {
         );
     };
 
+    const FeedbackInputModal = ({ isVisible, onClose, orderId }) => {
+        console.log("OrderId nhận được:", orderId); // Kiểm tra orderId
+
+        const [feedbackText, setFeedbackText] = useState('');
+        const [videoFile, setVideoFile] = useState(null);
+        const [requestRefund, setRequestRefund] = useState(false);
+        const [rating, setRating] = useState(0);
+        const [canRequestRefund, setCanRequestRefund] = useState(false); // Trạng thái cho phép request refund
+
+        useEffect(() => {
+            const checkWallet = async () => {
+                const token = sessionStorage.getItem('accessToken');
+                if (!token) return;
+
+                const decodedToken = jwtDecode(token);
+                const customerId = decodedToken.Id;
+
+                try {
+                    const response = await fetch(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Wallet/CheckWallet?CustomerId=${customerId}`);
+                    const data = await response.json();
+
+                    if (data.statusCode === 200 && data.data) {
+                        setCanRequestRefund(true); // Cho phép request refund nếu API trả về true
+                    } else {
+                        setCanRequestRefund(false); // Không cho phép nếu API trả về false
+                    }
+                } catch (error) {
+                    console.error('Error checking wallet:', error);
+                }
+            };
+
+            checkWallet();
+        }, []);
+
+        const renderStars = () => {
+            return Array.from({ length: 5 }, (_, index) => (
+                <span
+                    key={index}
+                    className={`cursor-pointer ${index < rating ? 'text-yellow-500' : 'text-gray-300'}`}
+                    onClick={() => setRating(index + 1)} // Cập nhật rating khi nhấp vào sao
+                >
+                    ★
+                </span>
+            ));
+        };
+
+        const handleCreateFeedback = async () => {
+            const formData = new FormData();
+            formData.append('FeedbackByCustomer', feedbackText);
+            if (videoFile) {
+                formData.append('FeedBackVideoByCustomer', videoFile);
+            }
+            formData.append('RequestRefundByCustomer', requestRefund);
+            formData.append('Rating', rating);
+            const token = sessionStorage.getItem('accessToken');
+            if (!token) {
+                message.error('Please login to view orders');
+                navigate('/login');
+                return;
+            }
+
+            const decodedToken = jwtDecode(token);
+            const customerId = decodedToken.Id;
+            try {
+                const response = await fetch(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/feedback/create-feedback?customerId=${customerId}&orderId=${orderId}`, {
+                    method: 'POST',
+                    headers: {
+                        'accept': 'text/plain',
+                    },
+                    body: formData,
+                });
+
+                const data = await response.json();
+                if (data.statusCode === 200) {
+                    message.success('Feedback created successfully');
+                    onClose(); // Close the input modal
+                } else {
+                    message.error(data.message || 'Failed to create feedback');
+                }
+            } catch (error) {
+                console.error('Error creating feedback:', error);
+                message.error('Failed to create feedback');
+            }
+        };
+
+        return (
+            <Modal
+                title="Submit Feedback"
+                open={isVisible}
+                onCancel={onClose}
+                footer={null}
+                width={600}
+                className="rounded-lg border border-pink-300 shadow-lg"
+            >
+                <div className="p-6 bg-white rounded-lg shadow-md">
+                    <h4 className="font-semibold text-lg text-pink-600">Your Feedback</h4>
+                    <textarea
+                        value={feedbackText}
+                        onChange={(e) => setFeedbackText(e.target.value)}
+                        placeholder="Enter your feedback here..."
+                        className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-300"
+                    />
+                    <input
+                        type="file"
+                        accept="video/*"
+                        onChange={(e) => setVideoFile(e.target.files[0])}
+                        className="mt-2 border rounded-lg p-2"
+                    />
+                    <div className="mt-2 flex items-center">
+                        <label className="font-semibold mr-2">Request Refund:</label>
+                        <input
+                            type="checkbox"
+                            checked={requestRefund}
+                            onChange={() => {
+                                if (canRequestRefund) {
+                                    setRequestRefund(!requestRefund);
+                                } else {
+                                    message.error('You cannot request a refund at this time.');
+                                }
+                            }}
+                            disabled={!canRequestRefund} // Disable checkbox if not allowed
+                        />
+                    </div>
+                    <div>* bạn phải kích hoạt ví mới được sử dung refund</div>
+                    {/* Rating Section */}
+                    <div className="mb-6 mt-4">
+                        <h4 className="font-semibold">Rating:</h4>
+                        <div className="flex space-x-1">
+                            {renderStars()}
+                        </div>
+                    </div>
+                    <button
+                        onClick={handleCreateFeedback}
+                        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                    >
+                        Submit Feedback
+                    </button>
+                </div>
+                <div className="p-6 bg-white rounded-lg shadow-md">
+                    Ghi chú: nếu sản phẩm có vấn đề gì hay quay video lai và gửi cho chúng tôi
+                    <div>- Với những đon hàng hư hại trên 30% chúng tôi sẽ hoàn trả lại 70% số tiền của hoa </div>
+                </div>
+            </Modal>
+        );
+    };
+    const FeedbackDetailsModal = ({ feedbackData, isVisible, onClose }) => {
+        return (
+            
+            <Modal
+                title="Feedback Details"
+                open={isVisible}
+                onCancel={onClose}
+                footer={null}
+                width={600}
+                className="rounded-lg border border-pink-300 shadow-lg"
+            >
+
+                
+                <div className="p-6 bg-white rounded-lg shadow-md">
+                    <h4 className="font-semibold text-lg text-pink-600">Feedback Information</h4>
+                    <div className="border-b pb-4 mb-4">
+                        <h5 className="font-bold text-pink-500">Customer Feedback</h5>
+                        <p><strong>Feedback ID:</strong> {feedbackData.feedbackId}</p>
+                        <p><strong>Feedback:</strong> {feedbackData.feedbackByCustomer}</p>
+                        <div className="mt-2">
+                            <strong>Video:</strong>
+                            {feedbackData.feedBackVideoByCustomer && (
+                                <video width="100%" controls className="rounded-lg border border-pink-200">
+                                    <source src={feedbackData.feedBackVideoByCustomer} type="video/mp4" />
+                                    Your browser does not support the video tag.
+                                </video>
+                            )}
+                        </div>
+                        <p><strong>Request Refund:</strong> {feedbackData.requestRefundByCustomer ? 'Yes' : 'No'}</p>
+                        <div className="flex items-center">
+                            <strong>Rating:</strong>
+                            <div className="ml-2">
+                                {Array.from({ length: 5 }, (_, index) => (
+                                    <span key={index} className={`text-${index < feedbackData.rating ? 'yellow' : 'gray'}-500`}>
+                                        ★
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                        <p><strong>Status:</strong> {feedbackData.status}</p>
+                        <p><strong>Created At:</strong> {new Date(feedbackData.createAt).toLocaleString()}</p>
+                    </div>
+                    <div>
+                        <h5 className="font-bold text-pink-500">Reply by Store</h5>
+                        <p>{feedbackData.responseFeedBackStore || "No reply from store yet."}</p>
+                    </div>
+                </div>
+            </Modal>
+        );
+    };
     const renderActionButtons = (order) => {
         return (
-            <div className="flex space-x-2">
+            <div className="flex space-x-3">
+                {/* Nút Xem Chi Tiết - Gradient Xanh Dương */}
                 <button
                     onClick={() => fetchOrderDetail(order.orderId)}
-                    className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-lg shadow-md transition-all duration-300 gap-2"
+                    className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
                 >
-                    <EyeOutlined />
-                    <span>View Details</span>
+                    <Eye className="w-5 h-5 text-white" />
+                    <span>View</span>
                 </button>
 
-
-
+                {/* Nút Hủy Đơn - Gradient Đỏ-Cam */}
+                {order.status !== "Received" && order.status !== "Delivery" && order.status !== "Request refund"&&(
+                    <button
+                        onClick={() => handleDelete(order.orderId)}
+                        className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-600 hover:to-orange-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
+                    >
+                        <XCircle className="w-5 h-5 text-white" />
+                        <span>Cancel</span>
+                    </button>
+                )}
+                {(order.status === "Received" || order.status === "Request refund") && (
+                    <button
+                        onClick={() => handleFeedback(order.orderId)}
+                        className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-600 hover:to-orange-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
+                    >
+                        <XCircle className="w-5 h-5 text-white" />
+                        <span>Feedback</span>
+                    </button>
+                )}
+                {/* Nút Chat - Hồng Neon */}
                 <button
                     onClick={() => {
                         setSelectedOrder(order);
                         setIsChatModalOpen(true);
                     }}
-                    className="text-pink-500 hover:text-pink-700 hover:bg-pink-100 p-2 rounded-full transition-colors"
+                    className="p-3 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-full transition-all duration-300 shadow-lg"
                 >
-                    <MessageOutlined className='text-2xl' />
+                    <MessageCircle className="w-6 h-6 text-white" />
                 </button>
+                
             </div>
+          
         );
     };
 
@@ -735,8 +1070,10 @@ const WalletPage = () => {
                     className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-lg shadow-md transition-all duration-300 gap-2"
                 >
                     <EyeOutlined />
-                    <span>View Details</span>
+                    <span>View</span>
                 </button>
+
+
 
                 {/* Payment button for failed orders */}
                 <button
@@ -758,11 +1095,50 @@ const WalletPage = () => {
             </div>
         );
     };
+    const renderRefundOrderActions = (order) => {
+        return (
+            <div className="flex space-x-2">
+                <button
+                    onClick={() => fetchOrderDetail(order.orderId)}
+                    className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-lg shadow-md transition-all duration-300 gap-2"
+                >
+                    <EyeOutlined />
+                    <span>View</span>
+                </button>
 
+
+
+                
+                    <button
+                        onClick={() => handleFeedback(order.orderId)}
+                        className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-600 hover:to-orange-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
+                    >
+                        <XCircle className="w-5 h-5 text-white" />
+                        <span>Feedback</span>
+                    </button>
+                
+               
+            </div>
+        );
+    };
+    const renderCancelOrderActions = (order) => {
+        return (
+            <div className="flex space-x-2">
+                <button
+                    onClick={() => fetchOrderDetail(order.orderId)}
+                    className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-lg shadow-md transition-all duration-300 gap-2"
+                >
+                    <EyeOutlined />
+                    <span>View Details</span>
+                </button>
+
+            </div>
+        );
+    };
     return (
         <div className="w-full">
             <Header />
-
+    
             <div className="p-14 min-h-screen">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-20 mb-10">
                     <div className="bg-pink-500 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
@@ -770,27 +1146,74 @@ const WalletPage = () => {
                         <h3 className="text-xl font-medium mb-2">Total Orders</h3>
                         <p className="text-3xl font-bold">{stats.total}</p>
                     </div>
-
+    
                     <div className="bg-green-500 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
                         <div className="absolute right-0 top-0 w-24 h-24 bg-green-400 rounded-full transform translate-x-8 -translate-y-8"></div>
                         <h3 className="text-xl font-medium mb-2">Completed Orders</h3>
                         <p className="text-3xl font-bold">{stats.completed}</p>
                     </div>
-
+    
                     <div className="bg-blue-500 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
                         <div className="absolute right-0 top-0 w-24 h-24 bg-blue-400 rounded-full transform translate-x-8 -translate-y-8"></div>
                         <h3 className="text-xl font-medium mb-2">Processing Orders</h3>
                         <p className="text-3xl font-bold">{stats.processing}</p>
                     </div>
-
+    
                     <div className="bg-red-500 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
                         <div className="absolute right-0 top-0 w-24 h-24 bg-red-400 rounded-full transform translate-x-8 -translate-y-8"></div>
                         <h3 className="text-xl font-medium mb-2">Failed Orders</h3>
                         <p className="text-3xl font-bold">{stats.failed}</p>
                     </div>
                 </div>
-
-                <div className="grid mt-10">
+    
+                {/* Tab Navigation */}
+                <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+                    <div className="flex border-b border-gray-200">
+                        <button
+                            onClick={() => setActiveTab('orders')}
+                            className={`py-3 px-6 font-medium text-lg transition-all border-b-2 mr-4 ${
+                                activeTab === 'orders' 
+                                ? 'border-pink-500 text-pink-500' 
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                            }`}
+                        >
+                            Orders
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('refund')}
+                            className={`py-3 px-6 font-medium text-lg transition-all border-b-2 mr-4 ${
+                                activeTab === 'refund' 
+                                ? 'border-pink-500 text-pink-500' 
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                            }`}
+                        >
+                            Refund Orders
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('cancel')}
+                            className={`py-3 px-6 font-medium text-lg transition-all border-b-2 mr-4 ${
+                                activeTab === 'cancel' 
+                                ? 'border-pink-500 text-pink-500' 
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                            }`}
+                        >
+                            Cancel Orders
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('fail')}
+                            className={`py-3 px-6 font-medium text-lg transition-all border-b-2 ${
+                                activeTab === 'fail' 
+                                ? 'border-pink-500 text-pink-500' 
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                            }`}
+                        >
+                            Failed Orders
+                        </button>
+                    </div>
+                </div>
+    
+                {/* Active Orders Tab Content */}
+                {activeTab === 'orders' && (
                     <div className="bg-white rounded-lg shadow-lg p-6 mb-10">
                         <div className="flex flex-col gap-6">
                             <div>
@@ -837,7 +1260,7 @@ const WalletPage = () => {
                                     <span className="w-2 h-2 rounded-full bg-current"></span>
                                     Awaiting Design Approval
                                 </button>
-
+    
                                 <button
                                     onClick={() => setSelectedStatus('Flower Completed')}
                                     className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${selectedStatus === 'Flower Completed'
@@ -851,8 +1274,8 @@ const WalletPage = () => {
                                 <button
                                     onClick={() => setSelectedStatus('Delivery')}
                                     className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${selectedStatus === 'Delivery'
-                                        ? 'bg-purple-500 text-white' // Màu tím khi được chọn
-                                        : 'bg-purple-100 text-purple-600 hover:bg-purple-200' // Màu tím nhạt khi chưa chọn
+                                        ? 'bg-purple-500 text-white'
+                                        : 'bg-purple-100 text-purple-600 hover:bg-purple-200'
                                         }`}
                                 >
                                     <span className="w-2 h-2 rounded-full bg-current"></span>
@@ -909,10 +1332,104 @@ const WalletPage = () => {
                             </table>
                         </div>
                     </div>
-                </div>
-                <div className="grid mt-10">
+                )}
+    
+                {/* Refund Orders Tab Content */}
+                {activeTab === 'refund' && (
                     <div className="bg-white rounded-lg shadow-lg p-6 mb-10">
-                        <h2 className="text-3xl text-left text-pink-400 font-bold mb-2">Fail Orders</h2>
+                        <h2 className="text-3xl text-left text-pink-400 font-bold mb-2">Refund Orders</h2>
+                        <p className="text-base text-left text-gray-400 mb-8">Review and track your Refund orders here</p>
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full">
+                                <thead className="bg-pink-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Order ID</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Details</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Price</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Payment</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Delivery</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Create Time</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">RecipientTime</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Status</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                    {refundOrders.map((order) => (
+                                        <tr key={order.orderId}>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.orderId}</td>
+                                            <td className="px-6 py-4 text-left text-base">{order.details.join(", ")}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">${order.price}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.payment}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.delivery}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.createAt}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.date}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap">
+                                                <span className={`px-2 py-1 text-base rounded-full ${getStatusColor(order.status)}`}>
+                                                    {order.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap">
+                                                {renderRefundOrderActions(order)}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+    
+                {/* Cancel Orders Tab Content */}
+                {activeTab === 'cancel' && (
+                    <div className="bg-white rounded-lg shadow-lg p-6 mb-10">
+                        <h2 className="text-3xl text-left text-pink-400 font-bold mb-2">Cancel Orders</h2>
+                        <p className="text-base text-left text-gray-400 mb-8">Review and track your Cancel orders here</p>
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full">
+                                <thead className="bg-pink-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Order ID</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Details</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Price</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Payment</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Delivery</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Create Time</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">RecipientTime</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Status</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                    {cancelOrders.map((order) => (
+                                        <tr key={order.orderId}>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.orderId}</td>
+                                            <td className="px-6 py-4 text-left text-base">{order.details.join(", ")}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">${order.price}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.payment}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.delivery}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.createAt}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.date}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap">
+                                                <span className={`px-2 py-1 text-base rounded-full ${getStatusColor(order.status)}`}>
+                                                    {order.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap">
+                                                {renderCancelOrderActions(order)}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+    
+                {/* Fail Orders Tab Content */}
+                {activeTab === 'fail' && (
+                    <div className="bg-white rounded-lg shadow-lg p-6 mb-10">
+                        <h2 className="text-3xl text-left text-pink-400 font-bold mb-2">Failed Orders</h2>
                         <p className="text-base text-left text-gray-400 mb-8">Review and track your fail orders here</p>
                         <div className="overflow-x-auto">
                             <table className="min-w-full">
@@ -926,7 +1443,7 @@ const WalletPage = () => {
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Create Time</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">RecipientTime</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Status</th>
-                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Chat</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
@@ -953,12 +1470,24 @@ const WalletPage = () => {
                             </table>
                         </div>
                     </div>
-                </div>
+                )}
             </div>
-
+    
             <Footer />
             {isChatModalOpen && <ChatModal />}
             {detailModalVisible && <OrderDetailModal />}
+            {isFeedbackInputModalVisible &&
+                <FeedbackInputModal
+                    isVisible={isFeedbackInputModalVisible}
+                    onClose={() => setIsFeedbackInputModalVisible(false)}
+                    orderId={selectedOrder?.orderId}
+                />
+            }
+            {isFeedbackModalVisible && <FeedbackDetailsModal
+                feedbackData={feedbackData}
+                isVisible={isFeedbackModalVisible}
+                onClose={() => setIsFeedbackModalVisible(false)}
+            />}
         </div>
     );
 };
