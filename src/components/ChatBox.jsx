@@ -83,7 +83,7 @@ const ChatBox = () => {
                             <div key={index} className={`flex ${msg.sender === 'customer' ? 'justify-end' : 'justify-start'} mb-2`}>
                                 <div className={`px-4 py-2 rounded-lg ${msg.sender === 'customer' ? 'bg-pink-600 text-white' : 'bg-gray-300 text-gray-800'}`}>
                                     <p>{msg.text}</p>
-                                    <small className="text-xs text-gray-500">{msg.timestamp}</small>
+                                    <small className="text-xs text-white-500">{msg.timestamp}</small>
                                 </div>
                             </div>
                         ))}

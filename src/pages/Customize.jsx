@@ -648,9 +648,9 @@ const FlowerCustomization = () => {
     );
 
     return (
-        <div className="w-full">
+        <div className="w-full bg-pink-50">
             <Header />
-            <div className="flex ml-20 mt-10">
+            <div className="flex ml-20 py-10">
                 <Button
                     type="primary"
                     icon={<ArrowLeftOutlined />}
@@ -660,7 +660,7 @@ const FlowerCustomization = () => {
                     BACK
                 </Button>
             </div>
-            <h1 className="text-center text-6xl font-bold text-pink-600 p-3 rounded">Customize</h1>
+            <h1 className="text-center text-6xl font-bold text-pink-600 p-3 rounded">CUSTOMIZE</h1>
             <p className="text-xl text-gray-500 mb-10 text-center">Customize Your Own Flower Basket With Your Selection</p>
 
             <ProgressBar currentStep={currentStep} />
