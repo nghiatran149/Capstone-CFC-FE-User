@@ -5,6 +5,7 @@ import { SearchOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import ProductCarousel from "../components/ProductCarousel"
 
 const { Search } = Input;
 const { TabPane } = Tabs;
@@ -142,81 +143,106 @@ const ProductPage = () => {
     return (
         <div>
             <Header />
-            <div className="p-8 mt-10 mb-16">
-                <div className="text-center mb-8">
+            <div className="bg-pink-50">
+                <div className="relative overflow-hidden mb-8" style={{ height: "50vh", minHeight: "400px" }}>
+                    <video
+                        className="absolute top-0 left-0 w-full h-full object-cover"
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                    >
+                        <source src="/src/assets/productbg.mp4" type="video/mp4" />
+                        Your browser does not support the video tag.
+                    </video>
+
+                    <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-40"></div>
+
+                    <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
+                        <h1 className="text-7xl font-bold text-white mb-4 shadow-text">PRODUCT</h1>
+                        <p className="text-white text-xl max-w-2xl shadow-text">
+                            Discover our exclusive collection of flowers and find the perfect one for you!
+                        </p>
+                    </div>
+                </div>
+
+                <div className="px-8 mb-16">
+                    {/* <div className="text-center mb-8">
                     <h1 className="text-5xl font-bold text-pink-500 mb-8">PRODUCT</h1>
                     <p className="text-gray-600 text-lg mt-2">
                         Discover our exclusive collection of flowers and find the perfect one for you!
                     </p>
-                </div>
+                </div> */}
 
-                <div className="flex justify-between items-center mb-8">
-                    <div className="flex gap-4">
-                        <Select
-                            defaultValue="all"
-                            className="w-32"
-                            onChange={(value) => setSelectedPrice(value)}
-                        >
-                            <Option value="all">All Prices</Option>
-                            <Option value="low">Below 100,000 VND</Option>
-                            <Option value="high">100,000 VND & Above</Option>
-                        </Select>
-                        <Select
-                            defaultValue="all"
-                            className="w-32"
-                            onChange={(value) => setSelectedSize(value)}
-                        >
-                            <Option value="all">All Sizes</Option>
-                            {sizes.filter(size => size !== 'all').map(size => (
-                                <Option key={size} value={size}>{size}</Option>
+                    <ProductCarousel />
+                    <div className="flex justify-between items-center mb-8">
+                        <div className="flex gap-4">
+                            <Select
+                                defaultValue="all"
+                                className="w-32"
+                                onChange={(value) => setSelectedPrice(value)}
+                            >
+                                <Option value="all">All Prices</Option>
+                                <Option value="low">Below 100,000 VND</Option>
+                                <Option value="high">100,000 VND & Above</Option>
+                            </Select>
+                            <Select
+                                defaultValue="all"
+                                className="w-32"
+                                onChange={(value) => setSelectedSize(value)}
+                            >
+                                <Option value="all">All Sizes</Option>
+                                {sizes.filter(size => size !== 'all').map(size => (
+                                    <Option key={size} value={size}>{size}</Option>
+                                ))}
+                            </Select>
+                            <Select
+                                defaultValue="all"
+                                className="w-40"
+                                onChange={(value) => setSelectedPopularity(value)}
+                            >
+                                <Option value="all">All Products</Option>
+                                <Option value="bestseller">Best Sellers</Option>
+                            </Select>
+                        </div>
+                        <Search
+                            placeholder="Search flowers..."
+                            allowClear
+                            onSearch={(value) => setSearchTerm(value)}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full max-w-md"
+                            prefix={<SearchOutlined className="text-gray-400" />}
+                        />
+                    </div>
+
+                    {categories.length > 0 ? (
+                        <Tabs defaultActiveKey="0">
+                            {categories.map((category, index) => (
+                                <TabPane tab={category} key={index.toString()}>
+                                    <Row gutter={[16, 16]}>
+                                        {Array.isArray(products) && filterProducts(category).length > 0 ? (
+                                            filterProducts(category).map(product => (
+                                                <Col key={product.id} xs={24} sm={12} md={6}>
+                                                    <ProductCard product={product} />
+                                                </Col>
+                                            ))
+                                        ) : (
+                                            <div className="w-full text-center p-8">
+                                                <p>No products found matching your criteria.</p>
+                                            </div>
+                                        )}
+                                    </Row>
+                                </TabPane>
                             ))}
-                        </Select>
-                        <Select
-                            defaultValue="all"
-                            className="w-40"
-                            onChange={(value) => setSelectedPopularity(value)}
-                        >
-                            <Option value="all">All Products</Option>
-                            <Option value="bestseller">Best Sellers</Option>
-                        </Select>
-                    </div>
-                    <Search
-                        placeholder="Search flowers..."
-                        allowClear
-                        onSearch={(value) => setSearchTerm(value)}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full max-w-md"
-                        prefix={<SearchOutlined className="text-gray-400" />}
-                    />
+                        </Tabs>
+                    ) : (
+                        <div className="text-center p-8">
+                            <p>No categories available.</p>
+                        </div>
+                    )}
                 </div>
-
-                {categories.length > 0 ? (
-                    <Tabs defaultActiveKey="0">
-                        {categories.map((category, index) => (
-                            <TabPane tab={category} key={index.toString()}>
-                                <Row gutter={[16, 16]}>
-                                    {Array.isArray(products) && filterProducts(category).length > 0 ? (
-                                        filterProducts(category).map(product => (
-                                            <Col key={product.id} xs={24} sm={12} md={6}>
-                                                <ProductCard product={product} />
-                                            </Col>
-                                        ))
-                                    ) : (
-                                        <div className="w-full text-center p-8">
-                                            <p>No products found matching your criteria.</p>
-                                        </div>
-                                    )}
-                                </Row>
-                            </TabPane>
-                        ))}
-                    </Tabs>
-                ) : (
-                    <div className="text-center p-8">
-                        <p>No categories available.</p>
-                    </div>
-                )}
+                <Footer />
             </div>
-            <Footer />
         </div>
     );
 };
