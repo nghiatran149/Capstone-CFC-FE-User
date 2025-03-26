@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MessageOutlined, EyeOutlined, CreditCardOutlined, DeleteOutlined } from '@ant-design/icons';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { jwtDecode } from "jwt-decode";
 import { message, Modal, Divider, Tag } from 'antd';
+import axios from 'axios';
+import { HubConnectionBuilder, HttpTransportType } from '@microsoft/signalr';
 import { useNavigate } from 'react-router-dom';
 import { Eye, XCircle, MessageCircle } from "lucide-react";
 
@@ -56,6 +58,8 @@ const WalletPage = () => {
             if (data.statusCode === 200) {
                 const formattedOrders = data.data.map(order => ({
                     orderId: order.orderId,
+                    staffId: order.staffId,
+                    customerId: order.customerId,
                     details: order.productCustomResponse ?
                         [order.productCustomResponse.productName] :
                         order.orderDetails.map(detail => detail.productName),
@@ -317,45 +321,187 @@ const WalletPage = () => {
         }
     };
     const ChatModal = () => {
-        const [message, setMessage] = useState('');
-        const [messages, setMessages] = useState([
-            {
-                text: "Hi, I have a question about my order.",
-                sender: 'customer',
-                timestamp: '10:00 AM'
-            },
-            {
-                text: "Hello! How can I help you today?",
-                sender: 'staff',
-                timestamp: '10:01 AM'
+        const [messages, setMessages] = useState([]);
+        const [newMessage, setNewMessage] = useState('');
+        const [connection, setConnection] = useState(null);
+        const [chatRoomId, setChatRoomId] = useState(null);
+        const messagesEndRef = useRef(null);
+        
+        // Add state for image handling
+        const [selectedImage, setSelectedImage] = useState(null);
+        const [isUploading, setIsUploading] = useState(false);
+        const [showImageModal, setShowImageModal] = useState(false);
+        const [modalImage, setModalImage] = useState('');
+        const fileInputRef = useRef(null);
+    
+        // Existing IDs
+        const orderId = selectedOrder.orderId;
+        const customerId = selectedOrder.customerId;
+        const employeeId = selectedOrder.staffId;
+    
+        // SignalR connection setup (unchanged)
+        useEffect(() => {
+            const newConnection = new HubConnectionBuilder()
+                .withUrl('https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/chatHub', {
+                    skipNegotiation: true, // ⚡ Chỉ dùng WebSockets
+                    transport: HttpTransportType.WebSockets,
+                  })
+                .withAutomaticReconnect()
+                .build();
+    
+            setConnection(newConnection);
+        }, []);
+    
+        // Start connection and listen for messages (unchanged)
+        useEffect(() => {
+            if (connection) {
+                connection.start()
+                    .then(() => {
+                        console.log('SignalR Connected!');
+    
+                        // Listen for new messages
+                        connection.on('ReceiveMessage', (message) => {
+                            setMessages((prevMessages) => [...prevMessages, message]);
+                        });
+                    })
+                    .catch((error) => console.error('SignalR Connection Error: ', error));
             }
-        ]);
-
-        const handleSendMessage = () => {
-            if (message.trim()) {
-                const newMessage = {
-                    text: message,
-                    sender: 'customer',
-                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }, [connection]);
+    
+        // Fetch messages from API (unchanged)
+        useEffect(() => {
+            if (isChatModalOpen && orderId) {
+                const fetchMessages = async () => {
+                    try {
+                        const response = await axios.get(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/messages/messages/${orderId}/${customerId}/${employeeId}`);
+                        setMessages(response.data.data);
+    
+                        // Get chatRoomId from first message if available
+                        if (response.data.data && response.data.data.length > 0) {
+                            const roomId = response.data.data[0].chatRoomId;
+                            setChatRoomId(roomId);
+    
+                            // Join chat room if connected
+                            if (connection && connection.state === "Connected" && roomId) {
+                                connection.invoke("JoinChatRoom", roomId);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error fetching messages:', error);
+                    }
                 };
-                setMessages([...messages, newMessage]);
-                setMessage('');
-
-                setTimeout(() => {
-                    const staffResponse = {
-                        text: "Thank you for your message. I'll help you with that shortly.",
-                        sender: 'staff',
-                        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                    };
-                    setMessages(prevMessages => [...prevMessages, staffResponse]);
-                }, 1000);
+    
+                fetchMessages();
+            }
+        }, [isChatModalOpen, orderId, connection, customerId, employeeId]);
+    
+        // Auto-scroll to newest message (unchanged)
+        useEffect(() => {
+            if (messagesEndRef.current) {
+                messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+            }
+        }, [messages]);
+    
+        // New: Handle image selection
+        const handleImageSelect = (e) => {
+            // When a file is selected through the input, set it to state
+            if (e.target.files && e.target.files[0]) {
+                const file = e.target.files[0];
+                setSelectedImage(file);
             }
         };
-
+    
+        // New: Remove selected image
+        const handleRemoveImage = () => {
+            // Clear the selected image from state
+            setSelectedImage(null);
+            // Also reset the file input element
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        };
+    
+        // New: Upload image to Cloudinary
+        const uploadImage = async (file) => {
+            setIsUploading(true);
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', 'delivery_app'); // Replace with your upload preset
+    
+            try {
+                // Send file to Cloudinary API
+                const response = await axios.post(
+                    `https://api.cloudinary.com/v1_1/dvkqdbaue/image/upload`,
+                    formData
+                );
+                setIsUploading(false);
+                // Return the image URL from Cloudinary
+                return response.data.secure_url;
+            } catch (error) {
+                console.error('Error uploading image:', error);
+                setIsUploading(false);
+                return null;
+            }
+        };
+    
+        // Modified: Send message to include image handling
+        const sendMessage = async () => {
+            // Only send if we have a chat room and either a message or image
+            if (!chatRoomId || (!newMessage.trim() && !selectedImage)) return;
+    
+            try {
+                let messageContent = newMessage;
+                let messageType = 'text';
+                let imageUrl = null;
+    
+                // If image selected, upload it first
+                if (selectedImage) {
+                    setIsUploading(true);
+                    imageUrl = await uploadImage(selectedImage);
+                    if (!imageUrl) {
+                        alert('Failed to upload image');
+                        setIsUploading(false);
+                        return;
+                    }
+                    // Store image URL in messageType field
+                    messageType = imageUrl;
+                }
+    
+                const messageData = {
+                    chatRoomId: chatRoomId,
+                    senderId: customerId,
+                    receiveId: employeeId,
+                    messageType: messageType, // 'text' or image URL
+                    content: messageContent // Text message
+                };
+    
+                // Send message via API
+                await axios.post('https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/messages/create-message', messageData);
+    
+                // Reset input and image selection
+                setNewMessage('');
+                setSelectedImage(null);
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = '';
+                }
+    
+            } catch (error) {
+                console.error('Error sending message:', error);
+            } finally {
+                setIsUploading(false);
+            }
+        };
+    
+        // New: Show full-size image in modal
+        const openImageModal = (imageUrl) => {
+            setModalImage(imageUrl);
+            setShowImageModal(true);
+        };
+    
         return (
             <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
                 <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[80vh] flex">
-                    {/* Order Details Sidebar */}
+                    {/* Order Details Sidebar (unchanged) */}
                     <div className="w-1/3 bg-pink-50 rounded-l-2xl p-6 border-r border-pink-200">
                         <h2 className="text-2xl font-bold text-pink-600 mb-4">Order Details</h2>
                         <div className="space-y-4">
@@ -375,7 +521,6 @@ const WalletPage = () => {
                                 <p className="font-semibold text-gray-700">Payment:</p>
                                 <p className="text-gray-600">{selectedOrder.payment}</p>
                             </div>
-
                             <div>
                                 <p className="font-semibold text-gray-700">Date:</p>
                                 <p className="text-gray-600">{selectedOrder.date}</p>
@@ -388,8 +533,8 @@ const WalletPage = () => {
                             </div>
                         </div>
                     </div>
-
-                    {/* Chat Area */}
+    
+                    {/* Chat Area - modified to handle images */}
                     <div className="w-2/3 flex flex-col">
                         <div className="bg-pink-400 text-white p-4 flex justify-between items-center rounded-tr-2xl">
                             <h2 className="text-xl font-bold">Chat Support - {selectedOrder.orderId}</h2>
@@ -400,44 +545,114 @@ const WalletPage = () => {
                                 ✕
                             </button>
                         </div>
-
+    
+                        {/* Modified: Messages container to handle image display */}
                         <div className="flex-grow overflow-y-auto p-6 space-y-4">
                             {messages.map((msg, index) => (
                                 <div
                                     key={index}
-                                    className={`flex ${msg.sender === 'customer' ? 'justify-end' : 'justify-start'}`}
+                                    className={`flex ${msg.senderId === customerId ? 'justify-end' : 'justify-start'}`}
                                 >
                                     <div className={`
                                         max-w-[70%] p-3 rounded-xl shadow-sm
-                                        ${msg.sender === 'customer'
+                                        ${msg.senderId === customerId
                                             ? 'bg-pink-100 text-pink-800'
                                             : 'bg-blue-100 text-blue-800'}
                                     `}>
-                                        <p className="mb-1">{msg.text}</p>
-                                        <p className="text-xs text-gray-500 text-right">{msg.timestamp}</p>
+                                        {/* Check if message contains an image */}
+                                        {msg.messageType.startsWith('http') ? (
+                                            <div className="image-container">
+                                                <img 
+                                                    src={msg.messageType} 
+                                                    alt="Shared" 
+                                                    className="w-full rounded-lg mb-2 cursor-pointer" 
+                                                    onClick={() => openImageModal(msg.messageType)}
+                                                />
+                                                {msg.content && <p>{msg.content}</p>}
+                                            </div>
+                                        ) : (
+                                            <p>{msg.content}</p>
+                                        )}
+                                        <p className="text-xs text-gray-500 text-right">
+                                            {new Date(msg.createAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </p>
                                     </div>
                                 </div>
                             ))}
+                            <div ref={messagesEndRef} />
                         </div>
-
-                        <div className="p-4 border-t flex gap-2">
-                            <input
-                                type="text"
-                                value={message}
-                                onChange={(e) => setMessage(e.target.value)}
-                                placeholder="Type your message..."
-                                className="flex-grow p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-300"
-                                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                            />
-                            <button
-                                onClick={handleSendMessage}
-                                className="bg-pink-400 text-white px-6 py-3 rounded-lg hover:bg-pink-500 transition-colors"
-                            >
-                                Send
-                            </button>
+    
+                        {/* Modified: Input area with image upload */}
+                        <div className="p-4 border-t">
+                            {/* Image preview if selected */}
+                            {selectedImage && (
+                                <div className="mb-2 relative w-32 h-32 rounded overflow-hidden">
+                                    <img 
+                                        src={URL.createObjectURL(selectedImage)} 
+                                        alt="Selected" 
+                                        className="w-full h-full object-cover" 
+                                    />
+                                    <button 
+                                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                                        onClick={handleRemoveImage}
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                            )}
+                            
+                            <div className="flex gap-2 items-center">
+                                {/* Text input */}
+                                <input
+                                    type="text"
+                                    value={newMessage}
+                                    onChange={(e) => setNewMessage(e.target.value)}
+                                    placeholder="Type your message..."
+                                    className="flex-grow p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-300"
+                                    onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                                    disabled={isUploading}
+                                />
+                                
+                                {/* Image upload button */}
+                                <label className="cursor-pointer p-3 bg-blue-100 text-blue-500 rounded-lg hover:bg-blue-200">
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageSelect}
+                                        ref={fileInputRef}
+                                        className="hidden"
+                                        disabled={isUploading}
+                                    />
+                                    📷
+                                </label>
+                                
+                                {/* Send button */}
+                                <button
+                                    onClick={sendMessage}
+                                    className="bg-pink-400 text-white px-6 py-3 rounded-lg hover:bg-pink-500 transition-colors disabled:opacity-50"
+                                    disabled={isUploading || (!newMessage.trim() && !selectedImage)}
+                                >
+                                    {isUploading ? 'Uploading...' : 'Send'}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
+                
+                {/* Image modal for full-size viewing */}
+                {showImageModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-hidden relative">
+                            <button 
+                                className="absolute top-2 right-2 text-2xl font-bold text-gray-700 h-8 w-8 rounded-full flex items-center justify-center bg-white bg-opacity-75"
+                                onClick={() => setShowImageModal(false)}
+                            >
+                                ✕
+                            </button>
+                            <img src={modalImage} alt="Full Size" className="max-w-full max-h-[90vh] object-contain" />
+                        </div>
+                    </div>
+                )}
             </div>
         );
     };
@@ -729,7 +944,7 @@ const WalletPage = () => {
         const [videoFile, setVideoFile] = useState(null);
         const [requestRefund, setRequestRefund] = useState(false);
         const [rating, setRating] = useState(0);
-        
+
         const renderStars = () => {
             return Array.from({ length: 5 }, (_, index) => (
                 <span
@@ -827,14 +1042,14 @@ const WalletPage = () => {
                     </button>
                 </div>
                 <div className="p-6 bg-white rounded-lg shadow-md">
-                   Ghi chú: nếu sản phẩm có vấn đề gì hay quay video lai và gửi cho chúng tôi
+                    Ghi chú: nếu sản phẩm có vấn đề gì hay quay video lai và gửi cho chúng tôi
                 </div>
             </Modal>
         );
     };
     const FeedbackDetailsModal = ({ feedbackData, isVisible, onClose }) => {
         return (
-            
+
             <Modal
                 title="Feedback Details"
                 open={isVisible}
@@ -844,7 +1059,7 @@ const WalletPage = () => {
                 className="rounded-lg border border-pink-300 shadow-lg"
             >
 
-                
+
                 <div className="p-6 bg-white rounded-lg shadow-md">
                     <h4 className="font-semibold text-lg text-pink-600">Feedback Information</h4>
                     <div className="border-b pb-4 mb-4">
@@ -923,9 +1138,9 @@ const WalletPage = () => {
                 >
                     <MessageCircle className="w-6 h-6 text-white" />
                 </button>
-                
+
             </div>
-          
+
         );
     };
 
