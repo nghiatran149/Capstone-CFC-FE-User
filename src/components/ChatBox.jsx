@@ -19,7 +19,7 @@ const ChatBox = () => {
             setMessage('');
 
             try {
-                const response = await fetch('http://localhost:5243/chat-box', { 
+                const response = await fetch('https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/ChatBox/chat-box', { 
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
