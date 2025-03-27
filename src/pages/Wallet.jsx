@@ -4,7 +4,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { jwtDecode } from "jwt-decode";
 import { message, Modal, Divider, Tag } from 'antd';
-import {  } from 'antd';
+import { } from 'antd';
 import axios from 'axios';
 import { HubConnectionBuilder, HttpTransportType } from '@microsoft/signalr';
 import { useNavigate } from 'react-router-dom';
@@ -56,7 +56,7 @@ const WalletPage = () => {
             // Decode token to get customer ID
             const decodedToken = jwtDecode(token);
             const customerId = decodedToken.Id;  // Using Id from token like in ShoppingCart
-
+            
             const response = await fetch(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Order/GetOrderByCustomer?CusomterId=${customerId}`);
             const data = await response.json();
 
@@ -376,50 +376,132 @@ const WalletPage = () => {
         const [messages, setMessages] = useState([]);
         const [newMessage, setNewMessage] = useState('');
         const [connection, setConnection] = useState(null);
+        const [connectionState, setConnectionState] = useState('disconnected');
         const [chatRoomId, setChatRoomId] = useState(null);
         const messagesEndRef = useRef(null);
-        
+
         // Add state for image handling
         const [selectedImage, setSelectedImage] = useState(null);
         const [isUploading, setIsUploading] = useState(false);
         const [showImageModal, setShowImageModal] = useState(false);
         const [modalImage, setModalImage] = useState('');
         const fileInputRef = useRef(null);
-    
+
         // Existing IDs
-        const orderId = selectedOrder.orderId;
+         const orderId = selectedOrder.orderId;
         const customerId = selectedOrder.customerId;
         const employeeId = selectedOrder.staffId;
-    
+
         // SignalR connection setup (unchanged)
         useEffect(() => {
-            const newConnection = new HubConnectionBuilder()
-                .withUrl('https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/chatHub', {
-                    skipNegotiation: true, // ⚡ Chỉ dùng WebSockets
-                    transport: HttpTransportType.WebSockets,
-                  })
-                .withAutomaticReconnect()
-                .build();
-    
-            setConnection(newConnection);
+            let newConnection = null;
+
+            const createConnection = () => {
+                newConnection = new HubConnectionBuilder()
+                    .withUrl('https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/chatHub', {
+                        skipNegotiation: true, // ⚡ Chỉ dùng WebSockets
+                        transport: HttpTransportType.WebSockets,
+                    })
+                    .withAutomaticReconnect()
+                    .build();
+
+                // Add event handlers
+                newConnection.onclose(() => {
+                    console.log('SignalR connection closed.');
+                    setConnectionState('disconnected');
+                });
+
+                newConnection.onreconnecting(() => {
+                    console.log('SignalR reconnecting...');
+                    setConnectionState('reconnecting');
+                });
+
+                newConnection.onreconnected(() => {
+                    console.log('SignalR reconnected. Rejoining chat room...');
+                    setConnectionState('connected');
+                    if (chatRoomId) {
+                        newConnection.invoke("JoinChatRoom", chatRoomId).catch(console.error);
+                    }
+                });
+
+                setConnection(newConnection);
+            };
+
+            createConnection();
+
+            return () => {
+                if (newConnection) {
+                    newConnection.stop().catch(console.error);
+                }
+            };
         }, []);
-    
+
+
         // Start connection and listen for messages (unchanged)
         useEffect(() => {
-            if (connection) {
-                connection.start()
-                    .then(() => {
-                        console.log('SignalR Connected!');
-    
-                        // Listen for new messages
-                        connection.on('ReceiveMessage', (message) => {
-                            setMessages((prevMessages) => [...prevMessages, message]);
-                        });
-                    })
-                    .catch((error) => console.error('SignalR Connection Error: ', error));
+            if (!connection) return;
+
+            const startConnection = async () => {
+                if (connectionState !== 'disconnected') {
+                    console.log(`Connection is already in state: ${connectionState}`);
+                    return;
+                }
+
+                try {
+                    setConnectionState('connecting');
+                    await connection.start();
+                    console.log('SignalR Connected!');
+                    setConnectionState('connected');
+
+                    // If we already have a chatRoomId, join it
+                    if (chatRoomId) {
+                        await connection.invoke("JoinChatRoom", chatRoomId);
+                    }
+                } catch (error) {
+                    console.error('SignalR Connection Error:', error);
+                    setConnectionState('disconnected');
+                    // Try again after a delay
+                    setTimeout(startConnection, 5000);
+                }
+            };
+
+            // Only setup message listener once
+            connection.off('ReceiveMessage'); // Remove any existing listeners
+            connection.on('ReceiveMessage', (message) => {
+                console.log("Received message:", message);
+                setMessages(prevMessages => [...prevMessages, message]);
+            });
+
+            // Start connection if disconnected
+            if (connectionState === 'disconnected') {
+                startConnection();
             }
-        }, [connection]);
-    
+        }, [connection, connectionState, chatRoomId]);
+
+        // Join chat room when we have both a connected connection and a room ID
+        useEffect(() => {
+            const joinChatRoom = async () => {
+                if (connection && connectionState === 'connected' && chatRoomId) {
+                    try {
+                        console.log(`Joining chat room: ${chatRoomId}`);
+                        await connection.invoke("JoinChatRoom", chatRoomId);
+                    } catch (error) {
+                        console.error('Error joining chat room:', error);
+                    }
+                }
+            };
+
+            joinChatRoom();
+
+            // Clean up when component unmounts or chatRoomId changes
+            return () => {
+                if (connection && connectionState === 'connected' && chatRoomId) {
+                    connection.invoke("LeaveChatRoom", chatRoomId).catch(console.error);
+                }
+            };
+        }, [connection, connectionState, chatRoomId]);
+
+
         // Fetch messages from API (unchanged)
         useEffect(() => {
             if (isChatModalOpen && orderId) {
@@ -427,33 +509,29 @@ const WalletPage = () => {
                     try {
                         const response = await axios.get(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/messages/messages/${orderId}/${customerId}/${employeeId}`);
                         setMessages(response.data.data);
-    
+
                         // Get chatRoomId from first message if available
                         if (response.data.data && response.data.data.length > 0) {
                             const roomId = response.data.data[0].chatRoomId;
                             setChatRoomId(roomId);
-    
-                            // Join chat room if connected
-                            if (connection && connection.state === "Connected" && roomId) {
-                                connection.invoke("JoinChatRoom", roomId);
-                            }
+
+                            
                         }
                     } catch (error) {
                         console.error('Error fetching messages:', error);
                     }
                 };
-    
+
                 fetchMessages();
             }
-        }, [isChatModalOpen, orderId, connection, customerId, employeeId]);
-    
+        }, [isChatModalOpen, orderId, customerId, employeeId]);
         // Auto-scroll to newest message (unchanged)
         useEffect(() => {
             if (messagesEndRef.current) {
                 messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
             }
         }, [messages]);
-    
+
         // New: Handle image selection
         const handleImageSelect = (e) => {
             // When a file is selected through the input, set it to state
@@ -462,7 +540,7 @@ const WalletPage = () => {
                 setSelectedImage(file);
             }
         };
-    
+
         // New: Remove selected image
         const handleRemoveImage = () => {
             // Clear the selected image from state
@@ -472,14 +550,14 @@ const WalletPage = () => {
                 fileInputRef.current.value = '';
             }
         };
-    
+
         // New: Upload image to Cloudinary
         const uploadImage = async (file) => {
             setIsUploading(true);
             const formData = new FormData();
             formData.append('file', file);
             formData.append('upload_preset', 'delivery_app'); // Replace with your upload preset
-    
+
             try {
                 // Send file to Cloudinary API
                 const response = await axios.post(
@@ -495,17 +573,17 @@ const WalletPage = () => {
                 return null;
             }
         };
-    
+
         // Modified: Send message to include image handling
         const sendMessage = async () => {
             // Only send if we have a chat room and either a message or image
             if (!chatRoomId || (!newMessage.trim() && !selectedImage)) return;
-    
+
             try {
                 let messageContent = newMessage;
                 let messageType = 'text';
                 let imageUrl = null;
-    
+
                 // If image selected, upload it first
                 if (selectedImage) {
                     setIsUploading(true);
@@ -518,7 +596,7 @@ const WalletPage = () => {
                     // Store image URL in messageType field
                     messageType = imageUrl;
                 }
-    
+
                 const messageData = {
                     chatRoomId: chatRoomId,
                     senderId: customerId,
@@ -526,30 +604,30 @@ const WalletPage = () => {
                     messageType: messageType, // 'text' or image URL
                     content: messageContent // Text message
                 };
-    
+
                 // Send message via API
                 await axios.post('https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/messages/create-message', messageData);
-    
+
                 // Reset input and image selection
                 setNewMessage('');
                 setSelectedImage(null);
                 if (fileInputRef.current) {
                     fileInputRef.current.value = '';
                 }
-    
+
             } catch (error) {
                 console.error('Error sending message:', error);
             } finally {
                 setIsUploading(false);
             }
         };
-    
+
         // New: Show full-size image in modal
         const openImageModal = (imageUrl) => {
             setModalImage(imageUrl);
             setShowImageModal(true);
         };
-    
+
         return (
             <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
                 <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[80vh] flex">
@@ -586,7 +664,7 @@ const WalletPage = () => {
                         </div>
                     </div>
 
-    
+
                     {/* Chat Area - modified to handle images */}
                     <div className="w-2/3 flex flex-col">
                         <div className="bg-pink-400 text-white p-4 flex justify-between items-center rounded-tr-2xl">
@@ -599,7 +677,7 @@ const WalletPage = () => {
                             </button>
                         </div>
 
-    
+
                         {/* Modified: Messages container to handle image display */}
                         <div className="flex-grow overflow-y-auto p-6 space-y-4">
                             {messages.map((msg, index) => (
@@ -616,10 +694,10 @@ const WalletPage = () => {
                                         {/* Check if message contains an image */}
                                         {msg.messageType.startsWith('http') ? (
                                             <div className="image-container">
-                                                <img 
-                                                    src={msg.messageType} 
-                                                    alt="Shared" 
-                                                    className="w-full rounded-lg mb-2 cursor-pointer" 
+                                                <img
+                                                    src={msg.messageType}
+                                                    alt="Shared"
+                                                    className="w-full rounded-lg mb-2 cursor-pointer"
                                                     onClick={() => openImageModal(msg.messageType)}
                                                 />
                                                 {msg.content && <p>{msg.content}</p>}
@@ -635,18 +713,18 @@ const WalletPage = () => {
                             ))}
                             <div ref={messagesEndRef} />
                         </div>
-    
+
                         {/* Modified: Input area with image upload */}
                         <div className="p-4 border-t">
                             {/* Image preview if selected */}
                             {selectedImage && (
                                 <div className="mb-2 relative w-32 h-32 rounded overflow-hidden">
-                                    <img 
-                                        src={URL.createObjectURL(selectedImage)} 
-                                        alt="Selected" 
-                                        className="w-full h-full object-cover" 
+                                    <img
+                                        src={URL.createObjectURL(selectedImage)}
+                                        alt="Selected"
+                                        className="w-full h-full object-cover"
                                     />
-                                    <button 
+                                    <button
                                         className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
                                         onClick={handleRemoveImage}
                                     >
@@ -654,7 +732,7 @@ const WalletPage = () => {
                                     </button>
                                 </div>
                             )}
-                            
+
                             <div className="flex gap-2 items-center">
                                 {/* Text input */}
                                 <input
@@ -666,7 +744,7 @@ const WalletPage = () => {
                                     onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
                                     disabled={isUploading}
                                 />
-                                
+
                                 {/* Image upload button */}
                                 <label className="cursor-pointer p-3 bg-blue-100 text-blue-500 rounded-lg hover:bg-blue-200">
                                     <input
@@ -679,7 +757,7 @@ const WalletPage = () => {
                                     />
                                     📷
                                 </label>
-                                
+
                                 {/* Send button */}
                                 <button
                                     onClick={sendMessage}
@@ -692,12 +770,12 @@ const WalletPage = () => {
                         </div>
                     </div>
                 </div>
-                
+
                 {/* Image modal for full-size viewing */}
                 {showImageModal && (
                     <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
                         <div className="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-hidden relative">
-                            <button 
+                            <button
                                 className="absolute top-2 right-2 text-2xl font-bold text-gray-700 h-8 w-8 rounded-full flex items-center justify-center bg-white bg-opacity-75"
                                 onClick={() => setShowImageModal(false)}
                             >
@@ -1111,8 +1189,7 @@ const WalletPage = () => {
                                     message.error('You cannot request a refund at this time.');
                                 }
                             }}
-                            disabled={!canRequestRefund} // Disable checkbox if not allowed
-                        />
+                            onChange={() => setRequestRefund(!requestRefund)} />
                     </div>
                     <div>* bạn phải kích hoạt ví mới được sử dung refund</div>
                     {/* Rating Section */}
@@ -1200,7 +1277,7 @@ const WalletPage = () => {
                 </button>
 
                 {/* Nút Hủy Đơn - Gradient Đỏ-Cam */}
-                {order.status !== "Received" && order.status !== "Delivery" && order.status !== "Request refund"&&(
+                {order.status !== "Received" && order.status !== "Delivery" && order.status !== "Request refund" && (
                     <button
                         onClick={() => handleDelete(order.orderId)}
                         className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-600 hover:to-orange-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
@@ -1280,16 +1357,16 @@ const WalletPage = () => {
 
 
 
-                
-                    <button
-                        onClick={() => handleFeedback(order.orderId)}
-                        className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-600 hover:to-orange-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
-                    >
-                        <XCircle className="w-5 h-5 text-white" />
-                        <span>Feedback</span>
-                    </button>
-                
-               
+
+                <button
+                    onClick={() => handleFeedback(order.orderId)}
+                    className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-600 hover:to-orange-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
+                >
+                    <XCircle className="w-5 h-5 text-white" />
+                    <span>Feedback</span>
+                </button>
+
+
             </div>
         );
     };
@@ -1310,7 +1387,7 @@ const WalletPage = () => {
     return (
         <div className="w-full">
             <Header />
-    
+
             <div className="p-14 min-h-screen">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-20 mb-10">
                     <div className="bg-pink-500 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
@@ -1318,72 +1395,68 @@ const WalletPage = () => {
                         <h3 className="text-xl font-medium mb-2">Total Orders</h3>
                         <p className="text-3xl font-bold">{stats.total}</p>
                     </div>
-    
+
                     <div className="bg-green-500 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
                         <div className="absolute right-0 top-0 w-24 h-24 bg-green-400 rounded-full transform translate-x-8 -translate-y-8"></div>
                         <h3 className="text-xl font-medium mb-2">Completed Orders</h3>
                         <p className="text-3xl font-bold">{stats.completed}</p>
                     </div>
-    
+
                     <div className="bg-blue-500 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
                         <div className="absolute right-0 top-0 w-24 h-24 bg-blue-400 rounded-full transform translate-x-8 -translate-y-8"></div>
                         <h3 className="text-xl font-medium mb-2">Processing Orders</h3>
                         <p className="text-3xl font-bold">{stats.processing}</p>
                     </div>
-    
+
                     <div className="bg-red-500 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
                         <div className="absolute right-0 top-0 w-24 h-24 bg-red-400 rounded-full transform translate-x-8 -translate-y-8"></div>
                         <h3 className="text-xl font-medium mb-2">Failed Orders</h3>
                         <p className="text-3xl font-bold">{stats.failed}</p>
                     </div>
                 </div>
-    
+
                 {/* Tab Navigation */}
                 <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
                     <div className="flex border-b border-gray-200">
                         <button
                             onClick={() => setActiveTab('orders')}
-                            className={`py-3 px-6 font-medium text-lg transition-all border-b-2 mr-4 ${
-                                activeTab === 'orders' 
-                                ? 'border-pink-500 text-pink-500' 
-                                : 'border-transparent text-gray-500 hover:text-gray-700'
-                            }`}
+                            className={`py-3 px-6 font-medium text-lg transition-all border-b-2 mr-4 ${activeTab === 'orders'
+                                    ? 'border-pink-500 text-pink-500'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                                }`}
                         >
                             Orders
                         </button>
                         <button
                             onClick={() => setActiveTab('refund')}
-                            className={`py-3 px-6 font-medium text-lg transition-all border-b-2 mr-4 ${
-                                activeTab === 'refund' 
-                                ? 'border-pink-500 text-pink-500' 
-                                : 'border-transparent text-gray-500 hover:text-gray-700'
-                            }`}
+                            className={`py-3 px-6 font-medium text-lg transition-all border-b-2 mr-4 ${activeTab === 'refund'
+                                    ? 'border-pink-500 text-pink-500'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                                }`}
                         >
                             Refund Orders
                         </button>
                         <button
                             onClick={() => setActiveTab('cancel')}
-                            className={`py-3 px-6 font-medium text-lg transition-all border-b-2 mr-4 ${
-                                activeTab === 'cancel' 
-                                ? 'border-pink-500 text-pink-500' 
-                                : 'border-transparent text-gray-500 hover:text-gray-700'
-                            }`}
+                            className={`py-3 px-6 font-medium text-lg transition-all border-b-2 mr-4 ${activeTab === 'cancel'
+                                    ? 'border-pink-500 text-pink-500'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                                }`}
                         >
                             Cancel Orders
                         </button>
                         <button
                             onClick={() => setActiveTab('fail')}
-                            className={`py-3 px-6 font-medium text-lg transition-all border-b-2 ${
-                                activeTab === 'fail' 
-                                ? 'border-pink-500 text-pink-500' 
-                                : 'border-transparent text-gray-500 hover:text-gray-700'
-                            }`}
+                            className={`py-3 px-6 font-medium text-lg transition-all border-b-2 ${activeTab === 'fail'
+                                    ? 'border-pink-500 text-pink-500'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                                }`}
                         >
                             Failed Orders
                         </button>
                     </div>
                 </div>
-    
+
                 {/* Active Orders Tab Content */}
                 {activeTab === 'orders' && (
                     <div className="bg-white rounded-lg shadow-lg p-6 mb-10">
@@ -1432,7 +1505,7 @@ const WalletPage = () => {
                                     <span className="w-2 h-2 rounded-full bg-current"></span>
                                     Awaiting Design Approval
                                 </button>
-    
+
                                 <button
                                     onClick={() => setSelectedStatus('Flower Completed')}
                                     className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${selectedStatus === 'Flower Completed'
@@ -1505,7 +1578,7 @@ const WalletPage = () => {
                         </div>
                     </div>
                 )}
-    
+
                 {/* Refund Orders Tab Content */}
                 {activeTab === 'refund' && (
                     <div className="bg-white rounded-lg shadow-lg p-6 mb-10">
@@ -1551,7 +1624,7 @@ const WalletPage = () => {
                         </div>
                     </div>
                 )}
-    
+
                 {/* Cancel Orders Tab Content */}
                 {activeTab === 'cancel' && (
                     <div className="bg-white rounded-lg shadow-lg p-6 mb-10">
@@ -1597,7 +1670,7 @@ const WalletPage = () => {
                         </div>
                     </div>
                 )}
-    
+
                 {/* Fail Orders Tab Content */}
                 {activeTab === 'fail' && (
                     <div className="bg-white rounded-lg shadow-lg p-6 mb-10">
@@ -1644,7 +1717,7 @@ const WalletPage = () => {
                     </div>
                 )}
             </div>
-    
+
             <Footer />
             {isChatModalOpen && <ChatModal />}
             {detailModalVisible && <OrderDetailModal />}
