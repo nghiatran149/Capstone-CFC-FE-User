@@ -4,16 +4,20 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { jwtDecode } from "jwt-decode";
 import { message, Modal, Divider, Tag } from 'antd';
+import { } from 'antd';
 import axios from 'axios';
 import { HubConnectionBuilder, HttpTransportType } from '@microsoft/signalr';
 import { useNavigate } from 'react-router-dom';
 import { Eye, XCircle, MessageCircle } from "lucide-react";
 
 const WalletPage = () => {
+    const [activeTab, setActiveTab] = useState('orders');
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [isChatModalOpen, setIsChatModalOpen] = useState(false);
     const [orders, setOrders] = useState([]);
     const [failOrders, setFailOrders] = useState([]);
+    const [refundOrders, setRefundOrders] = useState([]);
+
     const [cancelOrders, setCancelOrders] = useState([]);
 
     const [selectedStatus, setSelectedStatus] = useState('All');
@@ -36,6 +40,7 @@ const WalletPage = () => {
         fetchOrders();
         fetchFailOrders();
         fetchCancelOrders();
+        fetchRefundOrders();
     }, []);
 
     const fetchOrders = async () => {
@@ -51,7 +56,7 @@ const WalletPage = () => {
             // Decode token to get customer ID
             const decodedToken = jwtDecode(token);
             const customerId = decodedToken.Id;  // Using Id from token like in ShoppingCart
-
+            
             const response = await fetch(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Order/GetOrderByCustomer?CusomterId=${customerId}`);
             const data = await response.json();
 
@@ -134,6 +139,49 @@ const WalletPage = () => {
             message.error('Failed to load orders');
         }
     };
+    const fetchRefundOrders = async () => {
+        try {
+            // Get token from sessionStorage like in ShoppingCart
+            const token = sessionStorage.getItem('accessToken');
+            if (!token) {
+                message.error('Please login to view orders');
+                navigate('/login');
+                return;
+            }
+
+            // Decode token to get customer ID
+            const decodedToken = jwtDecode(token);
+            const customerId = decodedToken.Id;  // Using Id from token like in ShoppingCart
+
+            const response = await fetch(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Order/GetRefundOrderByCustomer?CusomterId=${customerId}`);
+            const data = await response.json();
+
+            if (data.statusCode === 200) {
+                const formattedOrders = data.data.map(order => ({
+                    orderId: order.orderId,
+                    details: order.productCustomResponse ?
+                        [order.productCustomResponse.productName] :
+                        order.orderDetails.map(detail => detail.productName),
+                    price: order.orderPrice,
+                    payment: order.transfer ? "100% payment" : "50% deposit",
+                    createAt: new Date(order.createAt).toLocaleString(),
+                    date: new Date(order.deliveryDateTime).toLocaleString(),
+                    status: order.status,
+                    note: order.note,
+                    phone: order.phone,
+                    delivery: order.delivery ? "Shipping" : "Pickup",
+
+                }));
+
+                setRefundOrders(formattedOrders);
+
+
+            }
+        } catch (error) {
+            console.error("Error fetching orders:", error);
+            message.error('Failed to load orders');
+        }
+    };
     const fetchCancelOrders = async () => {
         try {
             // Get token from sessionStorage like in ShoppingCart
@@ -187,6 +235,9 @@ const WalletPage = () => {
             "Delivery": "text-purple-600 bg-purple-100",
             "Cancel": "text-red-600 bg-red-100",
             "Received": "text-blue-600 bg-blue-100",
+            "Refuse refund": "text-red-600 bg-red-100",
+            "Accept refund": "text-green-600 bg-green-100",
+            "Request refund": "text-yellow-600 bg-yellow-100",
 
             "đang xử lý": "text-blue-600 bg-blue-100",
         };
@@ -320,6 +371,7 @@ const WalletPage = () => {
             message.error('Failed to process feedback');
         }
     };
+
     const ChatModal = () => {
         const [messages, setMessages] = useState([]);
         const [newMessage, setNewMessage] = useState('');
@@ -336,7 +388,7 @@ const WalletPage = () => {
         const fileInputRef = useRef(null);
 
         // Existing IDs
-        const orderId = selectedOrder.orderId;
+         const orderId = selectedOrder.orderId;
         const customerId = selectedOrder.customerId;
         const employeeId = selectedOrder.staffId;
 
@@ -383,6 +435,7 @@ const WalletPage = () => {
                 }
             };
         }, []);
+
 
         // Start connection and listen for messages (unchanged)
         useEffect(() => {
@@ -449,7 +502,6 @@ const WalletPage = () => {
         }, [connection, connectionState, chatRoomId]);
 
 
-
         // Fetch messages from API (unchanged)
         useEffect(() => {
             if (isChatModalOpen && orderId) {
@@ -473,7 +525,6 @@ const WalletPage = () => {
                 fetchMessages();
             }
         }, [isChatModalOpen, orderId, customerId, employeeId]);
-
         // Auto-scroll to newest message (unchanged)
         useEffect(() => {
             if (messagesEndRef.current) {
@@ -613,6 +664,7 @@ const WalletPage = () => {
                         </div>
                     </div>
 
+
                     {/* Chat Area - modified to handle images */}
                     <div className="w-2/3 flex flex-col">
                         <div className="bg-pink-400 text-white p-4 flex justify-between items-center rounded-tr-2xl">
@@ -624,6 +676,7 @@ const WalletPage = () => {
                                 ✕
                             </button>
                         </div>
+
 
                         {/* Modified: Messages container to handle image display */}
                         <div className="flex-grow overflow-y-auto p-6 space-y-4">
@@ -1023,6 +1076,32 @@ const WalletPage = () => {
         const [videoFile, setVideoFile] = useState(null);
         const [requestRefund, setRequestRefund] = useState(false);
         const [rating, setRating] = useState(0);
+        const [canRequestRefund, setCanRequestRefund] = useState(false); // Trạng thái cho phép request refund
+
+        useEffect(() => {
+            const checkWallet = async () => {
+                const token = sessionStorage.getItem('accessToken');
+                if (!token) return;
+
+                const decodedToken = jwtDecode(token);
+                const customerId = decodedToken.Id;
+
+                try {
+                    const response = await fetch(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Wallet/CheckWallet?CustomerId=${customerId}`);
+                    const data = await response.json();
+
+                    if (data.statusCode === 200 && data.data) {
+                        setCanRequestRefund(true); // Cho phép request refund nếu API trả về true
+                    } else {
+                        setCanRequestRefund(false); // Không cho phép nếu API trả về false
+                    }
+                } catch (error) {
+                    console.error('Error checking wallet:', error);
+                }
+            };
+
+            checkWallet();
+        }, []);
 
         const renderStars = () => {
             return Array.from({ length: 5 }, (_, index) => (
@@ -1103,9 +1182,16 @@ const WalletPage = () => {
                         <input
                             type="checkbox"
                             checked={requestRefund}
-                            onChange={() => setRequestRefund(!requestRefund)}
-                        />
+                            onChange={() => {
+                                if (canRequestRefund) {
+                                    setRequestRefund(!requestRefund);
+                                } else {
+                                    message.error('You cannot request a refund at this time.');
+                                }
+                            }}
+                            onChange={() => setRequestRefund(!requestRefund)} />
                     </div>
+                    <div>* bạn phải kích hoạt ví mới được sử dung refund</div>
                     {/* Rating Section */}
                     <div className="mb-6 mt-4">
                         <h4 className="font-semibold">Rating:</h4>
@@ -1122,6 +1208,8 @@ const WalletPage = () => {
                 </div>
                 <div className="p-6 bg-white rounded-lg shadow-md">
                     Ghi chú: nếu sản phẩm có vấn đề gì hay quay video lai và gửi cho chúng tôi
+                    <div>- Với những đon hàng hư hại trên 30% chúng tôi sẽ hoàn trả lại 70% số tiền của hoa </div>
+
                 </div>
             </Modal>
         );
@@ -1189,7 +1277,7 @@ const WalletPage = () => {
                 </button>
 
                 {/* Nút Hủy Đơn - Gradient Đỏ-Cam */}
-                {order.status !== "Received" && order.status !== "Delivery" && (
+                {order.status !== "Received" && order.status !== "Delivery" && order.status !== "Request refund" && (
                     <button
                         onClick={() => handleDelete(order.orderId)}
                         className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-600 hover:to-orange-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
@@ -1198,7 +1286,7 @@ const WalletPage = () => {
                         <span>Cancel</span>
                     </button>
                 )}
-                {order.status === "Received" && (
+                {(order.status === "Received" || order.status === "Request refund") && (
                     <button
                         onClick={() => handleFeedback(order.orderId)}
                         className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-600 hover:to-orange-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
@@ -1231,7 +1319,7 @@ const WalletPage = () => {
                     className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-lg shadow-md transition-all duration-300 gap-2"
                 >
                     <EyeOutlined />
-                    <span>View Details</span>
+                    <span>View</span>
                 </button>
 
 
@@ -1253,6 +1341,32 @@ const WalletPage = () => {
                     <DeleteOutlined className="text-xs" />
                     <span>Remove</span>
                 </button>
+            </div>
+        );
+    };
+    const renderRefundOrderActions = (order) => {
+        return (
+            <div className="flex space-x-2">
+                <button
+                    onClick={() => fetchOrderDetail(order.orderId)}
+                    className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-lg shadow-md transition-all duration-300 gap-2"
+                >
+                    <EyeOutlined />
+                    <span>View</span>
+                </button>
+
+
+
+
+                <button
+                    onClick={() => handleFeedback(order.orderId)}
+                    className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-600 hover:to-orange-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
+                >
+                    <XCircle className="w-5 h-5 text-white" />
+                    <span>Feedback</span>
+                </button>
+
+
             </div>
         );
     };
@@ -1301,7 +1415,50 @@ const WalletPage = () => {
                     </div>
                 </div>
 
-                <div className="grid mt-10">
+                {/* Tab Navigation */}
+                <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+                    <div className="flex border-b border-gray-200">
+                        <button
+                            onClick={() => setActiveTab('orders')}
+                            className={`py-3 px-6 font-medium text-lg transition-all border-b-2 mr-4 ${activeTab === 'orders'
+                                    ? 'border-pink-500 text-pink-500'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            Orders
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('refund')}
+                            className={`py-3 px-6 font-medium text-lg transition-all border-b-2 mr-4 ${activeTab === 'refund'
+                                    ? 'border-pink-500 text-pink-500'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            Refund Orders
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('cancel')}
+                            className={`py-3 px-6 font-medium text-lg transition-all border-b-2 mr-4 ${activeTab === 'cancel'
+                                    ? 'border-pink-500 text-pink-500'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            Cancel Orders
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('fail')}
+                            className={`py-3 px-6 font-medium text-lg transition-all border-b-2 ${activeTab === 'fail'
+                                    ? 'border-pink-500 text-pink-500'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            Failed Orders
+                        </button>
+                    </div>
+                </div>
+
+                {/* Active Orders Tab Content */}
+                {activeTab === 'orders' && (
                     <div className="bg-white rounded-lg shadow-lg p-6 mb-10">
                         <div className="flex flex-col gap-6">
                             <div>
@@ -1362,8 +1519,8 @@ const WalletPage = () => {
                                 <button
                                     onClick={() => setSelectedStatus('Delivery')}
                                     className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${selectedStatus === 'Delivery'
-                                        ? 'bg-purple-500 text-white' // Màu tím khi được chọn
-                                        : 'bg-purple-100 text-purple-600 hover:bg-purple-200' // Màu tím nhạt khi chưa chọn
+                                        ? 'bg-purple-500 text-white'
+                                        : 'bg-purple-100 text-purple-600 hover:bg-purple-200'
                                         }`}
                                 >
                                     <span className="w-2 h-2 rounded-full bg-current"></span>
@@ -1420,8 +1577,56 @@ const WalletPage = () => {
                             </table>
                         </div>
                     </div>
-                </div>
-                <div className="grid mt-10">
+                )}
+
+                {/* Refund Orders Tab Content */}
+                {activeTab === 'refund' && (
+                    <div className="bg-white rounded-lg shadow-lg p-6 mb-10">
+                        <h2 className="text-3xl text-left text-pink-400 font-bold mb-2">Refund Orders</h2>
+                        <p className="text-base text-left text-gray-400 mb-8">Review and track your Refund orders here</p>
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full">
+                                <thead className="bg-pink-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Order ID</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Details</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Price</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Payment</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Delivery</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Create Time</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">RecipientTime</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Status</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                    {refundOrders.map((order) => (
+                                        <tr key={order.orderId}>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.orderId}</td>
+                                            <td className="px-6 py-4 text-left text-base">{order.details.join(", ")}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">${order.price}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.payment}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.delivery}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.createAt}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.date}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap">
+                                                <span className={`px-2 py-1 text-base rounded-full ${getStatusColor(order.status)}`}>
+                                                    {order.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap">
+                                                {renderRefundOrderActions(order)}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+
+                {/* Cancel Orders Tab Content */}
+                {activeTab === 'cancel' && (
                     <div className="bg-white rounded-lg shadow-lg p-6 mb-10">
                         <h2 className="text-3xl text-left text-pink-400 font-bold mb-2">Cancel Orders</h2>
                         <p className="text-base text-left text-gray-400 mb-8">Review and track your Cancel orders here</p>
@@ -1437,7 +1642,7 @@ const WalletPage = () => {
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Create Time</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">RecipientTime</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Status</th>
-                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Chat</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
@@ -1464,10 +1669,12 @@ const WalletPage = () => {
                             </table>
                         </div>
                     </div>
-                </div>
-                <div className="grid mt-10">
+                )}
+
+                {/* Fail Orders Tab Content */}
+                {activeTab === 'fail' && (
                     <div className="bg-white rounded-lg shadow-lg p-6 mb-10">
-                        <h2 className="text-3xl text-left text-pink-400 font-bold mb-2">Fail Orders</h2>
+                        <h2 className="text-3xl text-left text-pink-400 font-bold mb-2">Failed Orders</h2>
                         <p className="text-base text-left text-gray-400 mb-8">Review and track your fail orders here</p>
                         <div className="overflow-x-auto">
                             <table className="min-w-full">
@@ -1481,7 +1688,7 @@ const WalletPage = () => {
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Create Time</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">RecipientTime</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Status</th>
-                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Chat</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
@@ -1508,19 +1715,17 @@ const WalletPage = () => {
                             </table>
                         </div>
                     </div>
-                </div>
+                )}
             </div>
 
             <Footer />
             {isChatModalOpen && <ChatModal />}
             {detailModalVisible && <OrderDetailModal />}
-            {console.log("isFeedbackInputModalVisible:", isFeedbackInputModalVisible)}
-            {console.log("selectedOrder:", selectedOrder)}
             {isFeedbackInputModalVisible &&
                 <FeedbackInputModal
                     isVisible={isFeedbackInputModalVisible}
                     onClose={() => setIsFeedbackInputModalVisible(false)}
-                    orderId={selectedOrder?.orderId} // Truyền orderId vào modal
+                    orderId={selectedOrder?.orderId}
                 />
             }
             {isFeedbackModalVisible && <FeedbackDetailsModal
