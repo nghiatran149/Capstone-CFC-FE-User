@@ -8,7 +8,7 @@ import { } from 'antd';
 import axios from 'axios';
 import { HubConnectionBuilder, HttpTransportType } from '@microsoft/signalr';
 import { useNavigate } from 'react-router-dom';
-import { Eye, XCircle, MessageCircle } from "lucide-react";
+import { Eye, XCircle, MessageSquareText, MessageCircle } from "lucide-react";
 
 const WalletPage = () => {
     const [activeTab, setActiveTab] = useState('orders');
@@ -1289,9 +1289,9 @@ const WalletPage = () => {
                 {(order.status === "Received" || order.status === "Request refund") && (
                     <button
                         onClick={() => handleFeedback(order.orderId)}
-                        className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-600 hover:to-orange-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
+                        className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-pink-500 to-pink-400 hover:from-pink-600 hover:to-pink-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
                     >
-                        <XCircle className="w-5 h-5 text-white" />
+                        <MessageSquareText className="w-5 h-5 text-white" />
                         <span>Feedback</span>
                     </button>
                 )}
@@ -1316,7 +1316,7 @@ const WalletPage = () => {
             <div className="flex space-x-2">
                 <button
                     onClick={() => fetchOrderDetail(order.orderId)}
-                    className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-lg shadow-md transition-all duration-300 gap-2"
+                    className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white rounded-lg shadow-md transition-all duration-300 gap-2"
                 >
                     <EyeOutlined />
                     <span>View</span>
@@ -1327,18 +1327,18 @@ const WalletPage = () => {
                 {/* Payment button for failed orders */}
                 <button
                     onClick={() => handlePaymentRetry(order.orderId)}
-                    className="inline-flex items-center px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white text-sm rounded-md shadow-sm transition-colors duration-200 gap-1.5"
+                    className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-green-400 hover:from-green-600 hover:to-green-500 text-white text-sm rounded-md shadow-sm transition-colors duration-200 gap-1.5"
                 >
-                    <CreditCardOutlined className="text-xs" />
+                    <CreditCardOutlined />
                     <span>Pay</span>
                 </button>
 
                 {/* Delete button */}
                 <button
                     onClick={() => handleDelete(order.orderId)}
-                    className="inline-flex items-center px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm rounded-md shadow-sm transition-colors duration-200 gap-1.5"
+                    className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-red-500 to-red-400 hover:from-red-600 hover:to-red-500 text-white text-sm rounded-md shadow-sm transition-colors duration-200 gap-1.5"
                 >
-                    <DeleteOutlined className="text-xs" />
+                    <DeleteOutlined />
                     <span>Remove</span>
                 </button>
             </div>
@@ -1349,24 +1349,19 @@ const WalletPage = () => {
             <div className="flex space-x-2">
                 <button
                     onClick={() => fetchOrderDetail(order.orderId)}
-                    className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-lg shadow-md transition-all duration-300 gap-2"
+                    className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white rounded-lg shadow-md transition-all duration-300 gap-2"
                 >
                     <EyeOutlined />
                     <span>View</span>
                 </button>
 
-
-
-
                 <button
                     onClick={() => handleFeedback(order.orderId)}
-                    className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-600 hover:to-orange-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
+                    className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-pink-500 to-pink-400 hover:from-pink-600 hover:to-pink-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
                 >
-                    <XCircle className="w-5 h-5 text-white" />
+                    <MessageSquareText className="w-5 h-5 text-white" />
                     <span>Feedback</span>
                 </button>
-
-
             </div>
         );
     };
@@ -1375,7 +1370,7 @@ const WalletPage = () => {
             <div className="flex space-x-2">
                 <button
                     onClick={() => fetchOrderDetail(order.orderId)}
-                    className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-lg shadow-md transition-all duration-300 gap-2"
+                    className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white rounded-lg shadow-md transition-all duration-300 gap-2"
                 >
                     <EyeOutlined />
                     <span>View Details</span>
@@ -1385,7 +1380,7 @@ const WalletPage = () => {
         );
     };
     return (
-        <div className="w-full">
+        <div className="w-full bg-pink-50">
             <Header />
 
             <div className="p-14 min-h-screen">
@@ -1548,7 +1543,7 @@ const WalletPage = () => {
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Payment</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Delivery</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Create Time</th>
-                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">RecipientTime</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Recipient Time</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Status</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Actions</th>
                                     </tr>
@@ -1583,7 +1578,7 @@ const WalletPage = () => {
                 {activeTab === 'refund' && (
                     <div className="bg-white rounded-lg shadow-lg p-6 mb-10">
                         <h2 className="text-3xl text-left text-pink-400 font-bold mb-2">Refund Orders</h2>
-                        <p className="text-base text-left text-gray-400 mb-8">Review and track your Refund orders here</p>
+                        <p className="text-base text-left text-gray-400 mb-8">Review and track your refund orders here</p>
                         <div className="overflow-x-auto">
                             <table className="min-w-full">
                                 <thead className="bg-pink-50">
@@ -1594,7 +1589,7 @@ const WalletPage = () => {
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Payment</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Delivery</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Create Time</th>
-                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">RecipientTime</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Recipient Time</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Status</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Actions</th>
                                     </tr>
@@ -1629,7 +1624,7 @@ const WalletPage = () => {
                 {activeTab === 'cancel' && (
                     <div className="bg-white rounded-lg shadow-lg p-6 mb-10">
                         <h2 className="text-3xl text-left text-pink-400 font-bold mb-2">Cancel Orders</h2>
-                        <p className="text-base text-left text-gray-400 mb-8">Review and track your Cancel orders here</p>
+                        <p className="text-base text-left text-gray-400 mb-8">Review and track your cancel orders here</p>
                         <div className="overflow-x-auto">
                             <table className="min-w-full">
                                 <thead className="bg-pink-50">
@@ -1640,7 +1635,7 @@ const WalletPage = () => {
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Payment</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Delivery</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Create Time</th>
-                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">RecipientTime</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Recipient Time</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Status</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Actions</th>
                                     </tr>
@@ -1675,7 +1670,7 @@ const WalletPage = () => {
                 {activeTab === 'fail' && (
                     <div className="bg-white rounded-lg shadow-lg p-6 mb-10">
                         <h2 className="text-3xl text-left text-pink-400 font-bold mb-2">Failed Orders</h2>
-                        <p className="text-base text-left text-gray-400 mb-8">Review and track your fail orders here</p>
+                        <p className="text-base text-left text-gray-400 mb-8">Review and track your failed orders here</p>
                         <div className="overflow-x-auto">
                             <table className="min-w-full">
                                 <thead className="bg-pink-50">
@@ -1686,7 +1681,7 @@ const WalletPage = () => {
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Payment</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Delivery</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Create Time</th>
-                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">RecipientTime</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Recipient Time</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Status</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Actions</th>
                                     </tr>

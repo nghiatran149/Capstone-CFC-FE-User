@@ -357,7 +357,7 @@ const WalletPage = () => {
     ];
 
     return (
-        <div className="w-full">
+        <div className="w-full bg-pink-50">
             <Header />
             <div className="p-14 min-h-screen">
                 {checkwallet && checkwallet.data ? (

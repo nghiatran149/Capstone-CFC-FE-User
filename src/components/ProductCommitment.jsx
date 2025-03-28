@@ -4,7 +4,7 @@ import { Divider } from 'antd';
 
 const ProductCommitment = () => {
   return (
-    <div className="bg-pink-50 rounded-lg p-6 border border-pink-200 h-full overflow-y-auto">
+    <div className="bg-white rounded-lg p-6 border border-pink-200 h-full overflow-y-auto">
       <div className="flex items-center mb-3">
         <div className="w-1 h-6 bg-pink-500 mr-3"></div>
         <h2 className="text-xl font-bold text-left">Offers & Commitments</h2>
