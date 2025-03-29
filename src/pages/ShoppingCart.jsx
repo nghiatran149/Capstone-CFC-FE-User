@@ -166,7 +166,7 @@ const ShoppingCart = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="bg-pink-50 flex flex-col min-h-screen">
       <Header />
 
       <div className="flex ml-20 mt-10">
@@ -224,7 +224,7 @@ const ShoppingCart = () => {
             <Button
               type="primary"
               className="bg-pink-600 hover:bg-pink-700"
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/product')}
             >
               Continue Shopping
             </Button>

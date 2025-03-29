@@ -180,7 +180,7 @@ const ProductDetail = () => {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full bg-pink-50 py-2">
       <Header />
 
       <div className="flex ml-20 mt-10 mb-4">
@@ -218,7 +218,7 @@ const ProductDetail = () => {
             </div>
           </div>
 
-          <div className="bg-pink-50 rounded-lg p-6 border border-pink-200 h-full overflow-y-auto">
+          <div className="bg-white rounded-lg p-6 border border-pink-200 h-full overflow-y-auto">
             <div className="flex items-center mb-6">
               <div className="w-1 h-6 bg-pink-500 mr-3"></div>
               <h2 className="text-xl font-bold text-left">Product Information</h2>
@@ -300,7 +300,7 @@ const ProductDetail = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
           <ProductCommitment />
 
-          <div className="bg-pink-50 rounded-lg p-6 border border-pink-200 h-full overflow-y-auto">
+          <div className="bg-white rounded-lg p-6 border border-pink-200 h-full overflow-y-auto">
             <div className="flex items-center mb-3">
               <div className="w-1 h-6 bg-pink-500 mr-3"></div>
               <h2 className="text-xl font-bold text-left">Product Description</h2>
@@ -321,7 +321,7 @@ const ProductDetail = () => {
 
         <div className="mt-10">
           <h2 className="text-3xl text-left font-bold mb-4">Customer Reviews</h2>
-          <div className="mb-6 p-6 bg-pink-50 text-left border rounded-md">
+          <div className="bg-white mb-6 p-6 bg-pink-50 text-left border rounded-md">
             <div className="flex items-center mb-3">
               <div className="w-1 h-6 bg-pink-500 mr-3"></div>
               <h2 className="text-xl font-bold text-left">Leave your feedback about this product</h2>
@@ -332,7 +332,7 @@ const ProductDetail = () => {
               rows={4}
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder="Write your review..."
+              placeholder="Write your review here..."
             />
             <Button type="primary" className="mt-3 bg-pink-400 text-white" onClick={handleSubmit}>
               Submit
