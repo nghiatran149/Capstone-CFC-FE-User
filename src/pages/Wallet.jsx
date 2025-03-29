@@ -56,7 +56,7 @@ const WalletPage = () => {
             // Decode token to get customer ID
             const decodedToken = jwtDecode(token);
             const customerId = decodedToken.Id;  // Using Id from token like in ShoppingCart
-            
+
             const response = await fetch(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Order/GetOrderByCustomer?CusomterId=${customerId}`);
             const data = await response.json();
 
@@ -65,6 +65,17 @@ const WalletPage = () => {
                     orderId: order.orderId,
                     staffId: order.staffId,
                     customerId: order.customerId,
+                    
+                    // Thêm thông tin về ảnh
+                    image: order.productCustomResponse 
+                        ? order.productCustomResponse.productCustomImage  // ảnh cho custom product
+                        : order.orderDetails[0]?.productImage,  // ảnh cho normal product
+                    
+                    // Thêm toàn bộ thông tin về productCustomResponse để dùng sau này
+                    productCustomResponse: order.productCustomResponse,
+                    // Thêm thông tin orderDetails để dùng sau này
+                    orderDetails: order.orderDetails,
+    
                     details: order.productCustomResponse ?
                         [order.productCustomResponse.productName] :
                         order.orderDetails.map(detail => detail.productName),
@@ -77,6 +88,7 @@ const WalletPage = () => {
                     phone: order.phone,
                     delivery: order.delivery ? "Shipping" : "Pickup",
                 }));
+    
 
                 setOrders(formattedOrders);
 
@@ -388,7 +400,7 @@ const WalletPage = () => {
         const fileInputRef = useRef(null);
 
         // Existing IDs
-         const orderId = selectedOrder.orderId;
+        const orderId = selectedOrder.orderId;
         const customerId = selectedOrder.customerId;
         const employeeId = selectedOrder.staffId;
 
@@ -515,7 +527,7 @@ const WalletPage = () => {
                             const roomId = response.data.data[0].chatRoomId;
                             setChatRoomId(roomId);
 
-                            
+
                         }
                     } catch (error) {
                         console.error('Error fetching messages:', error);
@@ -1421,8 +1433,8 @@ const WalletPage = () => {
                         <button
                             onClick={() => setActiveTab('orders')}
                             className={`py-3 px-6 font-medium text-lg transition-all border-b-2 mr-4 ${activeTab === 'orders'
-                                    ? 'border-pink-500 text-pink-500'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                                ? 'border-pink-500 text-pink-500'
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
                                 }`}
                         >
                             Orders
@@ -1430,8 +1442,8 @@ const WalletPage = () => {
                         <button
                             onClick={() => setActiveTab('refund')}
                             className={`py-3 px-6 font-medium text-lg transition-all border-b-2 mr-4 ${activeTab === 'refund'
-                                    ? 'border-pink-500 text-pink-500'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                                ? 'border-pink-500 text-pink-500'
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
                                 }`}
                         >
                             Refund Orders
@@ -1439,8 +1451,8 @@ const WalletPage = () => {
                         <button
                             onClick={() => setActiveTab('cancel')}
                             className={`py-3 px-6 font-medium text-lg transition-all border-b-2 mr-4 ${activeTab === 'cancel'
-                                    ? 'border-pink-500 text-pink-500'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                                ? 'border-pink-500 text-pink-500'
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
                                 }`}
                         >
                             Cancel Orders
@@ -1448,8 +1460,8 @@ const WalletPage = () => {
                         <button
                             onClick={() => setActiveTab('fail')}
                             className={`py-3 px-6 font-medium text-lg transition-all border-b-2 ${activeTab === 'fail'
-                                    ? 'border-pink-500 text-pink-500'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                                ? 'border-pink-500 text-pink-500'
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
                                 }`}
                         >
                             Failed Orders
@@ -1543,7 +1555,9 @@ const WalletPage = () => {
                                 <thead className="bg-pink-50">
                                     <tr>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Order ID</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Order Image</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Details</th>
+
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Price</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Payment</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Delivery</th>
@@ -1557,6 +1571,37 @@ const WalletPage = () => {
                                     {filteredOrders.map((order) => (
                                         <tr key={order.orderId}>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.orderId}</td>
+                                            <td className="px-6 py-4 text-left">
+                                                <div className="w-20 h-20 rounded-lg overflow-hidden">
+                                                    {order.productCustomResponse ? (
+                                                        // Ảnh cho custom product
+                                                        <img
+                                                            src={order.productCustomResponse.productCustomImage}
+                                                            alt="Custom Product"
+                                                            className="w-full h-full object-cover"
+                                                            onError={(e) => {
+                                                                e.target.onerror = null;
+                                                                e.target.src = 'https://via.placeholder.com/150';
+                                                            }}
+                                                        />
+                                                    ) : order.orderDetails && order.orderDetails[0] ? (
+                                                        // Ảnh cho normal product - sửa lại phần này
+                                                        <img
+                                                            src={order.orderDetails[0].productImage}
+                                                            alt="Product"
+                                                            className="w-full h-full object-cover"
+                                                            onError={(e) => {
+                                                                e.target.onerror = null;
+                                                                e.target.src = 'https://via.placeholder.com/150';
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                                                            No Image
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </td>
                                             <td className="px-6 py-4 text-left text-base">{order.details.join(", ")}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">${order.price}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.payment}</td>

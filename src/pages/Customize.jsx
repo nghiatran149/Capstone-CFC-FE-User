@@ -62,6 +62,10 @@ const FlowerCustomization = () => {
     const [flowerPriceFilter, setFlowerPriceFilter] = useState(null);
     const [accessoryPriceFilter, setAccessoryPriceFilter] = useState(null);
 
+    const [generatedImageUrl, setGeneratedImageUrl] = useState(null);
+    const [productCustomId, setProductCustomId] = useState(null);
+    const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -427,9 +431,21 @@ const FlowerCustomization = () => {
         form.resetFields();
     };
 
-    const handleModalSubmit = async () => {
+    const handleGenerateImage = async () => {
         try {
-            const values = await form.validateFields();
+            // Kiểm tra các điều kiện cần thiết trước khi generate
+            if (!selectedBasket || !selectedStyle || Object.keys(selectedFlowers).length === 0) {
+                message.error('Please select basket, style and at least one flower before generating image');
+                return;
+            }
+
+            setIsGeneratingImage(true);
+            
+            // Lấy giá trị form mà không cần validate
+            const values = form.getFieldsValue();
+            const productName = values.productName?.trim() || 'Custom Product';
+            const description = values.description?.trim() || 'Custom flower arrangement';
+
             const token = sessionStorage.getItem('accessToken');
             if (!token) {
                 message.error('Please login to proceed');
@@ -440,72 +456,87 @@ const FlowerCustomization = () => {
             const decodedToken = jwtDecode(token);
             const customerId = decodedToken.Id;
 
-            if (!customerId) {
-                message.error('User information not found. Please login again');
-                navigate('/login');
-                return;
-            }
-
-            // Check if flowers are selected
-            if (Object.keys(selectedFlowers).length === 0) {
-                message.error('Please select at least one flower');
-                return;
-            }
-
-            // Prepare flower custom requests with proper flowerId
+            // Prepare flower custom requests
             const createFlowerCustomRequests = Object.values(selectedFlowers).map(flower => ({
                 flowerId: flower.flowerId,
                 quantity: flower.quantity
             }));
 
-            // Get the first accessory ID if any accessories are selected
+            // Get accessory ID
             const accessoryIds = Object.keys(selectedAccessories);
             const accessoryId = accessoryIds.length > 0 ? accessoryIds[0] : null;
 
             const customProductData = {
-                productName: values.productName.trim(),
+                productName: productName,
                 flowerBasketId: selectedBasket.id,
                 styleId: selectedStyle.id,
                 accessoryId: accessoryId,
                 quantity: 1,
                 createFlowerCustomRequests: createFlowerCustomRequests,
-                description: values.description.trim()
+                description: description
             };
 
-            const response = await axios.post(
+            console.log('Sending custom product data:', customProductData); // Debug log
+
+            // Create custom product first
+            const createResponse = await axios.post(
                 `https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/productcustoms/create-productcustom?CustomerId=${customerId}`,
                 customProductData,
                 {
                     headers: {
                         'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'accept': '*/*'
                     }
                 }
             );
 
-            if (response.status === 200 || response.status === 201) {
-                message.success('Custom product created successfully!');
-                setIsModalVisible(false);
-                const customId = response.data.customeId;
-                navigate('/checkout-custom', { 
-                    state: { 
-                        customId: customId,
-                        statusCode: response.data.statusCode,
-                        code: response.data.code,
-                        message: response.data.message
-                    } 
-                });
+            console.log('Create product response:', createResponse.data); // Debug log
+
+            if (createResponse.data.statusCode === 200) {
+                const newProductCustomId = createResponse.data.customeId;
+                setProductCustomId(newProductCustomId);
+
+                // Generate AI image using the new product custom ID
+                const imageResponse = await axios.post(
+                    `https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/productcustoms/CreateImageProductCustom?ProductCustomId=${newProductCustomId}`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'accept': 'application/json'
+                        }
+                    }
+                );
+
+                console.log('Image generation response:', imageResponse.data); // Debug log
+
+                if (imageResponse.data.imageUrl) {
+                    setGeneratedImageUrl(imageResponse.data.imageUrl);
+                    message.success('AI Image generated successfully!');
+                } else {
+                    throw new Error('No image URL in response');
+                }
             } else {
-                throw new Error('Failed to create custom product');
+                throw new Error(createResponse.data.message || 'Failed to create custom product');
             }
         } catch (error) {
-            console.error('Error:', error);
-            console.error('Error response:', error.response?.data);
-            message.error(
-                error.response?.data?.message || 
-                error.response?.data?.title ||
-                'Failed to create custom product. Please try again.'
-            );
+            console.error('Detailed error:', error);
+            message.error('Failed to generate AI image: ' + (error.response?.data?.message || error.message));
+        } finally {
+            setIsGeneratingImage(false);
+        }
+    };
+
+    const handleModalSubmit = () => {
+        if (productCustomId) {
+            navigate('/checkout-custom', { 
+                state: { 
+                    customId: productCustomId,
+                    statusCode: 200,
+                    code: "Success",
+                    message: "Custom product created successfully"
+                } 
+            });
         }
     };
 
@@ -1070,6 +1101,7 @@ const FlowerCustomization = () => {
                 onCancel={handleModalCancel}
                 okText="Create Custom Product"
                 cancelText="Cancel"
+                okButtonProps={{ disabled: !productCustomId }}
             >
                 <Form
                     form={form}
@@ -1103,6 +1135,37 @@ const FlowerCustomization = () => {
                             rows={4}
                         />
                     </Form.Item>
+
+                    <div className="flex flex-col items-center gap-4 mt-4">
+                        <Button
+                            type="primary"
+                            onClick={handleGenerateImage}
+                            loading={isGeneratingImage}
+                            className="w-full h-10 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg shadow-md"
+                        >
+                            {isGeneratingImage ? 'Generating Image...' : 'Generate AI Image'}
+                        </Button>
+
+                        {generatedImageUrl && (
+                            <div className="w-full mt-4">
+                                <p className="font-medium mb-2">Generated AI Image Preview:</p>
+                                <div className="relative">
+                                    <img
+                                        src={generatedImageUrl}
+                                        alt="AI Generated Custom Product"
+                                        className="w-full rounded-lg shadow-md"
+                                        onError={(e) => {
+                                            console.error('Image loading error:', e);
+                                            message.error('Failed to load generated image');
+                                        }}
+                                    />
+                                    {isGeneratingImage && (
+                                        <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-lg"></div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </Form>
             </Modal>
         </div>
