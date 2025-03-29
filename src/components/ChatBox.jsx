@@ -46,7 +46,7 @@ const ChatBox = () => {
                 {/* Chat button */}
                 <button
                     onClick={toggleChat}
-                    className="w-12 h-12 rounded-full bg-pink-600 hover:bg-pink-700 flex items-center justify-center shadow-lg transition-all duration-300"
+                    className="w-12 h-12 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white flex items-center justify-center shadow-lg transition-all duration-300"
                     aria-label="Open chat"
                     onMouseEnter={() => setShowBubble(true)}
                 >
