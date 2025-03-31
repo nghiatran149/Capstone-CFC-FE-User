@@ -34,6 +34,10 @@ const WalletPage = () => {
     const [isFeedbackModalVisible, setIsFeedbackModalVisible] = useState(false);
     const [isFeedbackInputModalVisible, setIsFeedbackInputModalVisible] = useState(false);
 
+    // Thêm state mới để quản lý dialog xác nhận
+    const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false);
+    const [orderToCancel, setOrderToCancel] = useState(null);
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -346,8 +350,8 @@ const WalletPage = () => {
 
             if (data.statusCode === 200) {
                 message.success('Order canceled successfully');
-                // Reload orders to reflect the changes
-                fetchOrders();
+                setIsConfirmModalVisible(false); // Đóng modal sau khi hủy thành công
+                fetchOrders(); // Reload orders
             } else {
                 message.error(data.message || 'Failed to cancel order');
             }
@@ -1291,7 +1295,7 @@ const WalletPage = () => {
                 {/* Nút Hủy Đơn - Gradient Đỏ-Cam */}
                 {order.status !== "Received" && order.status !== "Delivery" && order.status !== "Request refund" && (
                     <button
-                        onClick={() => handleDelete(order.orderId)}
+                        onClick={() => showCancelConfirm(order)}
                         className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-600 hover:to-orange-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
                     >
                         <XCircle className="w-5 h-5 text-white" />
@@ -1391,6 +1395,135 @@ const WalletPage = () => {
             </div>
         );
     };
+
+    // Thêm hàm mới để xử lý việc mở dialog xác nhận
+    const showCancelConfirm = (order) => {
+        setOrderToCancel(order);
+        setIsConfirmModalVisible(true);
+    };
+
+    // Thêm hàm tính toán số tiền hoàn lại
+    const calculateRefundAmount = (order) => {
+        if (order.status === "Order Successfully") {
+            return {
+                percentage: 100,
+                amount: order.price
+            };
+        }
+
+        // Tính thời gian còn lại đến delivery time
+        const deliveryTime = new Date(order.date);
+        const now = new Date();
+        const hoursRemaining = (deliveryTime - now) / (1000 * 60 * 60);
+
+        if (hoursRemaining > 24) {
+            return {
+                percentage: 70,
+                amount: order.price * 0.7
+            };
+        } else if (hoursRemaining > 3) {
+            return {
+                percentage: 50,
+                amount: order.price * 0.5
+            };
+        } else {
+            return {
+                percentage: 30,
+                amount: order.price * 0.3
+            };
+        }
+    };
+
+    // Cập nhật component ConfirmCancelModal
+    const ConfirmCancelModal = () => {
+        const refundInfo = orderToCancel ? calculateRefundAmount(orderToCancel) : null;
+
+        return (
+            <Modal
+                title={
+                    <div className="text-xl font-bold text-red-600 pb-2 border-b">
+                        Confirm Order Cancellation
+                    </div>
+                }
+                open={isConfirmModalVisible}
+                onCancel={() => setIsConfirmModalVisible(false)}
+                footer={[
+                    <button
+                        key="cancel"
+                        onClick={() => setIsConfirmModalVisible(false)}
+                        className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 mr-2 transition-colors"
+                    >
+                        No, Keep Order
+                    </button>,
+                    <button
+                        key="submit"
+                        onClick={() => handleDelete(orderToCancel?.orderId)}
+                        className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                    >
+                        Yes, Cancel Order
+                    </button>,
+                ]}
+                className="rounded-lg"
+            >
+                <div className="p-4">
+                    <div className="text-red-500 text-center mb-4">
+                        <XCircle className="w-16 h-16 mx-auto mb-2" />
+                    </div>
+                    <p className="text-lg text-center mb-2">Are you sure you want to cancel this order?</p>
+                    <p className="text-gray-500 text-center mb-4">This action cannot be undone.</p>
+                    
+                    {orderToCancel && (
+                        <>
+                            {/* Order Details */}
+                            <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+                                <p><span className="font-semibold">Order ID:</span> {orderToCancel.orderId}</p>
+                                <p><span className="font-semibold">Details:</span> {orderToCancel.details.join(", ")}</p>
+                                <p><span className="font-semibold">Total Price:</span> ${orderToCancel.price}</p>
+                                <p><span className="font-semibold">Delivery Time:</span> {orderToCancel.date}</p>
+                                <p><span className="font-semibold">Status:</span> {orderToCancel.status}</p>
+                            </div>
+
+                            {/* Refund Information */}
+                            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                <h3 className="text-lg font-semibold text-blue-700 mb-2">Refund Information</h3>
+                                <div className="space-y-2">
+                                    <p className="text-blue-600">
+                                        You will receive a {refundInfo.percentage}% refund of your payment
+                                    </p>
+                                    <div className="flex justify-between items-center bg-white p-3 rounded-lg">
+                                        <span className="text-gray-600">Refund Amount:</span>
+                                        <span className="text-lg font-bold text-green-600">
+                                            ${refundInfo.amount.toFixed(2)}
+                                        </span>
+                                    </div>
+                                    <p className="text-sm text-gray-500 mt-2">
+                                        {orderToCancel.status === "Order Successfully" ? (
+                                            "You will receive a full refund as your order is still in the initial stage."
+                                        ) : (
+                                            <>
+                                                Refund percentage is based on time until delivery:
+                                                <ul className="list-disc ml-5 mt-1">
+                                                    <li>More than 24 hours: 70% refund</li>
+                                                    <li>3-24 hours: 50% refund</li>
+                                                    <li>Less than 3 hours: 30% refund</li>
+                                                </ul>
+                                            </>
+                                        )}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Warning Message */}
+                            <div className="mt-4 text-sm text-gray-500 text-center">
+                                The refund will be processed according to our refund policy and may take 3-5 business days.
+                            </div>
+                        </>
+                    )}
+                </div>
+            </Modal>
+        );
+    };
+
     return (
         <div className="w-full bg-pink-50">
             <Header />
@@ -1773,6 +1906,7 @@ const WalletPage = () => {
                 isVisible={isFeedbackModalVisible}
                 onClose={() => setIsFeedbackModalVisible(false)}
             />}
+            <ConfirmCancelModal /> {/* Thêm Modal xác nhận */}
         </div>
     );
 };
