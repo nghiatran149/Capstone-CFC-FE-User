@@ -253,7 +253,7 @@ const Homepage = () => {
                 </div>
             </section>
 
-            <ChatBox />
+            {/* <ChatBox /> */}
             <ScrollToTop />
             <Footer />
         </div>
