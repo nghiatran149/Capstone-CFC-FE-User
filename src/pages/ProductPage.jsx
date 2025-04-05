@@ -152,7 +152,7 @@ const ProductPage = () => {
                         loop
                         playsInline
                     >
-                        <source src="/src/assets/productbg.mp4" type="video/mp4" />
+                        <source src="https://res.cloudinary.com/dm4xjtgkx/video/upload/v1743841870/productbg_hjdath.mp4" type="video/mp4" />
                         Your browser does not support the video tag.
                     </video>
 

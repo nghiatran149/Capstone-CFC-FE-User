@@ -32,31 +32,31 @@ const AboutUs = () => {
 
     const imageData = [
         {
-            src: "src/assets/ourstorypic.jpg",
+            src: "https://res.cloudinary.com/dm4xjtgkx/image/upload/v1743841954/ourstorypic_jr2vum.jpg",
             alt: "Story",
             title: "Our Story",
             description: "Born from a deep passion for flowers, we strive to bring the most exquisite floral arrangements for every special moment. Our journey is about crafting beauty and emotions into every bouquet."
         },
         {
-            src: "src/assets/ourvisionpic.jpg",
+            src: "https://res.cloudinary.com/dm4xjtgkx/image/upload/v1743841955/ourvisionpic_roe316.jpg",
             alt: "Vision",
             title: "Our Vision",
             description: "We aspire to be a leading floral brand, offering the perfect choice for every occasion—from elegant bouquets to personalized floral gifts that capture heartfelt emotions."
         },
         {
-            src: "src/assets/ourmissionpic.jpg",
+            src: "https://res.cloudinary.com/dm4xjtgkx/image/upload/v1743841932/ourmissionpic_wo58sf.jpg",
             alt: "Mission",
             title: "Our Mission",
             description: "Our mission is to help people express their emotions through flowers. We are committed to providing fresh, high-quality blooms and exceptional service with every order."
         },
         {
-            src: "src/assets/banner4.jpg",
+            src: "https://res.cloudinary.com/dm4xjtgkx/image/upload/v1743843446/endlessvariety_ugzkcd.jpg",
             alt: "Variety",
             title: "Endless Variety",
             description: "With a wide selection of locally sourced and imported flowers, we offer diverse styles from classic to modern, catering to every taste and occasion."
         },
         {
-            src: "src/assets/banner3.jpg",
+            src: "https://res.cloudinary.com/dm4xjtgkx/image/upload/v1743842535/customizeyourbouquet_yderbn.jpg",
             alt: "Customization",
             title: "Customize Your Bouquet",
             description: "Create your own floral arrangement with our unique customization feature. Select flowers, mix colors, and add a personal message to make your gift truly special."
@@ -84,7 +84,7 @@ const AboutUs = () => {
                         muted
                         className="object-cover w-full h-full"
                     >
-                        <source src="src/assets/flowerfieldvid1.mp4" type="video/mp4" />
+                        <source src="https://res.cloudinary.com/dm4xjtgkx/video/upload/v1743841925/flowerfieldvid1_aqvo08.mp4" type="video/mp4" />
                         Your browser does not support the video tag.
                     </video>
                 </div>
@@ -161,7 +161,7 @@ const AboutUs = () => {
                         muted
                         className="object-cover w-full h-full"
                     >
-                        <source src="src/assets/flowerfieldvid2.mp4" type="video/mp4" />
+                        <source src="https://res.cloudinary.com/dm4xjtgkx/video/upload/v1743841924/flowerfieldvid2_jqeeac.mp4" type="video/mp4" />
                         Your browser does not support the video tag.
                     </video>
                 </div>

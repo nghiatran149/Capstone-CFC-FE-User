@@ -1312,6 +1312,8 @@ const WalletPage = () => {
                     </button>
                 )}
                 {/* Nút Chat - Hồng Neon */}
+                {(order.status != "Order Successfully") && (
+
                 <button
                     onClick={() => {
                         setSelectedOrder(order);
@@ -1321,6 +1323,7 @@ const WalletPage = () => {
                 >
                     <MessageCircle className="w-6 h-6 text-white" />
                 </button>
+                 )}
 
             </div>
 
