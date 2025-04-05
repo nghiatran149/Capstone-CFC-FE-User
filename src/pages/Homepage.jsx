@@ -74,7 +74,7 @@ const Homepage = () => {
                         loop
                         playsInline
                     >
-                        <source src="src/assets/homevid1.mp4" type="video/mp4" />
+                        <source src="https://res.cloudinary.com/dm4xjtgkx/video/upload/v1743841595/homevid1_vfe2pv.mp4" type="video/mp4" />
                         Your browser does not support the video tag.
                     </video>
                     <div className="absolute inset-0"></div>
@@ -181,7 +181,7 @@ const Homepage = () => {
                         loop
                         playsInline
                     >
-                        <source src="src/assets/homevid2.mp4" type="video/mp4" />
+                        <source src="https://res.cloudinary.com/dm4xjtgkx/video/upload/v1743841827/homevid2_yaxtx1.mp4" type="video/mp4" />
                         Your browser does not support the video tag.
                     </video>
                     <div className="absolute inset-0"></div>
