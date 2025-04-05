@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MessageOutlined, CloseOutlined } from '@ant-design/icons';
 
 const ChatBox = () => {
@@ -17,29 +17,38 @@ const ChatBox = () => {
             const newMessage = { text: message, sender: 'customer', timestamp: new Date().toLocaleTimeString() };
             setMessages([...messages, newMessage]);
             setMessage('');
-
+    
             try {
                 const response = await fetch('https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/ChatBox/chat-box', { 
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'accept': 'application/json'
+                        'accept': '*/*'
                     },
-                    body: JSON.stringify({ prompt: message })
+                    body: JSON.stringify({ message: message })
                 });
-
+    
                 const data = await response.json();
-                const botMessage = {
-                    text: data.description, 
-                    sender: 'bot',
-                    timestamp: new Date().toLocaleTimeString()
-                };
-                setMessages((prevMessages) => [...prevMessages, botMessage]);
+                console.log(data); 
+    
+                // Kiểm tra và xử lý phản hồi
+                if (data && data.description) {
+                    const botMessage = {
+                        text: data.description, 
+                        sender: 'bot',
+                        timestamp: new Date().toLocaleTimeString()
+                    };
+    
+                    setMessages((prevMessages) => [...prevMessages, botMessage]);
+                } else {
+                    console.error("No description field in response:", data);
+                }
             } catch (error) {
                 console.error("Error sending message:", error);
             }
         }
     };
+
     return (
         <>
             <div className="fixed bottom-20 right-6 z-50">
