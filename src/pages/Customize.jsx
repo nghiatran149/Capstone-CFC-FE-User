@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { Button, Slider, Modal, Form, Input, message, Select, Checkbox, Radio } from 'antd';
+import { PlusOutlined, MinusOutlined } from '@ant-design/icons';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import ProgressBar from "../components/ProgressBar";
@@ -90,7 +91,7 @@ const FlowerCustomization = () => {
                 }));
                 setBaskets(transformedBaskets);
                 setFilteredBaskets(transformedBaskets);
-                
+
                 // Extract unique categories
                 const uniqueCategories = [...new Set(transformedBaskets.map(basket => basket.category))];
                 setBasketCategories(uniqueCategories);
@@ -127,7 +128,7 @@ const FlowerCustomization = () => {
                 }));
                 setFlowers(transformedFlowers);
                 setFilteredFlowers(transformedFlowers);
-                
+
                 // Extract unique categories
                 const uniqueCategories = [...new Set(transformedFlowers.map(flower => flower.category))];
                 setFlowerCategories(uniqueCategories);
@@ -162,7 +163,7 @@ const FlowerCustomization = () => {
                 }));
                 setAccessories(transformedAccessories);
                 setFilteredAccessories(transformedAccessories);
-                
+
                 // Extract unique categories
                 const uniqueCategories = [...new Set(transformedAccessories.map(accessory => accessory.category))];
                 setAccessoryCategories(uniqueCategories);
@@ -197,7 +198,7 @@ const FlowerCustomization = () => {
                 }));
                 setStyles(transformedStyles);
                 setFilteredStyles(transformedStyles);
-                
+
                 // Extract unique categories
                 const uniqueCategories = [...new Set(transformedStyles.map(style => style.category))];
                 setStyleCategories(uniqueCategories);
@@ -214,7 +215,7 @@ const FlowerCustomization = () => {
 
     // Filter functions
     const applyBasketFilters = () => {
-        let result = [...baskets];  
+        let result = [...baskets];
         if (basketCategoryFilter !== 'all') {
             result = result.filter(basket => basket.category === basketCategoryFilter);
         }
@@ -267,11 +268,11 @@ const FlowerCustomization = () => {
 
     const applyAccessoryFilters = () => {
         let result = [...accessories];
-        
+
         if (accessoryCategoryFilter !== 'all') {
             result = result.filter(accessory => accessory.category === accessoryCategoryFilter);
         }
-        
+
         if (accessoryPriceFilter) {
             if (accessoryPriceFilter === 'lowToHigh') {
                 result.sort((a, b) => a.price - b.price);
@@ -285,11 +286,11 @@ const FlowerCustomization = () => {
                 result = result.filter(accessory => accessory.price > 10);
             }
         }
-        
+
         setFilteredAccessories(result);
     };
-    
-    
+
+
     useEffect(() => {
         applyBasketFilters();
     }, [basketCategoryFilter, basketPriceFilter]);
@@ -304,7 +305,7 @@ const FlowerCustomization = () => {
 
     useEffect(() => {
         applyAccessoryFilters();
-    }, [accessoryCategoryFilter, accessoryPriceFilter]);    
+    }, [accessoryCategoryFilter, accessoryPriceFilter]);
 
     //Basket Function
     const handleBasketSelect = (basket) => {
@@ -333,7 +334,7 @@ const FlowerCustomization = () => {
     const handleResetFlowers = () => {
         setSelectedFlowers({});
         setTotalFlowers(0);
-        alert('All selected flowers have been reset.');
+        message.info('All selected flowers have been reset.');
     };
 
     const handleSaveFlowerQuantity = () => {
@@ -364,6 +365,22 @@ const FlowerCustomization = () => {
         setFlowerQuantity(value);
     };
 
+    const increaseQuantity = () => {
+        const max = Math.min(
+            selectedFlower.quantity,
+            selectedBasket.maxFlowers - totalFlowers + (selectedFlowers[selectedFlower.id]?.quantity || 0)
+        );
+
+        if (flowerQuantity < max) {
+            setFlowerQuantity(flowerQuantity + 1);
+        }
+    };
+
+    const decreaseQuantity = () => {
+        if (flowerQuantity > 1) {
+            setFlowerQuantity(flowerQuantity - 1);
+        }
+    };
 
     // Accessory Function
     const handleAccessorySelect = (accessory) => {
@@ -377,23 +394,25 @@ const FlowerCustomization = () => {
                 ...prev,
                 [selectedAccessory.id]: { ...selectedAccessory }
             }));
-            alert(`Added ${selectedAccessory.name} to your arrangement`);
+            message.success(`Added ${selectedAccessory.name} to your arrangement`);
         }
     };
 
     const handleResetAccessories = () => {
         setSelectedAccessories({});
-        alert('All selected accessories have been reset.');
+        message.info('All selected accessories have been reset.');
     };
 
 
     //Next & Back
     const handleNext = () => {
         setCurrentStep('style');
+        message.success(`Added ${selectedBasket.name}`);
     };
 
     const handleNextToFlowers = () => {
         setCurrentStep('flowers');
+        message.success(`Added ${selectedStyle.name}`);
     };
 
     const handleNextToAccessories = () => {
@@ -440,7 +459,7 @@ const FlowerCustomization = () => {
             }
 
             setIsGeneratingImage(true);
-            
+
             // Lấy giá trị form mà không cần validate
             const values = form.getFieldsValue();
             const productName = values.productName?.trim() || 'Custom Product';
@@ -529,13 +548,13 @@ const FlowerCustomization = () => {
 
     const handleModalSubmit = () => {
         if (productCustomId) {
-            navigate('/checkout-custom', { 
-                state: { 
+            navigate('/checkout-custom', {
+                state: {
                     customId: productCustomId,
                     statusCode: 200,
                     code: "Success",
                     message: "Custom product created successfully"
-                } 
+                }
             });
         }
     };
@@ -704,7 +723,7 @@ const FlowerCustomization = () => {
                                 : currentStep === 'flowers' ? 'Choose Flowers'
                                     : 'Choose Accessories'}
                     </h2>
-                    
+
                     {/* Add filters based on current step */}
                     {currentStep === 'basket' && renderBasketFilters()}
                     {currentStep === 'style' && renderStyleFilters()}
@@ -805,7 +824,7 @@ const FlowerCustomization = () => {
                                 </div>
 
                             )}
-                            
+
                             {selectedStyle && (
                                 <div className="flex justify-between text-gray-700">
                                     <span>Style: {selectedStyle.name}</span>
@@ -854,7 +873,7 @@ const FlowerCustomization = () => {
                         </div>
                     )}
                 </div>
-                
+
                 {/* Details */}
                 <div className="w-1/4 p-6 bg-white rounded-xl shadow-lg space-y-6">
                     <div className="bg-white rounded-lg p-4 border border-gray-200">
@@ -886,23 +905,46 @@ const FlowerCustomization = () => {
                                 <p className="text-gray-600">Available Quantity: {selectedFlower.quantity}</p>
                                 <p className="text-gray-600">Description: {selectedFlower.description}</p>
                                 <div className="mt-4">
-                                    <p className="text-gray-700 font-bold mb-2">Select Quantity:</p>
-                                    <Slider
-                                        min={1}
-                                        max={Math.min(
-                                            selectedFlower.quantity,
-                                            selectedBasket.maxFlowers - totalFlowers + (selectedFlowers[selectedFlower.id]?.quantity || 0)
-                                        )}
-                                        defaultValue={1}
-                                        onChange={handleQuantityChange}
-                                        value={flowerQuantity}
-                                    />
+                                    <p className="text-pink-500 font-bold mb-2">Select Quantity:</p>
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            onClick={decreaseQuantity}
+                                            className="bg-pink-300 hover:bg-pink-400 text-gray-700 font-bold py-1 px-3 rounded-lg flex items-center justify-center"
+                                            disabled={flowerQuantity <= 1}
+                                        >
+                                            <MinusOutlined />
+                                        </button>
+
+                                        <div className="flex-1">
+                                            <Slider
+                                                min={1}
+                                                max={Math.min(
+                                                    selectedFlower.quantity,
+                                                    selectedBasket.maxFlowers - totalFlowers + (selectedFlowers[selectedFlower.id]?.quantity || 0)
+                                                )}
+                                                defaultValue={1}
+                                                onChange={handleQuantityChange}
+                                                value={flowerQuantity}
+                                            />
+                                        </div>
+
+                                        <button
+                                            onClick={increaseQuantity}
+                                            className="bg-pink-300 hover:bg-pink-400 text-gray-700 font-bold py-1 px-3 rounded-lg flex items-center justify-center"
+                                            disabled={flowerQuantity >= Math.min(
+                                                selectedFlower.quantity,
+                                                selectedBasket.maxFlowers - totalFlowers + (selectedFlowers[selectedFlower.id]?.quantity || 0)
+                                            )}
+                                        >
+                                            <PlusOutlined />
+                                        </button>
+                                    </div>
                                     <p className="text-gray-600 mt-2">Quantity: {flowerQuantity}</p>
                                     <div className="flex justify-between gap-4 mt-3">
                                         <button
                                             className="w-1/2 bg-green-500 hover:bg-green-600 text-white text-lg font-medium py-2 px-2 rounded-lg
-                   disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2
-                   transition-colors duration-200 shadow-md"
+                    disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2
+                    transition-colors duration-200 shadow-md"
                                             onClick={handleSaveFlowerQuantity}
                                         >
                                             Save
@@ -910,8 +952,8 @@ const FlowerCustomization = () => {
 
                                         <button
                                             className="w-1/2 bg-red-500 hover:bg-red-600 text-white text-lg font-medium py-2 px-2 rounded-lg
-                   disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2
-                   transition-colors duration-200 shadow-md"
+                    disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2
+                    transition-colors duration-200 shadow-md"
                                             onClick={handleResetFlowers}
                                         >
                                             Reset
@@ -1093,7 +1135,7 @@ const FlowerCustomization = () => {
                 </div>
             </div>
             <Footer />
-            
+
             <Modal
                 title="Custom Product Information"
                 open={isModalVisible}
@@ -1130,7 +1172,7 @@ const FlowerCustomization = () => {
                             },
                         ]}
                     >
-                        <Input.TextArea 
+                        <Input.TextArea
                             placeholder="Enter a description for your custom product"
                             rows={4}
                         />
