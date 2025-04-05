@@ -1,5 +1,6 @@
 import React from 'react';
 import Header from './Header';
+import ChatBox from './ChatBox'
 
 const Layout = ({ children }) => {
   return (
@@ -8,6 +9,7 @@ const Layout = ({ children }) => {
       <main className="flex-grow pt-10 md:pt-14">
         {children}
       </main>
+      <ChatBox/>
     </div>
   );
 };
