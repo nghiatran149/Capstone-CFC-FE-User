@@ -1186,8 +1186,9 @@ const FlowerCustomization = () => {
                             className="w-full h-10 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg shadow-md"
                         >
                             {isGeneratingImage ? 'Generating Image...' : 'Generate AI Image'}
+                            
                         </Button>
-
+                           <>* Ảnh chỉ mang tính chất tượng chưng , không phải sản phẩm cuối cùng</> 
                         {generatedImageUrl && (
                             <div className="w-full mt-4">
                                 <p className="font-medium mb-2">Generated AI Image Preview:</p>
