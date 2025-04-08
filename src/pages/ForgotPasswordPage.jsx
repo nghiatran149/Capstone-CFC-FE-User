@@ -33,6 +33,7 @@ const ForgotPasswordPage = () => {
             message.error("An error occurred. Please try again later.");
         }
     };
+
     return (
         <div className="bg-pink-50 w-full min-h-screen">
             <Header />
