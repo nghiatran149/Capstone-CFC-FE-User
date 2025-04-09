@@ -1462,10 +1462,21 @@ const WalletPage = () => {
 
     // Thêm hàm tính toán số tiền hoàn lại
     const calculateRefundAmount = (order) => {
+        let amount = 0;
+
+        // Kiểm tra nếu order.transfer là false và order.status không phải là "Order Successfully"
+        if (order.payment === "50% deposit" && order.status !== "Order Successfully") {
+            return {
+                percentage: 0,
+                amount: 0
+            };
+        }
+
         if (order.status === "Order Successfully") {
+            amount = order.price; // Giả sử order.price là số
             return {
                 percentage: 100,
-                amount: order.price
+                amount: amount
             };
         }
 
@@ -1473,21 +1484,26 @@ const WalletPage = () => {
         const deliveryTime = new Date(order.date);
         const now = new Date();
         const hoursRemaining = (deliveryTime - now) / (1000 * 60 * 60);
+        const cleaned = order.price.replace(/[₫\s]/g, '').replace(',', '.');
+        const price = parseFloat(cleaned);
 
-        if (hoursRemaining > 24) {
+        if ( hoursRemaining > 24) {
+            amount =  price * 0.7 *1000  ;
             return {
                 percentage: 70,
-                amount: order.price * 0.7
+                amount: amount
             };
         } else if (hoursRemaining > 3) {
+            amount = price * 0.5 *1000;
             return {
                 percentage: 50,
-                amount: order.price * 0.5
+                amount: amount
             };
         } else {
+            amount = price * 0.3 *1000;
             return {
                 percentage: 30,
-                amount: order.price * 0.3
+                amount: amount
             };
         }
     };
@@ -1546,16 +1562,22 @@ const WalletPage = () => {
                                 <h3 className="text-lg font-semibold text-blue-700 mb-2">Refund Information</h3>
                                 <div className="space-y-2">
                                     <p className="text-blue-600">
-                                        You will receive a {refundInfo.percentage}% refund of your payment
+                                        {orderToCancel.payment === "50% deposit" ? (
+                                            "Order is not refund."
+                                        ) : (
+                                            `You will receive a ${refundInfo.percentage}% refund of your payment`
+                                        )}
                                     </p>
                                     <div className="flex justify-between items-center bg-white p-3 rounded-lg">
                                         <span className="text-gray-600">Refund Amount:</span>
                                         <span className="text-lg font-bold text-green-600">
-                                            ${refundInfo.amount.toFixed(2)}
+                                            {refundInfo.amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
                                         </span>
                                     </div>
                                     <p className="text-sm text-gray-500 mt-2">
-                                        {orderToCancel.status === "Order Successfully" ? (
+                                        {orderToCancel.payment === "50% deposit" && orderToCancel.status !== "Order Successfully" ? (
+                                            "Không thể hoàn tiền cho đơn hàng này."
+                                        ) : orderToCancel.status === "Order Successfully" ? (
                                             "You will receive a full refund as your order is still in the initial stage."
                                         ) : (
                                             <>
