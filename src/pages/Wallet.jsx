@@ -83,7 +83,7 @@ const WalletPage = () => {
                     details: order.productCustomResponse ?
                         [order.productCustomResponse.productName] :
                         order.orderDetails.map(detail => detail.productName),
-                    price: order.orderPrice,
+                    price: order.orderPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }),
                     payment: order.transfer ? "100% payment" : "50% deposit",
                     createAt: new Date(order.createAt).toLocaleString(),
                     date: new Date(order.deliveryDateTime).toLocaleString(),
@@ -135,8 +135,10 @@ const WalletPage = () => {
                     details: order.productCustomResponse ?
                         [order.productCustomResponse.productName] :
                         order.orderDetails.map(detail => detail.productName),
-                    price: order.orderPrice,
-                    payment: order.transfer ? "100% payment" : "50% deposit",
+                        price: order.orderPrice,
+                        // price: order.orderPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }),
+
+                        payment: order.transfer ? "100% payment" : "50% deposit",
                     createAt: new Date(order.createAt).toLocaleString(),
                     date: new Date(order.deliveryDateTime).toLocaleString(),
                     status: order.status,
@@ -178,7 +180,7 @@ const WalletPage = () => {
                     details: order.productCustomResponse ?
                         [order.productCustomResponse.productName] :
                         order.orderDetails.map(detail => detail.productName),
-                    price: order.orderPrice,
+                        price: order.orderPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }),
                     payment: order.transfer ? "100% payment" : "50% deposit",
                     createAt: new Date(order.createAt).toLocaleString(),
                     date: new Date(order.deliveryDateTime).toLocaleString(),
@@ -220,7 +222,7 @@ const WalletPage = () => {
                     details: order.productCustomResponse ?
                         [order.productCustomResponse.productName] :
                         order.orderDetails.map(detail => detail.productName),
-                    price: order.orderPrice,
+                        price: order.orderPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }),
                     payment: order.transfer ? "100% payment" : "50% deposit",
                     createAt: new Date(order.createAt).toLocaleString(),
                     date: new Date(order.deliveryDateTime).toLocaleString(),
@@ -661,7 +663,7 @@ const WalletPage = () => {
                             </div>
                             <div>
                                 <p className="font-semibold text-gray-700">Price:</p>
-                                <p className="text-gray-600">${selectedOrder.price}</p>
+                                <p className="text-gray-600">{selectedOrder.price} VND</p>
                             </div>
                             <div>
                                 <p className="font-semibold text-gray-700">Payment:</p>
@@ -1481,7 +1483,7 @@ const WalletPage = () => {
                             <div className="mb-4 p-4 bg-gray-50 rounded-lg">
                                 <p><span className="font-semibold">Order ID:</span> {orderToCancel.orderId}</p>
                                 <p><span className="font-semibold">Details:</span> {orderToCancel.details.join(", ")}</p>
-                                <p><span className="font-semibold">Total Price:</span> ${orderToCancel.price}</p>
+                                <p><span className="font-semibold">Total Price:</span> {orderToCancel.price} VND</p>
                                 <p><span className="font-semibold">Delivery Time:</span> {orderToCancel.date}</p>
                                 <p><span className="font-semibold">Status:</span> {orderToCancel.status}</p>
                             </div>
@@ -1685,7 +1687,7 @@ const WalletPage = () => {
                             <table className="min-w-full">
                                 <thead className="bg-pink-50">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Order ID</th>
+                                        {/* <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Order ID</th> */}
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Order Image</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Details</th>
 
@@ -1701,7 +1703,7 @@ const WalletPage = () => {
                                 <tbody className="divide-y divide-gray-200">
                                     {filteredOrders.map((order) => (
                                         <tr key={order.orderId}>
-                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.orderId}</td>
+                                            {/* <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.orderId}</td> */}
                                             <td className="px-6 py-4 text-left">
                                                 <div className="w-20 h-20 rounded-lg overflow-hidden">
                                                     {order.productCustomResponse ? (
@@ -1734,7 +1736,7 @@ const WalletPage = () => {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-left text-base">{order.details.join(", ")}</td>
-                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">${order.price}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.price}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.payment}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.delivery}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.createAt}</td>
@@ -1780,7 +1782,7 @@ const WalletPage = () => {
                                         <tr key={order.orderId}>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.orderId}</td>
                                             <td className="px-6 py-4 text-left text-base">{order.details.join(", ")}</td>
-                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">${order.price}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.price}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.payment}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.delivery}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.createAt}</td>
@@ -1826,7 +1828,7 @@ const WalletPage = () => {
                                         <tr key={order.orderId}>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.orderId}</td>
                                             <td className="px-6 py-4 text-left text-base">{order.details.join(", ")}</td>
-                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">${order.price}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.price}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.payment}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.delivery}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.createAt}</td>
@@ -1872,7 +1874,7 @@ const WalletPage = () => {
                                         <tr key={order.orderId}>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.orderId}</td>
                                             <td className="px-6 py-4 text-left text-base">{order.details.join(", ")}</td>
-                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">${order.price}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.price}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.payment}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.delivery}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.createAt}</td>

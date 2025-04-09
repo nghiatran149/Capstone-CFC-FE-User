@@ -603,9 +603,9 @@ const FlowerCustomization = () => {
                         <Option value={null}>All Prices</Option>
                         <Option value="lowToHigh">Price: Low to High</Option>
                         <Option value="highToLow">Price: High to Low</Option>
-                        <Option value="under50">Under $50</Option>
-                        <Option value="50to100">$50 - $100</Option>
-                        <Option value="over100">Over $100</Option>
+                        <Option value="under50">Under 50 VND</Option>
+                        <Option value="50to100">50 VND - 100 VND</Option>
+                        <Option value="over100">Over 100 VND</Option>
                     </Select>
                 </div>
             </div>
@@ -814,7 +814,9 @@ const FlowerCustomization = () => {
                             {selectedBasket && (
                                 <div className="flex justify-between text-gray-700">
                                     <span>Basket: {selectedBasket.name}</span>
-                                    <span className="font-medium">${selectedBasket.price}</span>
+                                    <span className="font-medium">
+                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedBasket.price)}
+                                    </span>
                                 </div>
                             )}
                             {selectedBasket && (
@@ -836,7 +838,9 @@ const FlowerCustomization = () => {
                                 return (
                                     <div key={flowerId} className="flex justify-between text-gray-700">
                                         <span>Flower: {flower.name} x {flower.quantity}</span>
-                                        <span className="font-medium">${(flower.price * flower.quantity).toFixed(2)}</span>
+                                        <span className="font-medium">
+                                            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(flower.price * flower.quantity)}
+                                        </span>
                                     </div>
                                 );
                             })}
@@ -845,14 +849,16 @@ const FlowerCustomization = () => {
                                 return (
                                     <div key={accessoryId} className="flex justify-between text-gray-700">
                                         <span>Accessory: {accessory.name}</span>
-                                        <span className="font-medium">${accessory.price.toFixed(2)}</span>
+                                        <span className="font-medium">
+                                            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(accessory.price)}
+                                        </span>
                                     </div>
                                 );
                             })}
                             <div className="border-t pt-3 font-semibold flex justify-between text-lg">
                                 <span>Total:</span>
                                 <span className="text-pink-600">
-                                    ${calculateTotalPrice()}
+                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(calculateTotalPrice())}
                                 </span>
                             </div>
                         </div>
@@ -885,8 +891,9 @@ const FlowerCustomization = () => {
                             <div className="space-y-2">
                                 <p className="font-semibold text-xl">{selectedBasket.name}</p>
                                 <p className="text-gray-600">Category: {selectedBasket.category}</p>
-                                <p className="text-gray-600">Price: ${selectedBasket.price}</p>
                                 <p className="text-gray-600">
+                                    Price: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedBasket.price)}
+                                </p>                                <p className="text-gray-600">
                                     Basket Capacity: {selectedBasket.minFlowers} - {selectedBasket.maxFlowers} Flowers
                                 </p>
                                 <p className="text-gray-600">Available Quantity: {selectedBasket.quantity}</p>
@@ -899,8 +906,9 @@ const FlowerCustomization = () => {
                         {currentStep === 'flowers' && selectedFlower && selectedBasket && (
                             <div className="space-y-2">
                                 <p className="font-semibold text-xl">{selectedFlower.name}</p>
-                                <p className="text-gray-600">Price: ${selectedFlower.price}</p>
-                                <p className="text-gray-600">Color: {selectedFlower.color}</p>
+                                <p className="text-gray-600">
+                                    Price: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedFlower.price)}
+                                </p>                                <p className="text-gray-600">Color: {selectedFlower.color}</p>
                                 <p className="text-gray-600">Category: {selectedFlower.category}</p>
                                 <p className="text-gray-600">Available Quantity: {selectedFlower.quantity}</p>
                                 <p className="text-gray-600">Description: {selectedFlower.description}</p>
@@ -975,8 +983,9 @@ const FlowerCustomization = () => {
                             <div className="space-y-2">
                                 <p className="font-semibold text-xl">{selectedAccessory.name}</p>
                                 <p className="text-gray-600">Category: {selectedAccessory.category}</p>
-                                <p className="text-gray-600">Price: ${selectedAccessory.price}</p>
-                                <p className="text-gray-600">Description: {selectedAccessory.description}</p>
+                                <p className="text-gray-600">
+                                    Price: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedAccessory.price)}
+                                </p>                                <p className="text-gray-600">Description: {selectedAccessory.description}</p>
                                 <div className="flex justify-between gap-4 mt-3">
                                     <button
                                         className="w-1/2 bg-green-500 hover:bg-green-600 text-white text-lg font-medium py-2 px-2 rounded-lg
@@ -1027,8 +1036,9 @@ const FlowerCustomization = () => {
                                     {Object.entries(selectedAccessories).map(([accessoryId, accessory]) => (
                                         <li key={accessoryId} className="flex justify-between items-center py-1 border-b border-gray-200">
                                             <span>{accessory.name}</span>
-                                            <span>${accessory.price}</span>
-                                        </li>
+                                            <span>
+                                                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(accessory.price)}
+                                            </span>                                        </li>
                                     ))}
                                 </ul>
                             ) : (
@@ -1186,9 +1196,9 @@ const FlowerCustomization = () => {
                             className="w-full h-10 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg shadow-md"
                         >
                             {isGeneratingImage ? 'Generating Image...' : 'Generate AI Image'}
-                            
+
                         </Button>
-                           <>* Ảnh chỉ mang tính chất tượng chưng , không phải sản phẩm cuối cùng</> 
+                        <>* Ảnh chỉ mang tính chất tượng chưng , không phải sản phẩm cuối cùng</>
                         {generatedImageUrl && (
                             <div className="w-full mt-4">
                                 <p className="font-medium mb-2">Generated AI Image Preview:</p>
