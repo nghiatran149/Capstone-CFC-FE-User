@@ -7,7 +7,7 @@ import { message, Modal, Divider, Tag } from 'antd';
 import { } from 'antd';
 import axios from 'axios';
 import { HubConnectionBuilder, HttpTransportType } from '@microsoft/signalr';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Eye, XCircle, MessageSquareText, MessageCircle } from "lucide-react";
 
 const WalletPage = () => {
@@ -39,6 +39,7 @@ const WalletPage = () => {
     const [orderToCancel, setOrderToCancel] = useState(null);
 
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         fetchOrders();
@@ -47,6 +48,58 @@ const WalletPage = () => {
         fetchRefundOrders();
     }, []);
 
+    useEffect(() => {
+        const queryParams = new URLSearchParams(location.search);
+        const shouldOpenChat = queryParams.get('openChat') === 'true';
+        
+        if (shouldOpenChat) {
+            const orderIdParam = queryParams.get('orderId');
+            const customerIdParam = queryParams.get('customerId');
+            const employeeIdParam = queryParams.get('employeeId');
+            
+            if (orderIdParam && customerIdParam && employeeIdParam) {
+                // Wait for orders to be loaded
+                const checkAndOpenChat = () => {
+                    // Search in all order lists
+                    const allOrders = [...orders, ...failOrders, ...cancelOrders, ...refundOrders];
+                    const matchedOrder = allOrders.find(order => 
+                        order.orderId === orderIdParam && 
+                        order.customerId === customerIdParam && 
+                        order.staffId === employeeIdParam
+                    );
+                    
+                    if (matchedOrder) {
+                        setSelectedOrder(matchedOrder);
+                        setIsChatModalOpen(true);
+                    } else if (orders.length > 0 || failOrders.length > 0 || cancelOrders.length > 0 || refundOrders.length > 0) {
+                        // If we have orders loaded but didn't find a match, we can create a temporary order object
+                        const tempOrder = {
+                            orderId: orderIdParam,
+                            customerId: customerIdParam,
+                            staffId: employeeIdParam
+                        };
+                        setSelectedOrder(tempOrder);
+                        setIsChatModalOpen(true);
+                    }
+                };
+                
+                // Check immediately in case orders are already loaded
+                checkAndOpenChat();
+                
+                // If orders aren't loaded yet, set up an interval to check
+                const intervalId = setInterval(() => {
+                    if (orders.length > 0 || failOrders.length > 0 || cancelOrders.length > 0 || refundOrders.length > 0) {
+                        checkAndOpenChat();
+                        clearInterval(intervalId);
+                    }
+                }, 500);
+                
+                // Clean up interval
+                return () => clearInterval(intervalId);
+            }
+        }
+    }, [location.search, orders, failOrders, cancelOrders, refundOrders]);
+    
     const fetchOrders = async () => {
         try {
             // Get token from sessionStorage like in ShoppingCart
@@ -69,17 +122,17 @@ const WalletPage = () => {
                     orderId: order.orderId,
                     staffId: order.staffId,
                     customerId: order.customerId,
-                    
+
                     // Thêm thông tin về ảnh
-                    image: order.productCustomResponse 
+                    image: order.productCustomResponse
                         ? order.productCustomResponse.productCustomImage  // ảnh cho custom product
                         : order.orderDetails[0]?.productImage,  // ảnh cho normal product
-                    
+
                     // Thêm toàn bộ thông tin về productCustomResponse để dùng sau này
                     productCustomResponse: order.productCustomResponse,
                     // Thêm thông tin orderDetails để dùng sau này
                     orderDetails: order.orderDetails,
-    
+
                     details: order.productCustomResponse ?
                         [order.productCustomResponse.productName] :
                         order.orderDetails.map(detail => detail.productName),
@@ -92,7 +145,7 @@ const WalletPage = () => {
                     phone: order.phone,
                     delivery: order.delivery ? "Shipping" : "Pickup",
                 }));
-    
+
 
                 setOrders(formattedOrders);
 
@@ -1471,7 +1524,7 @@ const WalletPage = () => {
                     </div>
                     <p className="text-lg text-center mb-2">Are you sure you want to cancel this order?</p>
                     <p className="text-gray-500 text-center mb-4">This action cannot be undone.</p>
-                    
+
                     {orderToCancel && (
                         <>
                             {/* Order Details */}
