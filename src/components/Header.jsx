@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { SearchOutlined, ShoppingCartOutlined, UserOutlined, LogoutOutlined, HistoryOutlined, WalletOutlined } from '@ant-design/icons';
+import NotificationSection from './Notification';
 
 const Header = () => {
   const navItems = [
@@ -83,6 +84,10 @@ const Header = () => {
               <ShoppingCartOutlined className="text-2xl" />
             </Link>
           </div>
+
+          {isLoggedIn && (
+            <NotificationSection />
+          )}
 
           {isLoggedIn ? (
             <div className="relative">
