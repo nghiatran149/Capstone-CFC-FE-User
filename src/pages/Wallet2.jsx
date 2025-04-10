@@ -400,8 +400,9 @@ const WalletPage = () => {
                                             {depositHistory.map((deposit) => (
                                                 <tr key={deposit.incomeWalletID}>
                                                     <td className="px-6 py-4 text-left whitespace-nowrap text-base">{deposit.incomeWalletID}</td>
-                                                    <td className="px-6 py-4 text-left whitespace-nowrap text-base">{deposit.incomePrice} VND</td>
-                                                    <td className="px-6 py-4 text-left whitespace-nowrap text-base">{deposit.orderId}</td>
+                                                    <td className="px-6 py-4 text-left whitespace-nowrap text-base">
+                                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(deposit.incomePrice)}
+                                                    </td>                                                    <td className="px-6 py-4 text-left whitespace-nowrap text-base">{deposit.orderId}</td>
                                                     <td className="px-6 py-4 text-left whitespace-nowrap text-base">{deposit.method}</td>
                                                     <td className="px-6 py-4 text-left whitespace-nowrap">
                                                         <span className={`px-2 py-1 text-base rounded-full ${getStatusColor(deposit.status)}`}>
@@ -437,6 +438,7 @@ const WalletPage = () => {
                                                 <tr key={withdrawal.withdrawMoneyId}>
                                                     <td className="px-6 py-4 text-left whitespace-nowrap text-base">{withdrawal.withdrawMoneyId}</td>
                                                     <td className="px-6 py-4 text-left whitespace-nowrap text-base">{withdrawal.price} VND</td>
+                                                    
                                                     <td className="px-6 py-4 text-left whitespace-nowrap text-base">{withdrawal.bankAccountName}</td>
                                                     <td className="px-6 py-4 text-left whitespace-nowrap text-base">{withdrawal.bankName}</td>
                                                     <td className="px-6 py-4 text-left whitespace-nowrap text-base">{withdrawal.bankNumber}</td>

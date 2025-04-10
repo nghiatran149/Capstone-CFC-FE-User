@@ -11,6 +11,7 @@ import WalletPage from "./pages/Wallet"
 import ShoppingCart from "./pages/ShoppingCart"
 import Checkout from "./pages/Checkout"
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
 import Customize from "./pages/Customize"
 import PaymentSuccess from "./pages/PaymentSuccess"
@@ -29,6 +30,7 @@ function App() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/forgotpassword" element={<ForgotPasswordPage />} />
+                <Route path="/reset-password" element={<Layout><ResetPasswordPage /></Layout>} />
                 <Route path="/changepassword" element={<ChangePasswordPage />} />
 
                 <Route path="/home" element={<Layout><Homepage /></Layout>} />

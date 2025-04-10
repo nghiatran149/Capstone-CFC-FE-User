@@ -7,7 +7,7 @@ import { message, Modal, Divider, Tag } from 'antd';
 import { } from 'antd';
 import axios from 'axios';
 import { HubConnectionBuilder, HttpTransportType } from '@microsoft/signalr';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Eye, XCircle, MessageSquareText, MessageCircle } from "lucide-react";
 
 const WalletPage = () => {
@@ -39,6 +39,7 @@ const WalletPage = () => {
     const [orderToCancel, setOrderToCancel] = useState(null);
 
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         fetchOrders();
@@ -47,6 +48,58 @@ const WalletPage = () => {
         fetchRefundOrders();
     }, []);
 
+    useEffect(() => {
+        const queryParams = new URLSearchParams(location.search);
+        const shouldOpenChat = queryParams.get('openChat') === 'true';
+        
+        if (shouldOpenChat) {
+            const orderIdParam = queryParams.get('orderId');
+            const customerIdParam = queryParams.get('customerId');
+            const employeeIdParam = queryParams.get('employeeId');
+            
+            if (orderIdParam && customerIdParam && employeeIdParam) {
+                // Wait for orders to be loaded
+                const checkAndOpenChat = () => {
+                    // Search in all order lists
+                    const allOrders = [...orders, ...failOrders, ...cancelOrders, ...refundOrders];
+                    const matchedOrder = allOrders.find(order => 
+                        order.orderId === orderIdParam && 
+                        order.customerId === customerIdParam && 
+                        order.staffId === employeeIdParam
+                    );
+                    
+                    if (matchedOrder) {
+                        setSelectedOrder(matchedOrder);
+                        setIsChatModalOpen(true);
+                    } else if (orders.length > 0 || failOrders.length > 0 || cancelOrders.length > 0 || refundOrders.length > 0) {
+                        // If we have orders loaded but didn't find a match, we can create a temporary order object
+                        const tempOrder = {
+                            orderId: orderIdParam,
+                            customerId: customerIdParam,
+                            staffId: employeeIdParam
+                        };
+                        setSelectedOrder(tempOrder);
+                        setIsChatModalOpen(true);
+                    }
+                };
+                
+                // Check immediately in case orders are already loaded
+                checkAndOpenChat();
+                
+                // If orders aren't loaded yet, set up an interval to check
+                const intervalId = setInterval(() => {
+                    if (orders.length > 0 || failOrders.length > 0 || cancelOrders.length > 0 || refundOrders.length > 0) {
+                        checkAndOpenChat();
+                        clearInterval(intervalId);
+                    }
+                }, 500);
+                
+                // Clean up interval
+                return () => clearInterval(intervalId);
+            }
+        }
+    }, [location.search, orders, failOrders, cancelOrders, refundOrders]);
+    
     const fetchOrders = async () => {
         try {
             // Get token from sessionStorage like in ShoppingCart
@@ -69,21 +122,21 @@ const WalletPage = () => {
                     orderId: order.orderId,
                     staffId: order.staffId,
                     customerId: order.customerId,
-                    
+
                     // Thêm thông tin về ảnh
-                    image: order.productCustomResponse 
+                    image: order.productCustomResponse
                         ? order.productCustomResponse.productCustomImage  // ảnh cho custom product
                         : order.orderDetails[0]?.productImage,  // ảnh cho normal product
-                    
+
                     // Thêm toàn bộ thông tin về productCustomResponse để dùng sau này
                     productCustomResponse: order.productCustomResponse,
                     // Thêm thông tin orderDetails để dùng sau này
                     orderDetails: order.orderDetails,
-    
+
                     details: order.productCustomResponse ?
                         [order.productCustomResponse.productName] :
                         order.orderDetails.map(detail => detail.productName),
-                    price: order.orderPrice,
+                    price: order.orderPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }),
                     payment: order.transfer ? "100% payment" : "50% deposit",
                     createAt: new Date(order.createAt).toLocaleString(),
                     date: new Date(order.deliveryDateTime).toLocaleString(),
@@ -92,7 +145,7 @@ const WalletPage = () => {
                     phone: order.phone,
                     delivery: order.delivery ? "Shipping" : "Pickup",
                 }));
-    
+
 
                 setOrders(formattedOrders);
 
@@ -135,8 +188,10 @@ const WalletPage = () => {
                     details: order.productCustomResponse ?
                         [order.productCustomResponse.productName] :
                         order.orderDetails.map(detail => detail.productName),
-                    price: order.orderPrice,
-                    payment: order.transfer ? "100% payment" : "50% deposit",
+                        price: order.orderPrice,
+                        // price: order.orderPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }),
+
+                        payment: order.transfer ? "100% payment" : "50% deposit",
                     createAt: new Date(order.createAt).toLocaleString(),
                     date: new Date(order.deliveryDateTime).toLocaleString(),
                     status: order.status,
@@ -178,7 +233,7 @@ const WalletPage = () => {
                     details: order.productCustomResponse ?
                         [order.productCustomResponse.productName] :
                         order.orderDetails.map(detail => detail.productName),
-                    price: order.orderPrice,
+                        price: order.orderPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }),
                     payment: order.transfer ? "100% payment" : "50% deposit",
                     createAt: new Date(order.createAt).toLocaleString(),
                     date: new Date(order.deliveryDateTime).toLocaleString(),
@@ -220,7 +275,7 @@ const WalletPage = () => {
                     details: order.productCustomResponse ?
                         [order.productCustomResponse.productName] :
                         order.orderDetails.map(detail => detail.productName),
-                    price: order.orderPrice,
+                        price: order.orderPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }),
                     payment: order.transfer ? "100% payment" : "50% deposit",
                     createAt: new Date(order.createAt).toLocaleString(),
                     date: new Date(order.deliveryDateTime).toLocaleString(),
@@ -661,7 +716,7 @@ const WalletPage = () => {
                             </div>
                             <div>
                                 <p className="font-semibold text-gray-700">Price:</p>
-                                <p className="text-gray-600">${selectedOrder.price}</p>
+                                <p className="text-gray-600">{selectedOrder.price} VND</p>
                             </div>
                             <div>
                                 <p className="font-semibold text-gray-700">Payment:</p>
@@ -1407,10 +1462,21 @@ const WalletPage = () => {
 
     // Thêm hàm tính toán số tiền hoàn lại
     const calculateRefundAmount = (order) => {
+        let amount = 0;
+
+        // Kiểm tra nếu order.transfer là false và order.status không phải là "Order Successfully"
+        if (order.payment === "50% deposit" && order.status !== "Order Successfully") {
+            return {
+                percentage: 0,
+                amount: 0
+            };
+        }
+
         if (order.status === "Order Successfully") {
+            amount = order.price; // Giả sử order.price là số
             return {
                 percentage: 100,
-                amount: order.price
+                amount: amount
             };
         }
 
@@ -1418,21 +1484,26 @@ const WalletPage = () => {
         const deliveryTime = new Date(order.date);
         const now = new Date();
         const hoursRemaining = (deliveryTime - now) / (1000 * 60 * 60);
+        const cleaned = order.price.replace(/[₫\s]/g, '').replace(',', '.');
+        const price = parseFloat(cleaned);
 
-        if (hoursRemaining > 24) {
+        if ( hoursRemaining > 24) {
+            amount =  price * 0.7 *1000  ;
             return {
                 percentage: 70,
-                amount: order.price * 0.7
+                amount: amount
             };
         } else if (hoursRemaining > 3) {
+            amount = price * 0.5 *1000;
             return {
                 percentage: 50,
-                amount: order.price * 0.5
+                amount: amount
             };
         } else {
+            amount = price * 0.3 *1000;
             return {
                 percentage: 30,
-                amount: order.price * 0.3
+                amount: amount
             };
         }
     };
@@ -1474,14 +1545,14 @@ const WalletPage = () => {
                     </div>
                     <p className="text-lg text-center mb-2">Are you sure you want to cancel this order?</p>
                     <p className="text-gray-500 text-center mb-4">This action cannot be undone.</p>
-                    
+
                     {orderToCancel && (
                         <>
                             {/* Order Details */}
                             <div className="mb-4 p-4 bg-gray-50 rounded-lg">
                                 <p><span className="font-semibold">Order ID:</span> {orderToCancel.orderId}</p>
                                 <p><span className="font-semibold">Details:</span> {orderToCancel.details.join(", ")}</p>
-                                <p><span className="font-semibold">Total Price:</span> ${orderToCancel.price}</p>
+                                <p><span className="font-semibold">Total Price:</span> {orderToCancel.price} VND</p>
                                 <p><span className="font-semibold">Delivery Time:</span> {orderToCancel.date}</p>
                                 <p><span className="font-semibold">Status:</span> {orderToCancel.status}</p>
                             </div>
@@ -1491,16 +1562,22 @@ const WalletPage = () => {
                                 <h3 className="text-lg font-semibold text-blue-700 mb-2">Refund Information</h3>
                                 <div className="space-y-2">
                                     <p className="text-blue-600">
-                                        You will receive a {refundInfo.percentage}% refund of your payment
+                                        {orderToCancel.payment === "50% deposit" ? (
+                                            "Order is not refund."
+                                        ) : (
+                                            `You will receive a ${refundInfo.percentage}% refund of your payment`
+                                        )}
                                     </p>
                                     <div className="flex justify-between items-center bg-white p-3 rounded-lg">
                                         <span className="text-gray-600">Refund Amount:</span>
                                         <span className="text-lg font-bold text-green-600">
-                                            ${refundInfo.amount.toFixed(2)}
+                                            {refundInfo.amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
                                         </span>
                                     </div>
                                     <p className="text-sm text-gray-500 mt-2">
-                                        {orderToCancel.status === "Order Successfully" ? (
+                                        {orderToCancel.payment === "50% deposit" && orderToCancel.status !== "Order Successfully" ? (
+                                            "Không thể hoàn tiền cho đơn hàng này."
+                                        ) : orderToCancel.status === "Order Successfully" ? (
                                             "You will receive a full refund as your order is still in the initial stage."
                                         ) : (
                                             <>
@@ -1685,7 +1762,7 @@ const WalletPage = () => {
                             <table className="min-w-full">
                                 <thead className="bg-pink-50">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Order ID</th>
+                                        {/* <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Order ID</th> */}
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Order Image</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Details</th>
 
@@ -1701,7 +1778,7 @@ const WalletPage = () => {
                                 <tbody className="divide-y divide-gray-200">
                                     {filteredOrders.map((order) => (
                                         <tr key={order.orderId}>
-                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.orderId}</td>
+                                            {/* <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.orderId}</td> */}
                                             <td className="px-6 py-4 text-left">
                                                 <div className="w-20 h-20 rounded-lg overflow-hidden">
                                                     {order.productCustomResponse ? (
@@ -1734,7 +1811,7 @@ const WalletPage = () => {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-left text-base">{order.details.join(", ")}</td>
-                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">${order.price}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.price}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.payment}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.delivery}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.createAt}</td>
@@ -1780,7 +1857,7 @@ const WalletPage = () => {
                                         <tr key={order.orderId}>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.orderId}</td>
                                             <td className="px-6 py-4 text-left text-base">{order.details.join(", ")}</td>
-                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">${order.price}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.price}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.payment}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.delivery}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.createAt}</td>
@@ -1826,7 +1903,7 @@ const WalletPage = () => {
                                         <tr key={order.orderId}>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.orderId}</td>
                                             <td className="px-6 py-4 text-left text-base">{order.details.join(", ")}</td>
-                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">${order.price}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.price}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.payment}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.delivery}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.createAt}</td>
@@ -1872,7 +1949,7 @@ const WalletPage = () => {
                                         <tr key={order.orderId}>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.orderId}</td>
                                             <td className="px-6 py-4 text-left text-base">{order.details.join(", ")}</td>
-                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">${order.price}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.price}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.payment}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.delivery}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.createAt}</td>
