@@ -8,10 +8,10 @@ const PaymentFailure = () => {
     const navigate = useNavigate();
 
     return (
-        <div className="min-h-screen flex flex-col">
+        <div className="min-h-screen bg-pink-50 flex flex-col">
             <Header />
             
-            <div className="flex-grow flex items-center justify-center bg-gray-50">
+            <div className="flex-grow flex items-center justify-center py-20">
                 <div className="text-center p-8 bg-white rounded-lg shadow-lg max-w-2xl w-full mx-4">
                     <CloseCircleOutlined className="text-6xl text-red-500 mb-4" />
                     
