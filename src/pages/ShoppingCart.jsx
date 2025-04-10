@@ -113,16 +113,16 @@ const ShoppingCart = () => {
         </div>
       ),
     },
-    {
-      title: 'Price',
-      dataIndex: 'productPrice',
-      key: 'productPrice',
-      render: (price) => (
-        <span className="text-pink-600 font-semibold">
-          {price.toLocaleString()} VNĐ
-        </span>
-      ),
-    },
+    // {
+    //   title: 'Price',
+    //   dataIndex: 'productPrice',
+    //   key: 'productPrice',
+    //   render: (price) => (
+    //     <span className="text-pink-600 font-semibold">
+    //       {price.toLocaleString()} VNĐ
+    //     </span>
+    //   ),
+    // },
     {
       title: 'Quantity',
       dataIndex: 'quantity',
