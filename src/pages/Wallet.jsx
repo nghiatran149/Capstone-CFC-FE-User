@@ -1562,7 +1562,7 @@ const WalletPage = () => {
                                 <h3 className="text-lg font-semibold text-blue-700 mb-2">Refund Information</h3>
                                 <div className="space-y-2">
                                     <p className="text-blue-600">
-                                        {orderToCancel.payment === "50% deposit" ? (
+                                        {orderToCancel.payment === "50% deposit"&& orderToCancel.status !== "Order Successfully" ? (
                                             "Order is not refund."
                                         ) : (
                                             `You will receive a ${refundInfo.percentage}% refund of your payment`

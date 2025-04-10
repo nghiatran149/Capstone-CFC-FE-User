@@ -26,7 +26,7 @@ const RegisterPage = () => {
                 password: password
             });
             if (response.data.resultStatus === 'Success') {
-                message.success("Register successfully!");
+                message.success("Register successfully!, Check mail to verify");
                 setEmail('');
                 setPassword('');
                 setConfirmPassword('');
