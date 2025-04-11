@@ -1198,7 +1198,7 @@ const FlowerCustomization = () => {
                             {isGeneratingImage ? 'Generating Image...' : 'Generate AI Image'}
 
                         </Button>
-                        <>* Ảnh chỉ mang tính chất tượng chưng , không phải sản phẩm cuối cùng</>
+                        <>* Photos are for representational purposes only, not final product.</>
                         {generatedImageUrl && (
                             <div className="w-full mt-4">
                                 <p className="font-medium mb-2">Generated AI Image Preview:</p>

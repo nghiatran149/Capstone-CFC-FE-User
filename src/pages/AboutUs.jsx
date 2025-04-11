@@ -121,7 +121,7 @@ const AboutUs = () => {
                                         alt={data.alt}
                                         className="w-full h-full object-cover"
                                     />
-                                    <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/70 to-transparent p-4">
+                                    <div className="absolute bottom-0 left-0 w-full p-4">
                                         <h3 className="text-white text-lg font-bold">{data.title}</h3>
                                         <p className="text-white text-sm">Click to view</p>
                                     </div>
