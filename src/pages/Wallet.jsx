@@ -71,6 +71,7 @@ const WalletPage = () => {
                     if (matchedOrder) {
                         setSelectedOrder(matchedOrder);
                         setIsChatModalOpen(true);
+                        navigate('/wallet', { replace: true });
                     } else if (orders.length > 0 || failOrders.length > 0 || cancelOrders.length > 0 || refundOrders.length > 0) {
                         // If we have orders loaded but didn't find a match, we can create a temporary order object
                         const tempOrder = {
@@ -80,6 +81,7 @@ const WalletPage = () => {
                         };
                         setSelectedOrder(tempOrder);
                         setIsChatModalOpen(true);
+                        navigate('/wallet', { replace: true });
                     }
                 };
                 
@@ -743,6 +745,22 @@ const WalletPage = () => {
                             <button
                                 onClick={() => setIsChatModalOpen(false)}
                                 className="text-white hover:text-pink-200"
+
+                                // onClick={() => {
+                                //     setIsChatModalOpen(false);
+                                //     navigate('/wallet');
+                                // }}
+                                // className="text-white hover:text-pink-200"
+
+                                // onClick={() => {
+                                //     setIsChatModalOpen(false);
+                                //     const currentUrl = window.location.href;
+                                //     const baseUrl = window.location.origin + '/wallet';
+                                //     if (currentUrl !== baseUrl) {
+                                //         navigate('/wallet');
+                                //     }
+                                // }}
+                                // className="text-white hover:text-pink-200"
                             >
                                 ✕
                             </button>
