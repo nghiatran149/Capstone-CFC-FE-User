@@ -225,11 +225,11 @@ const FlowerCustomization = () => {
             } else if (basketPriceFilter === 'highToLow') {
                 result.sort((a, b) => b.price - a.price);
             } else if (basketPriceFilter === 'under50') {
-                result = result.filter(basket => basket.price < 50);
+                result = result.filter(basket => basket.price < 500000);
             } else if (basketPriceFilter === '50to100') {
-                result = result.filter(basket => basket.price >= 50 && basket.price <= 100);
+                result = result.filter(basket => basket.price >= 500000 && basket.price <= 1000000);
             } else if (basketPriceFilter === 'over100') {
-                result = result.filter(basket => basket.price > 100);
+                result = result.filter(basket => basket.price > 1000000);
             }
         }
         setFilteredBaskets(result);
@@ -256,11 +256,11 @@ const FlowerCustomization = () => {
             } else if (flowerPriceFilter === 'highToLow') {
                 result.sort((a, b) => b.price - a.price);
             } else if (flowerPriceFilter === 'under5') {
-                result = result.filter(flower => flower.price < 5);
+                result = result.filter(flower => flower.price < 25000);
             } else if (flowerPriceFilter === '5to10') {
-                result = result.filter(flower => flower.price >= 5 && flower.price <= 10);
+                result = result.filter(flower => flower.price >= 25000 && flower.price <= 50000);
             } else if (flowerPriceFilter === 'over10') {
-                result = result.filter(flower => flower.price > 10);
+                result = result.filter(flower => flower.price > 50000);
             }
         }
         setFilteredFlowers(result);
@@ -279,11 +279,11 @@ const FlowerCustomization = () => {
             } else if (accessoryPriceFilter === 'highToLow') {
                 result.sort((a, b) => b.price - a.price);
             } else if (accessoryPriceFilter === 'under5') {
-                result = result.filter(accessory => accessory.price < 5);
+                result = result.filter(accessory => accessory.price < 25000);
             } else if (accessoryPriceFilter === '5to10') {
-                result = result.filter(accessory => accessory.price >= 5 && accessory.price <= 10);
+                result = result.filter(accessory => accessory.price >= 25000 && accessory.price <= 50000);
             } else if (accessoryPriceFilter === 'over10') {
-                result = result.filter(accessory => accessory.price > 10);
+                result = result.filter(accessory => accessory.price > 50000);
             }
         }
 
@@ -655,9 +655,9 @@ const FlowerCustomization = () => {
                         <Option value={null}>All Prices</Option>
                         <Option value="lowToHigh">Price: Low to High</Option>
                         <Option value="highToLow">Price: High to Low</Option>
-                        <Option value="under5">Under $5</Option>
-                        <Option value="5to10">$5 - $10</Option>
-                        <Option value="over10">Over $10</Option>
+                        <Option value="under5">Under 25.000 VND</Option>
+                        <Option value="5to10">25.000 - 50.000 VND</Option>
+                        <Option value="over10">Over 50.000 VND</Option>
                     </Select>
                 </div>
             </div>
@@ -688,9 +688,9 @@ const FlowerCustomization = () => {
                         <Option value={null}>All Prices</Option>
                         <Option value="lowToHigh">Price: Low to High</Option>
                         <Option value="highToLow">Price: High to Low</Option>
-                        <Option value="under5">Under $5</Option>
-                        <Option value="5to10">$5 - $10</Option>
-                        <Option value="over10">Over $10</Option>
+                        <Option value="under5">Under 25.000 VND</Option>
+                        <Option value="5to10">25.000 - 50.000 VND</Option>
+                        <Option value="over10">Over 50.000 VND</Option>
                     </Select>
                 </div>
             </div>
@@ -699,7 +699,7 @@ const FlowerCustomization = () => {
 
     return (
         <div className="w-full bg-pink-50">
-            <Header />
+            {/* <Header /> */}
             <div className="flex ml-20 py-10">
                 <Button
                     type="primary"
@@ -710,7 +710,7 @@ const FlowerCustomization = () => {
                     BACK
                 </Button>
             </div>
-            <h1 className="text-center text-6xl font-bold text-pink-600 p-3 rounded">CUSTOMIZE</h1>
+            <h1 className="text-center text-6xl font-bold text-pink-600 p-3 rounded">Build Your Bouquet</h1>
             <p className="text-xl text-gray-500 mb-10 text-center">Customize Your Own Flower Basket With Your Selection</p>
 
             <ProgressBar currentStep={currentStep} />
@@ -782,7 +782,7 @@ const FlowerCustomization = () => {
                                             </div>
                                         </div>
                                     ))
-                                    : accessories.map((accessory) => (
+                                    : filteredAccessories.map((accessory) => (
                                         <div
                                             key={accessory.id}
                                             className={`cursor-pointer transition-all rounded-lg shadow-sm hover:shadow-md overflow-hidden

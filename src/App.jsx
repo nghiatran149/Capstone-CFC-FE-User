@@ -13,6 +13,7 @@ import Checkout from "./pages/Checkout"
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
+import CustomizeOptions from "./pages/CustomizeOptions"
 import Customize from "./pages/Customize"
 import PaymentSuccess from "./pages/PaymentSuccess"
 import PaymentFailure from "./pages/PaymentFailure"
@@ -46,7 +47,8 @@ function App() {
                 <Route path="/checkout" element={<Layout><Checkout /></Layout>} />
                 <Route path="/checkout-custom" element={<Layout><CheckoutCustom /></Layout>} />
                 <Route path="/checkout-cart" element={<Layout><CheckoutCart /></Layout>} />
-                <Route path="/customize" element={<Layout><Customize /></Layout>} />
+                <Route path="/customize-options" element={<Layout><CustomizeOptions /></Layout>} />
+                <Route path="/customize1" element={<Layout><Customize /></Layout>} />
                 <Route path="/payment-success" element={<Layout><PaymentSuccess /></Layout>} />
                 <Route path="/payment-failure" element={<Layout><PaymentFailure /></Layout>} />
                 <Route path="/history-order" element={<Layout><HistoryOrder /></Layout>} />
