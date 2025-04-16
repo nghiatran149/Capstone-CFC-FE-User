@@ -17,18 +17,25 @@ const CustomizeOptions = () => {
         },
         {
             id: 2,
-            title: 'Upload a Reference',
-            description: 'Send us a photo of the bouquet you like, and we\'ll give you a quote.',
+            title: 'Share Your Idea',
+            description: 'Describe your dream bouquet or upload a photo—our florists will bring it to life.',
             image: 'https://i.pinimg.com/474x/f3/ca/b0/f3cab0136c131cd45bafcdb501773556.jpg',
             link: '/customize2'
         },
-        {
-            id: 3,
-            title: 'Describe Your Vision',
-            description: 'Tell us your preferences—budget, flowers, style, occasion—and we\'ll create it for you.',
-            image: 'https://www.annsflowers.com.au/cdn/shop/products/florists-choice-2.jpg?v=1608171430',
-            link: '/customize3'
-        }
+        // {
+        //     id: 2,
+        //     title: 'Upload a Reference',
+        //     description: 'Send us a photo of the bouquet you like, and we\'ll give you a quote.',
+        //     image: 'https://i.pinimg.com/474x/f3/ca/b0/f3cab0136c131cd45bafcdb501773556.jpg',
+        //     link: '/customize2'
+        // },
+        // {
+        //     id: 3,
+        //     title: 'Describe Your Vision',
+        //     description: 'Tell us your preferences—budget, flowers, style, occasion—and we\'ll create it for you.',
+        //     image: 'https://www.annsflowers.com.au/cdn/shop/products/florists-choice-2.jpg?v=1608171430',
+        //     link: '/customize3'
+        // }
     ];
 
     return (
@@ -49,20 +56,15 @@ const CustomizeOptions = () => {
                 <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-40"></div>
 
                 <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
-                    <h1 className="text-7xl font-bold text-white mb-4 shadow-text">CUSTOMIZE OPTIONS</h1>
+                    <h1 className="text-7xl font-bold text-white mb-4 shadow-text">CUSTOMIZE</h1>
                     <p className="text-white text-xl max-w-2xl shadow-text">
                         Choose your way to customize your floral order
                     </p>
                 </div>
             </div>
 
-            {/* <div className="text-center mb-10">
-                <h1 className="text-center text-6xl font-bold text-pink-600 p-3 rounded">CUSTOMIZE OPTIONS</h1>
-                <p className="text-xl text-gray-500 mb-10 text-center">Choose your way to customize your floral order</p>
-            </div> */}
-
-            <div className="container mx-auto px-4 py-12 max-w-6xl">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="container mx-auto px-4 py-12 max-w-3xl">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {customizeOptions.map((option) => (
                         <Link
                             to={option.link}
