@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+
 import {
     Button,
     Form,
@@ -15,31 +16,104 @@ import {
 import { UploadOutlined, SendOutlined, PictureOutlined, ArrowLeftOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useNavigate } from 'react-router-dom';
 import Footer from "../components/Footer";
+const { Option } = Select;
+import { jwtDecode } from "jwt-decode";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 
+const budgetOptions = [
+    { label: '100,000 - 200,000 VND', value: '100000-200000' },
+    { label: '200,000 - 300,000 VND', value: '200000-300000' },
+    { label: '300,000 - 500,000 VND', value: '300000-500000' },
+    { label: '500,000 - 1,000,000 VND', value: '500000-1000000' },
+];
 
 const Customize2 = () => {
     const [imageUrl, setImageUrl] = useState(null);
     const [loading, setLoading] = useState(false);
     const [form] = Form.useForm();
     const navigate = useNavigate();
+    const [stores, setStores] = useState([]);
+    const [imageFile, setImageFile] = useState(null);
 
+    const fetchStores = async () => {
+        try {
+            const response = await fetch('https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Store/GetAllStore');
+            const data = await response.json();
+            if (data.statusCode === 200) {
+                setStores(data.data); // lưu danh sách store vào state
+            } else {
+                message.error('Failed to load stores');
+            }
+        } catch (error) {
+            console.error('Error fetching stores:', error);
+            message.error('Failed to load stores');
+        }
+    };
+    const createDesignCustom = async (storeId, values) => {
+        const formData = new FormData();
+        formData.append('RequestFlowerType', values.flowerType);
+        formData.append('RecipientName', values.name  );
+        formData.append('RequestImage', imageFile); // Đây mới là file thực
+        formData.append('RequestDescription', values.description );
+        formData.append('Phone', values.phone );
+        formData.append('Note', values.note || null);
+        formData.append('RequestOccasion', values.occasion);
+        formData.append('RequestPrice', values.price);
+        formData.append('RequestMainColor', values.mainColor);
+        formData.append('StoreId', storeId);
+        formData.append('RequestCard', values.card );
 
-    const handleImageUpload = (info) => {
-        if (info.file.status === "uploading") {
-            setLoading(true);
+        const token = sessionStorage.getItem('accessToken');
+        if (!token) {
+            message.error('Please login to proceed');
+            navigate('/login');
             return;
         }
-        if (info.file.status === "done") {
-            getBase64(info.file.originFileObj, (url) => {
-                setLoading(false);
-                setImageUrl(url);
+
+        const decodedToken = jwtDecode(token);
+        const customerId = decodedToken.Id;
+        try {
+            const response = await fetch(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/DesignCustom/CreateDesignCustomByCustomer?customerId=${customerId}`, {
+                method: 'POST',
+                headers: {
+                    'accept': '*/*',
+                },
+                body: formData,
             });
+    
+            const result = await response.json();
+            if (result.statusCode === 200) {
+                message.success('Design custom created successfully!');
+                navigate('/desginCustom');
+            } else {
+                message.error('Failed to create design custom');
+            }
+        } catch (error) {
+            console.error('Error creating design custom:', error);
+            message.error('Failed to create design custom');
+        }
+    };
+    useEffect(() => {
+        fetchStores();
+        createDesignCustom();
+    }, []);
+    const handleImageUpload = (info) => {
+        if (info.file.status === 'done' || info.file.status === 'uploading') {
+            const file = info.file.originFileObj;
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImageUrl(reader.result); // dùng để hiển thị hình ảnh
+            };
+            if (file) {
+                reader.readAsDataURL(file);
+                setImageFile(file); // Lưu file thực
+            }
         }
     };
     
+
     const getBase64 = (img, callback) => {
         const reader = new FileReader();
         reader.addEventListener("load", () => callback(reader.result));
@@ -65,9 +139,8 @@ const Customize2 = () => {
             return;
         }
 
-        message.success("Your request has been sent successfully!");
-        console.log("Form values:", { ...values, imageUrl });
-
+        const storeId = values.store;
+        createDesignCustom(storeId, values);
     };
 
     const dummyRequest = ({ onSuccess }) => {
@@ -129,7 +202,7 @@ const Customize2 = () => {
                                 Upload sample bouquet image
                             </Button>
                         </Upload>
-                        
+
                         <Button
                             icon={<DeleteOutlined />}
                             onClick={handleDeleteImage}
@@ -157,12 +230,13 @@ const Customize2 = () => {
                     >
 
                         <Form.Item name="price" label="Estimated budget (VND)">
-                            <InputNumber
-                                formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                                placeholder="Ex: 500,000"
-                                className="w-full"
-                            />
+                            <Select placeholder="Select estimated budget" className="w-full">
+                                {budgetOptions.map(option => (
+                                    <Option key={option.value} value={option.value}>
+                                        {option.label}
+                                    </Option>
+                                ))}
+                            </Select>
                         </Form.Item>
 
                         <Form.Item name="occasion" label="Occasion">
@@ -186,7 +260,23 @@ const Customize2 = () => {
                         </div>
 
                         <Form.Item name="card" label="Card">
-                            <Input placeholder="Card content (if any)" />
+                            <Input placeholder="store content (if any)" />
+                        </Form.Item>
+                        <Form.Item name="name" label="Recipient Name">
+                            <Input placeholder="name content (if any)" />
+                        </Form.Item>
+                        <Form.Item name="phone" label="Consulting phone number">
+                            <Input placeholder="phone content (if any)" />
+                        </Form.Item>
+
+                        <Form.Item name="store" label="Store">
+                            <Select placeholder="Select a store" className="w-full" showSearch optionFilterProp="children">
+                                {stores.map((store) => (
+                                    <Option key={store.storeId} value={store.storeId}>
+                                        {`${store.storeName} - ${store.district}, ${store.city}`}
+                                    </Option>
+                                ))}
+                            </Select>
                         </Form.Item>
 
                         <Form.Item name="description" label="Description">
@@ -212,7 +302,7 @@ const Customize2 = () => {
                     </Form>
                 </div>
             </div>
-            <Footer/>
+            <Footer />
         </div>
     );
 };

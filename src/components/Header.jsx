@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { SearchOutlined, ShoppingCartOutlined, UserOutlined, LogoutOutlined, HistoryOutlined, WalletOutlined } from '@ant-design/icons';
+import { SearchOutlined, ShoppingCartOutlined, UserOutlined, LogoutOutlined, HistoryOutlined, WalletOutlined ,EyeFilled} from '@ant-design/icons';
 import NotificationSection from './Notification';
 
 const Header = () => {
@@ -106,6 +106,13 @@ const Header = () => {
                   >
                     <UserOutlined className="text-lg mr-4" />
                     Profile
+                  </Link>
+                  <Link
+                    to="/desginCustom"
+                    className="flex items-center px-4 py-2 text-pink-600 hover:bg-pink-200"
+                  >
+                    <EyeFilled className="text-lg mr-4" />
+                    Request Custom
                   </Link>
                   <Link
                     to="/wallet"
