@@ -4,7 +4,6 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { jwtDecode } from "jwt-decode";
 import { message, Modal, Divider, Tag } from 'antd';
-import { } from 'antd';
 import axios from 'axios';
 import { HubConnectionBuilder, HttpTransportType } from '@microsoft/signalr';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -88,13 +87,15 @@ const WalletPage = () => {
         };
         return colors[status] || "text-gray-600 bg-gray-100";
     };
-    const openChatModal = (order) => {
+
+    const viewDetail = (order) => {
         setSelectedOrder(order);
         setIsChatModalOpen(true);
     };
 
-    const viewDetail = (order) => {
-        setSelectedOrder(order);
+    const openChatModal = (design) => {
+        setSelectedOrder(design);
+        setSelectedDesign(design);
         setIsChatModalOpen(true);
     };
 
@@ -103,263 +104,125 @@ const WalletPage = () => {
         setSelectedOrder(null);
     };
 
+    // Simplified Chat Modal Component that just renders a basic chat interface
     const ChatModal = () => {
-        const [messages, setMessages] = useState([]);
-        const [newMessage, setNewMessage] = useState('');
-        const [connection, setConnection] = useState(null);
-        const [connectionState, setConnectionState] = useState('disconnected');
-        const [chatRoomId, setChatRoomId] = useState(null);
-        const messagesEndRef = useRef(null);
-
-        // Add state for image handling
-        const [selectedImage, setSelectedImage] = useState(null);
-        const [isUploading, setIsUploading] = useState(false);
-        const [showImageModal, setShowImageModal] = useState(false);
-        const [modalImage, setModalImage] = useState('');
-        const fileInputRef = useRef(null);
-
-        // Existing IDs
-        const orderId = selectedOrder.orderId;
-        const customerId = selectedOrder.customerId;
-        const employeeId = selectedOrder.staffId;
-
-        // SignalR connection setup (unchanged)
-        useEffect(() => {
-            let newConnection = null;
-
-            const createConnection = () => {
-                newConnection = new HubConnectionBuilder()
-                    .withUrl('https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/chatHub', {
-                        skipNegotiation: true, // ⚡ Chỉ dùng WebSockets
-                        transport: HttpTransportType.WebSockets,
-                    })
-                    .withAutomaticReconnect()
-                    .build();
-
-                // Add event handlers
-                newConnection.onclose(() => {
-                    console.log('SignalR connection closed.');
-                    setConnectionState('disconnected');
-                });
-
-                newConnection.onreconnecting(() => {
-                    console.log('SignalR reconnecting...');
-                    setConnectionState('reconnecting');
-                });
-
-                newConnection.onreconnected(() => {
-                    console.log('SignalR reconnected. Rejoining chat room...');
-                    setConnectionState('connected');
-                    if (chatRoomId) {
-                        newConnection.invoke("JoinChatRoom", chatRoomId).catch(console.error);
-                    }
-                });
-
-                setConnection(newConnection);
-            };
-
-            createConnection();
-
-            return () => {
-                if (newConnection) {
-                    newConnection.stop().catch(console.error);
-                }
-            };
-        }, []);
-
-
-        // Start connection and listen for messages (unchanged)
-        useEffect(() => {
-            if (!connection) return;
-
-            const startConnection = async () => {
-                if (connectionState !== 'disconnected') {
-                    console.log(`Connection is already in state: ${connectionState}`);
-                    return;
-                }
-
-                try {
-                    setConnectionState('connecting');
-                    await connection.start();
-                    console.log('SignalR Connected!');
-                    setConnectionState('connected');
-
-                    // If we already have a chatRoomId, join it
-                    if (chatRoomId) {
-                        await connection.invoke("JoinChatRoom", chatRoomId);
-                    }
-                } catch (error) {
-                    console.error('SignalR Connection Error:', error);
-                    setConnectionState('disconnected');
-                    // Try again after a delay
-                    setTimeout(startConnection, 5000);
-                }
-            };
-
-            // Only setup message listener once
-            connection.off('ReceiveMessage'); // Remove any existing listeners
-            connection.on('ReceiveMessage', (message) => {
-                console.log("Received message:", message);
-                setMessages(prevMessages => [...prevMessages, message]);
-            });
-
-            // Start connection if disconnected
-            if (connectionState === 'disconnected') {
-                startConnection();
-            }
-        }, [connection, connectionState, chatRoomId]);
-
-        // Join chat room when we have both a connected connection and a room ID
-        useEffect(() => {
-            const joinChatRoom = async () => {
-                if (connection && connectionState === 'connected' && chatRoomId) {
-                    try {
-                        console.log(`Joining chat room: ${chatRoomId}`);
-                        await connection.invoke("JoinChatRoom", chatRoomId);
-                    } catch (error) {
-                        console.error('Error joining chat room:', error);
-                    }
-                }
-            };
-
-            joinChatRoom();
-
-            // Clean up when component unmounts or chatRoomId changes
-            return () => {
-                if (connection && connectionState === 'connected' && chatRoomId) {
-                    connection.invoke("LeaveChatRoom", chatRoomId).catch(console.error);
-                }
-            };
-        }, [connection, connectionState, chatRoomId]);
-
-
-        // Fetch messages from API (unchanged)
-        useEffect(() => {
-            if (isChatModalOpen && orderId) {
-                const fetchMessages = async () => {
-                    try {
-                        const response = await axios.get(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/messages/messages/${designs.orderId}/${customerId}/${employeeId}`);
-                        setMessages(response.data.data);
-
-                        // Get chatRoomId from first message if available
-                        if (response.data.data && response.data.data.length > 0) {
-                            const roomId = response.data.data[0].chatRoomId;
-                            setChatRoomId(roomId);
-
-
-                        }
-                    } catch (error) {
-                        console.error('Error fetching messages:', error);
-                    }
+        const [messageText, setMessageText] = useState('');
+        const [messages, setMessages] = useState([
+            {
+                text: 'Hi, I have a question about my design request.',
+                sender: 'customer',
+                timestamp: '10:00 AM',
+            },
+            {
+                text: 'Hello! How can I help you with your design today?',
+                sender: 'staff',
+                timestamp: '10:01 AM',
+            },
+        ]);
+        
+        // Simple function to send a message and add a mock response
+        const handleSendMessage = () => {
+            if (messageText.trim()) {
+                const newMessage = {
+                    text: messageText,
+                    sender: 'customer',
+                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 };
-
-                fetchMessages();
-            }
-        }, [isChatModalOpen, orderId, customerId, employeeId]);
-        // Auto-scroll to newest message (unchanged)
-        useEffect(() => {
-            if (messagesEndRef.current) {
-                messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-            }
-        }, [messages]);
-
-        // New: Handle image selection
-        const handleImageSelect = (e) => {
-            // When a file is selected through the input, set it to state
-            if (e.target.files && e.target.files[0]) {
-                const file = e.target.files[0];
-                setSelectedImage(file);
+                
+                setMessages([...messages, newMessage]);
+                setMessageText('');
+                
+                // Add a simulated response from staff after a short delay
+                setTimeout(() => {
+                    const staffResponse = {
+                        text: 'Thank you for your message. I\'ll help you with that shortly.',
+                        sender: 'staff',
+                        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    };
+                    setMessages(prevMessages => [...prevMessages, staffResponse]);
+                }, 1000);
             }
         };
 
-        // New: Remove selected image
-        const handleRemoveImage = () => {
-            // Clear the selected image from state
-            setSelectedImage(null);
-            // Also reset the file input element
-            if (fileInputRef.current) {
-                fileInputRef.current.value = '';
-            }
-        };
-
-        // New: Upload image to Cloudinary
-        const uploadImage = async (file) => {
-            setIsUploading(true);
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', 'delivery_app'); // Replace with your upload preset
-
-            try {
-                // Send file to Cloudinary API
-                const response = await axios.post(
-                    `https://api.cloudinary.com/v1_1/dvkqdbaue/image/upload`,
-                    formData
-                );
-                setIsUploading(false);
-                // Return the image URL from Cloudinary
-                return response.data.secure_url;
-            } catch (error) {
-                console.error('Error uploading image:', error);
-                setIsUploading(false);
-                return null;
-            }
-        };
-
-        // Modified: Send message to include image handling
-        const sendMessage = async () => {
-            // Only send if we have a chat room and either a message or image
-            if (!chatRoomId || (!newMessage.trim() && !selectedImage)) return;
-
-            try {
-                let messageContent = newMessage;
-                let messageType = 'text';
-                let imageUrl = null;
-
-                // If image selected, upload it first
-                if (selectedImage) {
-                    setIsUploading(true);
-                    imageUrl = await uploadImage(selectedImage);
-                    if (!imageUrl) {
-                        alert('Failed to upload image');
-                        setIsUploading(false);
-                        return;
-                    }
-                    // Store image URL in messageType field
-                    messageType = imageUrl;
-                }
-
-                const messageData = {
-                    chatRoomId: chatRoomId,
-                    senderId: customerId,
-                    receiveId: employeeId,
-                    messageType: messageType, // 'text' or image URL
-                    content: messageContent // Text message
-                };
-
-                // Send message via API
-                await axios.post('https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/messages/create-message', messageData);
-
-                // Reset input and image selection
-                setNewMessage('');
-                setSelectedImage(null);
-                if (fileInputRef.current) {
-                    fileInputRef.current.value = '';
-                }
-
-            } catch (error) {
-                console.error('Error sending message:', error);
-            } finally {
-                setIsUploading(false);
-            }
-        };
-
-        // New: Show full-size image in modal
-        const openImageModal = (imageUrl) => {
-            setModalImage(imageUrl);
-            setShowImageModal(true);
-        };
-
-
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[80vh] flex">
+                    {/* Order Details Sidebar */}
+                    <div className="w-1/3 bg-pink-50 rounded-l-2xl p-6 border-r border-pink-200">
+                        <h2 className="text-2xl font-bold text-pink-600 mb-4">Design Details</h2>
+                        <div className="space-y-4">
+                            <div>
+                                <p className="font-semibold text-gray-700">Design ID:</p>
+                                <p className="text-gray-600">{selectedDesign?.designCustomId || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <p className="font-semibold text-gray-700">Description:</p>
+                                <p className="text-gray-600">{selectedDesign?.requestDescription || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <p className="font-semibold text-gray-700">Price:</p>
+                                <p className="text-gray-600">${selectedDesign?.requestPrice || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <p className="font-semibold text-gray-700">Status:</p>
+                                <span className={`px-2 py-1 rounded-full text-sm ${getStatusColor(selectedDesign?.status || '')}`}>
+                                    {selectedDesign?.status || 'N/A'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+        
+                    {/* Chat Area */}
+                    <div className="w-2/3 flex flex-col">
+                        <div className="bg-pink-400 text-white p-4 flex justify-between items-center rounded-tr-2xl">
+                            <h2 className="text-xl font-bold">Chat Support - {selectedDesign?.designCustomId || 'Design'}</h2>
+                            <button
+                                onClick={() => setIsChatModalOpen(false)}
+                                className="text-white hover:text-pink-200"
+                            >
+                                ✕
+                            </button>
+                        </div>
+        
+                        <div className="flex-grow overflow-y-auto p-6 space-y-4">
+                            {messages.map((msg, index) => (
+                                <div
+                                    key={index}
+                                    className={`flex ${msg.sender === 'customer' ? 'justify-end' : 'justify-start'}`}
+                                >
+                                    <div className={`
+                                        max-w-[70%] p-3 rounded-xl shadow-sm
+                                        ${msg.sender === 'customer'
+                                            ? 'bg-pink-100 text-pink-800'
+                                            : 'bg-blue-100 text-blue-800'}
+                                    `}>
+                                        <p className="mb-1">{msg.text}</p>
+                                        <p className="text-xs text-gray-500 text-right">{msg.timestamp}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+        
+                        <div className="p-4 border-t flex gap-2">
+                            <input
+                                type="text"
+                                value={messageText}
+                                onChange={(e) => setMessageText(e.target.value)}
+                                placeholder="Type your message..."
+                                className="flex-grow p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-300"
+                                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                            />
+                            <button
+                                onClick={handleSendMessage}
+                                className="bg-pink-400 text-white px-6 py-3 rounded-lg hover:bg-pink-500 transition-colors"
+                            >
+                                Send
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
     };
 
     const deleteDesign = async (designId) => {
@@ -407,21 +270,15 @@ const WalletPage = () => {
                     </button>
                 )}
                 {/* Nút Chat - Hồng Neon */}
-                {(design.status != "Order Successfully") && (
-
+                {(design.status !== "Order Successfully") && (
                     <button
-                        onClick={() => {
-                            setSelectedOrder(design);
-                            setIsChatModalOpen(true);
-                        }}
+                        onClick={() => openChatModal(design)}
                         className="p-3 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-full transition-all duration-300 shadow-lg"
                     >
                         <MessageCircle className="w-6 h-6 text-white" />
                     </button>
                 )}
-
             </div>
-
         );
     };
 
@@ -430,8 +287,6 @@ const WalletPage = () => {
             <Header />
 
             <div className="p-14 min-h-screen">
-
-
                 {/* Tab Navigation */}
                 <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
                     <div className="flex border-b border-gray-200">
@@ -444,7 +299,6 @@ const WalletPage = () => {
                         >
                             Orders
                         </button>
-
                     </div>
                 </div>
 
@@ -453,8 +307,8 @@ const WalletPage = () => {
                     <div className="bg-white rounded-lg shadow-lg p-6 mb-10">
                         <div className="flex flex-col gap-6">
                             <div>
-                                <h2 className="text-3xl text-left text-pink-400 font-bold mb-2">Desgin Custom</h2>
-                                <p className="text-base text-left text-gray-400">Review and track your desgin custom here</p>
+                                <h2 className="text-3xl text-left text-pink-400 font-bold mb-2">Design Custom</h2>
+                                <p className="text-base text-left text-gray-400">Review and track your design custom here</p>
                             </div>
                             <div className="flex gap-2 flex-wrap">
                                 <button
@@ -513,7 +367,6 @@ const WalletPage = () => {
                             <table className="min-w-full">
                                 <thead className="bg-pink-50">
                                     <tr>
-                                        {/* <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Order ID</th> */}
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Request Image</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Request Description</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Request Price</th>
@@ -526,13 +379,13 @@ const WalletPage = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
-                                    {designs.map((design) => (
+                                    {designs
+                                        .filter(design => selectedStatus === 'All' || design.status === selectedStatus)
+                                        .map((design) => (
                                         <tr key={design.designCustomId}>
-                                            {/* <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.orderId}</td> */}
                                             <td className="px-6 py-4 text-left">
                                                 <div className="w-20 h-20 rounded-lg overflow-hidden">
                                                     {design.requestImage ? (
-                                                        // Ảnh cho custom product
                                                         <img
                                                             src={design.requestImage}
                                                             alt="Custom Product"
@@ -542,12 +395,11 @@ const WalletPage = () => {
                                                                 e.target.src = 'https://via.placeholder.com/150';
                                                             }}
                                                         />
-                                                    )
-                                                        : (
-                                                            <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                                                                No Image
-                                                            </div>
-                                                        )}
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                                                            No Image
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{design.requestDescription}</td>
@@ -556,7 +408,6 @@ const WalletPage = () => {
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{design.requestMainColor}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{design.requestFlowerType}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{design.requestCard}</td>
-
                                             <td className="px-6 py-4 text-left whitespace-nowrap">
                                                 <span className={`px-2 py-1 text-base rounded-full ${getStatusColor(design.status)}`}>
                                                     {design.status}
@@ -572,16 +423,14 @@ const WalletPage = () => {
                         </div>
                     </div>
                 )}
-
-                {/* Refund Orders Tab Content */}
-
-
-
             </div>
 
             <Footer />
+            
+            {/* Simple chat modal that will display when isChatModalOpen is true */}
             {isChatModalOpen && <ChatModal />}
 
+            {/* Detail modal for viewing design details */}
             <Modal
                 title="Design Details"
                 visible={isDetailModalVisible}
@@ -653,11 +502,17 @@ const WalletPage = () => {
                             </div>
                             <div>
                                 <p className="font-semibold">Response Image:</p>
-                                <img src={selectedDesign.responseImage} alt="Design" className="w-full h-auto rounded-lg shadow" />
+                                {selectedDesign.responseImage ? (
+                                    <img src={selectedDesign.responseImage} alt="Design Response" className="w-full h-auto rounded-lg shadow" />
+                                ) : (
+                                    <div className="w-full h-40 flex items-center justify-center bg-gray-100 rounded-lg">
+                                        No Response Image
+                                    </div>
+                                )}
                             </div>
                             <div>
                                 <p className="font-semibold">Response Description:</p>
-                                <p className="text-gray-600">{selectedDesign.responseDescription}</p>
+                                <p className="text-gray-600">{selectedDesign.responseDescription || 'No response yet'}</p>
                             </div>
                         </div>
                     </div>

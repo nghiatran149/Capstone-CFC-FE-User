@@ -22,7 +22,7 @@ import CheckoutCustom from "./pages/CheckoutCustom"
 import CheckoutCart from "./pages/CheckoutCart"
 import HistoryOrder from "./pages/HistoryOrder"
 import Wallet2Page from "./pages/Wallet2"
-import DesginCustom from "./pages/DesginCustom"
+import RequestCustomOrderHistory from "./pages/RequestCustomOrderHistory"
 
 import Layout from "./components/Layout"
 
@@ -35,7 +35,6 @@ function App() {
                 <Route path="/forgotpassword" element={<ForgotPasswordPage />} />
                 <Route path="/reset-password" element={<Layout><ResetPasswordPage /></Layout>} />
                 <Route path="/changepassword" element={<ChangePasswordPage />} />
-                <Route path="/desginCustom" element={<DesginCustom />} />
 
                 <Route path="/home" element={<Layout><Homepage /></Layout>} />
                 <Route path="/about" element={<Layout><AboutUs /></Layout>} />
@@ -45,6 +44,7 @@ function App() {
                 <Route path="/userprofile" element={<Layout><UserProfile /></Layout>} />
                 <Route path="/wallet" element={<Layout><WalletPage /></Layout>} />
                 <Route path="/wallet2" element={<Layout><Wallet2Page /></Layout>} />
+                <Route path="/request-custom-history" element={<RequestCustomOrderHistory />} />
 
                 <Route path="/cart" element={<Layout><ShoppingCart /></Layout>} />
                 <Route path="/checkout" element={<Layout><Checkout /></Layout>} />
