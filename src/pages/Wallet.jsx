@@ -158,8 +158,8 @@ const WalletPage = () => {
                     processing: formattedOrders.filter(o =>
                         ["Arranging & Packing", "Awaiting Design Approval", "Flower Completed", "Delivery"].includes(o.status)
                     ).length,
+                    fail:formattedOrders.filter(o => o.status === "Fail").length,
 
-                    failed: formattedOrders.filter(o => o.status === "Cancel").length
                 });
             }
         } catch (error) {
@@ -307,6 +307,7 @@ const WalletPage = () => {
             "Flower Completed": "text-orange-600 bg-orange-100",
             "Delivery": "text-purple-600 bg-purple-100",
             "Cancel": "text-red-600 bg-red-100",
+            "Fail": "text-red-600 bg-red-100",
             "Received": "text-blue-600 bg-blue-100",
             "Refuse refund": "text-red-600 bg-red-100",
             "Accept refund": "text-green-600 bg-green-100",
@@ -1649,7 +1650,7 @@ const WalletPage = () => {
                     <div className="bg-red-500 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
                         <div className="absolute right-0 top-0 w-24 h-24 bg-red-400 rounded-full transform translate-x-8 -translate-y-8"></div>
                         <h3 className="text-xl font-medium mb-2">Failed Orders</h3>
-                        <p className="text-3xl font-bold">{stats.failed}</p>
+                        <p className="text-3xl font-bold">{stats.fail}</p>
                     </div>
                 </div>
 
@@ -1773,6 +1774,16 @@ const WalletPage = () => {
                                 >
                                     <span className="w-2 h-2 rounded-full bg-current"></span>
                                     Received
+                                </button>
+                                <button
+                                    onClick={() => setSelectedStatus('Fail')}
+                                    className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all ${selectedStatus === 'Fail'
+                                        ? 'bg-red-500 text-white'
+                                        : 'bg-red-100 text-red-600 hover:bg-red-200'
+                                        }`}
+                                >
+                                    <span className="w-2 h-2 rounded-full bg-current"></span>
+                                    Fail
                                 </button>
                             </div>
                         </div>

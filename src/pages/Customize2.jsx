@@ -86,7 +86,7 @@ const Customize2 = () => {
             const result = await response.json();
             if (result.statusCode === 200) {
                 message.success('Design custom created successfully!');
-                navigate('/desginCustom');
+                navigate('/request-custom-history');
             } else {
                 message.error('Failed to create design custom');
             }

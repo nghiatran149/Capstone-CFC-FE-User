@@ -23,7 +23,7 @@ import CheckoutCart from "./pages/CheckoutCart"
 import HistoryOrder from "./pages/HistoryOrder"
 import Wallet2Page from "./pages/Wallet2"
 import RequestCustomOrderHistory from "./pages/RequestCustomOrderHistory"
-
+import CheckoutCustom2 from "./pages/CheckoutCustom2"
 import Layout from "./components/Layout"
 
 function App() {
@@ -35,6 +35,7 @@ function App() {
                 <Route path="/forgotpassword" element={<ForgotPasswordPage />} />
                 <Route path="/reset-password" element={<Layout><ResetPasswordPage /></Layout>} />
                 <Route path="/changepassword" element={<ChangePasswordPage />} />
+                <Route path="/checkout-custom2" element={<CheckoutCustom2 />} />
 
                 <Route path="/home" element={<Layout><Homepage /></Layout>} />
                 <Route path="/about" element={<Layout><AboutUs /></Layout>} />

@@ -240,6 +240,22 @@ const WalletPage = () => {
         }
     };
 
+    const handleCheckout = async (designId) => {
+        try {
+            // Gọi API để thực hiện checkout
+            const response = await axios.post(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/DesignCustom/Checkout?id=${designId}`);
+            if (response.data.statusCode === 200) {
+                message.success('Checkout successful!');
+                fetchDesigns(); // Refresh the designs list after checkout
+            } else {
+                message.error('Failed to checkout');
+            }
+        } catch (error) {
+            console.error('Error during checkout:', error);
+            message.error('Failed to checkout');
+        }
+    };
+
     const renderActionButtons = (design) => {
         return (
             <div className="flex space-x-3">
@@ -260,6 +276,18 @@ const WalletPage = () => {
                     <XCircle className="w-5 h-5 text-white" />
                     <span>Cancel</span>
                 </button>
+
+                {/* Nút Checkout - chỉ hiển thị nếu trạng thái là "Send Response" */}
+                {design.status === "Send Response" && (
+                    <button
+                        onClick={() => handleCheckout(design.designCustomId)}
+                        className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-green-500 to-green-400 hover:from-green-600 hover:to-green-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
+                    >
+                        <CreditCardOutlined className="w-5 h-5 text-white" />
+                        <span>Checkout</span>
+                    </button>
+                )}
+
                 {(design.status === "Received" || design.status === "Request refund") && (
                     <button
                         onClick={() => handleFeedback(design.orderId)}
@@ -269,6 +297,7 @@ const WalletPage = () => {
                         <span>Feedback</span>
                     </button>
                 )}
+
                 {/* Nút Chat - Hồng Neon */}
                 {(design.status !== "Order Successfully") && (
                     <button
@@ -496,6 +525,14 @@ const WalletPage = () => {
                         {/* Bên phải */}
                         <div className="w-full md:w-1/2 space-y-4 p-4 bg-white rounded-lg shadow-md">
                             <h3 className="text-xl font-bold text-pink-600">Response</h3>
+                            <div>
+                                <p className="font-semibold">Staff ID:</p>
+                                <p className="text-gray-600">{selectedDesign.staffId}</p>
+                            </div>
+                            <div>
+                                <p className="font-semibold">Staff Name:</p>
+                                <p className="text-gray-600">{selectedDesign.staffName}</p>
+                            </div>
                             <div>
                                 <p className="font-semibold">Response Price:</p>
                                 <p className="text-gray-600">{selectedDesign.responsePrice}</p>
