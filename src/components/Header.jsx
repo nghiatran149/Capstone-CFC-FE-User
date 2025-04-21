@@ -108,11 +108,11 @@ const Header = () => {
                     Profile
                   </Link>
                   <Link
-                    to="/desginCustom"
+                    to="/request-custom-history"
                     className="flex items-center px-4 py-2 text-pink-600 hover:bg-pink-200"
                   >
-                    <EyeFilled className="text-lg mr-4" />
-                    Request Custom
+                    <HistoryOutlined className="text-lg mr-4" />
+                    Request History 
                   </Link>
                   <Link
                     to="/wallet"

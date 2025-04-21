@@ -87,7 +87,7 @@ const WalletPage = () => {
 
     useEffect(() => {
         const fetchWithdrawalHistory = async () => {
-            try {
+          
                 const walletId = wallet?.walletId; // Lấy walletId từ state
                 if (!walletId) return;
 
@@ -96,13 +96,8 @@ const WalletPage = () => {
 
                 if (data.statusCode === 200) {
                     setWithdrawalHistory(data.data); // Lưu dữ liệu vào state
-                } else {
-                    message.error(data.message || 'Failed to load withdrawal history');
                 }
-            } catch (error) {
-                console.error("Error fetching withdrawal history:", error);
-                message.error('Failed to load withdrawal history');
-            }
+             
         };
 
         if (wallet) {
@@ -112,7 +107,7 @@ const WalletPage = () => {
 
     useEffect(() => {
         const fetchDepositHistory = async () => {
-            try {
+         
                 const walletId = wallet?.walletId; // Lấy walletId từ state
                 if (!walletId) return;
 
@@ -121,13 +116,8 @@ const WalletPage = () => {
 
                 if (data.statusCode === 200) {
                     setDepositHistory(data.data); // Lưu dữ liệu vào state
-                } else {
-                    message.error(data.message || 'Failed to load Wallet history');
                 }
-            } catch (error) {
-                console.error("Error fetching deposit history:", error);
-                message.error('Failed to load deposit history');
-            }
+            
         };
 
         if (wallet) {
