@@ -240,21 +240,7 @@ const WalletPage = () => {
         }
     };
 
-    const handleCheckout = async (designId) => {
-        try {
-            // Gọi API để thực hiện checkout
-            const response = await axios.post(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/DesignCustom/Checkout?id=${designId}`);
-            if (response.data.statusCode === 200) {
-                message.success('Checkout successful!');
-                fetchDesigns(); // Refresh the designs list after checkout
-            } else {
-                message.error('Failed to checkout');
-            }
-        } catch (error) {
-            console.error('Error during checkout:', error);
-            message.error('Failed to checkout');
-        }
-    };
+   
 
     const renderActionButtons = (design) => {
         return (
@@ -274,13 +260,22 @@ const WalletPage = () => {
                     className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-600 hover:to-orange-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
                 >
                     <XCircle className="w-5 h-5 text-white" />
-                    <span>Cancel</span>
+                  
+                  <span>Cancel</span>
                 </button>
 
                 {/* Nút Checkout - chỉ hiển thị nếu trạng thái là "Send Response" */}
                 {design.status === "Send Response" && (
                     <button
-                        onClick={() => handleCheckout(design.designCustomId)}
+                        onClick={() => navigate('/checkout-custom2', {
+                            state: {
+                                design: {
+                                    ...design,
+                                    DesignCustom: design.designCustomId,
+                                    totalPrice: design.responsePrice,
+                                }
+                            }
+                        })}
                         className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-green-500 to-green-400 hover:from-green-600 hover:to-green-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
                     >
                         <CreditCardOutlined className="w-5 h-5 text-white" />
@@ -288,15 +283,7 @@ const WalletPage = () => {
                     </button>
                 )}
 
-                {(design.status === "Received" || design.status === "Request refund") && (
-                    <button
-                        onClick={() => handleFeedback(design.orderId)}
-                        className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-pink-500 to-pink-400 hover:from-pink-600 hover:to-pink-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
-                    >
-                        <MessageSquareText className="w-5 h-5 text-white" />
-                        <span>Feedback</span>
-                    </button>
-                )}
+               
 
                 {/* Nút Chat - Hồng Neon */}
                 {(design.status !== "Order Successfully") && (

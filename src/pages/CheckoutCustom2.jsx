@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeftOutlined } from '@ant-design/icons';
-import { Input, Button, Form, Checkbox, Select, message, DatePicker, TimePicker, Radio, Modal } from 'antd';
+import { Input, Button, Form, Checkbox, Select, message, DatePicker, TimePicker, Modal } from 'antd';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import axios from 'axios';
@@ -17,9 +17,11 @@ const districts = [
     "Bình Chánh", "Cần Giờ"
 ];
 
-const CheckoutCustom = () => {
+
+const Checkout = () => {
     const [form] = Form.useForm();
     const [shippingMethod, setShippingMethod] = useState('store-pickup');
+    const [paymentMethod, setPaymentMethod] = useState('vnpay');
     const [isAddressDisabled, setIsAddressDisabled] = useState(true);
     const [selectedVoucher, setSelectedVoucher] = useState(null);
     const [selectedStore, setSelectedStore] = useState(null);
@@ -28,7 +30,9 @@ const CheckoutCustom = () => {
     const [loading, setLoading] = useState(true);
     const [loadingStores, setLoadingStores] = useState(true);
     const [selectedDeposit, setSelectedDeposit] = useState(null);
-    const [customProduct, setCustomProduct] = useState(null);
+    const [checkwallet, setCheckWallet] = useState(null);
+    const [walletPassword, setWalletPassword] = useState('');
+    const [isPasswordDialogVisible, setIsPasswordDialogVisible] = useState(false);
     const [orderId, setOrderId] = useState(null);
 
     const [recipientInfo, setRecipientInfo] = useState({
@@ -39,60 +43,23 @@ const CheckoutCustom = () => {
     });
     const [deliveryCheckResult, setDeliveryCheckResult] = useState(null);
     const [isCheckingDelivery, setIsCheckingDelivery] = useState(false);
-    const [paymentMethod, setPaymentMethod] = useState('vn-pay');
-    const [walletPassword, setWalletPassword] = useState('');
-    const [isPasswordDialogVisible, setIsPasswordDialogVisible] = useState(false);
     const [isWalletAvailable, setIsWalletAvailable] = useState(false);
     const [wallet, setWallet] = useState(null);
-
     const navigate = useNavigate();
     const location = useLocation();
-    const { customId } = location.state || {};
+    const cartItems = location.state?.cartItems;
+    const totalAmount = location.state?.totalAmount;
+    const productInfo = location.state?.product;
+    const order = location.state?.order;
+    const design = location.state?.design;
 
     useEffect(() => {
-        fetchPromotions();
-        fetchStores();
-        if (customId) {
-            fetchCustomProduct();
+        if (design) {
+            console.log("Design ID:", design.DesignCustom);
         }
         checkWallet();
         fetchWallet();
-    }, [customId]);
-
-    const fetchCustomProduct = async () => {
-        try {
-            const token = sessionStorage.getItem('accessToken');
-            const response = await axios.get(
-                `https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/productcustoms/Id?id=${customId}`,
-                {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                }
-            );
-            setCustomProduct(response.data);
-            setLoading(false);
-        } catch (error) {
-            console.error('Error fetching custom product:', error);
-            message.error('Failed to fetch custom product details');
-            setLoading(false);
-        }
-    };
-
-   
-
-    const fetchStores = async () => {
-        try {
-            const response = await axios.get('https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Store/GetAllStore');
-            if (response.data && response.data.data) {
-                setStores(response.data.data);
-            }
-            setLoadingStores(false);
-        } catch (error) {
-            console.error('Error fetching stores:', error);
-            setLoadingStores(false);
-        }
-    };
+    }, [design]);
 
     const checkWallet = async () => {
         try {
@@ -122,19 +89,17 @@ const CheckoutCustom = () => {
             message.error('Failed to check wallet status');
         }
     };
-
     const fetchWallet = async () => {
         try {
             const token = sessionStorage.getItem('accessToken');
             if (!token) {
-                message.error('Please login to view wallet');
+                message.error('Please login to view orders');
                 navigate('/login');
                 return;
             }
 
             const decodedToken = jwtDecode(token);
             const customerId = decodedToken.Id;
-
             const response = await fetch(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Wallet/GetWalletByCustomerId?CustomerId=${customerId}`);
             const data = await response.json();
 
@@ -149,232 +114,10 @@ const CheckoutCustom = () => {
             message.error('Failed to load wallet');
         }
     };
-
-    // Redirect if no customId
-    if (!customId) {
-        navigate('/');
-        return null;
-    }
-
-    const handleStoreChange = (value) => {
-        setSelectedStore(value);
-    };
-
-    const handleShippingChange = (method) => {
-        setShippingMethod(method);
-        setIsAddressDisabled(method === 'store-pickup');
-    };
-
-    const handleVoucherChange = (voucherId) => {
-        setSelectedVoucher(voucherId);
-    };
-
-    const calculateDiscount = () => {
-        if (!selectedVoucher) return 0;
-        const promotion = promotions.find(p => p.promotionId === selectedVoucher);
-        if (!promotion) return 0;
-
-        const subtotal = customProduct ? customProduct.totalPrice : 0;
-        return Math.round((subtotal * promotion.promotionDiscount) / 100);
-    };
-
-    const handleRecipientInfoChange = (field, value) => {
-        setRecipientInfo(prev => ({
-            ...prev,
-            [field]: value
-        }));
-    };
-
-    const handleDepositChange = (value) => {
-        setSelectedDeposit(value);
-    };
-
-    
-
-    const handleProceedToPayment = async () => {
-        try {
-            // Validate form first
-            await form.validateFields();
-
-            if (!selectedStore) {
-                message.error('Please select a store');
-                return;
-            }
-
-            // Check if delivery is selected but not checked
-            if (shippingMethod === 'shop-shipping' && !deliveryCheckResult?.success) {
-                message.error('Please check delivery availability first');
-                return;
-            }
-
-            const token = sessionStorage.getItem('accessToken');
-            if (!token) {
-                message.error('Please login to proceed');
-                navigate('/login');
-                return;
-            }
-
-            const decodedToken = jwtDecode(token);
-            const customerId = decodedToken.Id;
-
-            if (!customerId) {
-                message.error('User information not found. Please login again');
-                navigate('/login');
-                return;
-            }
-
-            // Get form values
-            const formValues = await form.getFieldsValue();
-            const cardMessage = formValues.cardMessage;
-            const hideGiverName = formValues.hideGiverName;
-            const importantNote = formValues.importantNote;
-
-            // Format note
-            const fullNote = `Card Message: ${cardMessage || ''}\nHide Giver's Name: ${hideGiverName ? 'Yes' : 'No'}\nImportant Note: ${importantNote || ''}`;
-
-            // Format date time
-            const formattedDateTime = recipientInfo.date && recipientInfo.time
-                ? `${dayjs(recipientInfo.date).format('YYYY-MM-DD')}T${dayjs(recipientInfo.time).format('HH:mm:ss')}`
-                : null;
-
-            const orderData = {
-                promotionId: selectedVoucher || null,
-                note: fullNote,
-                storeId: selectedStore,
-                recipientName: recipientInfo.name,
-                recipientTime: formattedDateTime,
-                phone: recipientInfo.phone,
-                status: "Pending",
-                transfer: selectedDeposit === "100",
-                delivery: shippingMethod === 'shop-shipping',
-                productCustomId: customId,
-                paymentMethod,
-                // Add delivery information if shipping method is shop-shipping
-                ...(shippingMethod === 'shop-shipping' && {
-                    deliveryDistrict: formValues.district,
-                    deliveryCity: "Hồ Chí Minh",
-                    deliveryAddress: formValues.detailedAddress
-                }),
-                wallet: paymentMethod === 'flower-wallet' // Set useWallet based on payment method
-
-            };
-
-            console.log('Order Data:', orderData);
-
-            // Create order with new API endpoint
-            const orderResponse = await axios.post(
-                `https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Order/CreateOrderCustom?Customer=${customerId}`,
-                JSON.stringify(orderData),
-                {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-
-            if (orderResponse.status === 200) {
-                message.success('Order created successfully!');
-
-                const createdOrderId = orderResponse.data.orderId; // Get orderId from response
-                setOrderId(createdOrderId); // Cập nhật orderId trong state
-                sessionStorage.setItem('lastOrderId', createdOrderId); // Lưu orderId vào sessionStorage
-              
-                // Check payment method
-                if (paymentMethod === 'flower-wallet'&& isWalletAvailable) {
-                    setIsPasswordDialogVisible(true); // Show password dialog
-                } else {
-                    // Proceed with VNPAY payment
-                    const vnpayResponse = await axios.post(
-                        'https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/VnPay/proceed-vnpay-payment',
-                        createdOrderId,
-                        {
-                            headers: {
-                                'Authorization': `Bearer ${token}`,
-                                'Content-Type': 'application/json'
-                            }
-                        }
-                    );
-
-                    if (vnpayResponse.data && vnpayResponse.data.paymentUrl) {
-                        sessionStorage.setItem('lastOrderId', createdOrderId);
-                        window.location.href = vnpayResponse.data.paymentUrl;
-                    } else {
-                        message.error('Failed to get payment URL');
-                        navigate('payment-failure'); // Redirect to failure page
-                    }
-                }
-            }
-        } catch (error) {
-            console.error('Error:', error.response?.data || error);
-            message.error(
-                error.response?.data?.errors ? 
-                Object.values(error.response.data.errors).flat().join(', ') : 
-                'Failed to process. Please try again.'
-            );
-        }
-    };
-    const handlePaymentMethodChange = (method) => {
-        setPaymentMethod(method);
-        // Kiểm tra nếu phương thức thanh toán là ví
-        if (method === 'flower-wallet' && !isWalletAvailable) {
-            setPaymentMethod('vn-pay'); // Chuyển sang VNPAY nếu ví không khả dụng
-        }
-    };
-    const handlePasswordSubmit = async () => {
-        if (walletPassword) {
-            await handleWalletPayment(); // Call the wallet payment function
-            setIsPasswordDialogVisible(false); // Close the dialog
-        } else {
-            message.error('Please enter your wallet password.');
-        }
-    };
-
-    const handleWalletPayment = async () => {
-        try {
-            const token = sessionStorage.getItem('accessToken');
-            const orderId = sessionStorage.getItem('lastOrderId'); // Get orderId from sessionStorage
-            console.log('OrderId:', orderId);
-            console.log('WalletPassword:', walletPassword);
-
-            const response = await axios.post(
-                `https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Wallet/PaymentByWallet?OrderId=${orderId}&PasswordWallet=${walletPassword}`,
-                {},
-                {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-
-            console.log('API Response:', response);
-
-            if (response.status === 200) {
-                message.success('Payment successful!');
-                navigate('/payment-success'); // Redirect to success page
-            } else {
-                message.error('Payment failed. Please check your password or try again.');
-                navigate('/payment-failure'); // Redirect to failure page
-            }
-        } catch (error) {
-            console.error('Error during wallet payment:', error);
-            if (error.response) {
-                console.error('Response data:', error.response.data);
-                message.error(error.response.data.message || 'Failed to process wallet payment. Please try again.');
-            } else {
-                message.error('Failed to process wallet payment. Please try again.');
-            }
-        } finally {
-            setIsPasswordDialogVisible(false); // Close password dialog
-        }
-    };
-
     const handleCheck = async () => {
         try {
             setIsCheckingDelivery(true);
 
-            // Validate form fields
             const formValues = await form.validateFields(['district', 'detailedAddress']);
 
             if (!selectedStore) {
@@ -387,23 +130,33 @@ const CheckoutCustom = () => {
                 return;
             }
 
-            // Get quantity from customProduct
-            if (!customProduct || !customProduct.quantity) {
-                message.error('Product quantity not available');
+            let productsToCheck = [];
+            if (cartItems) {
+                productsToCheck = cartItems.map(item => ({
+                    productId: item.productId,
+                    quantity: item.quantity
+                }));
+            } else if (productInfo) {
+                productsToCheck = [{
+                    productId: productInfo.productId,
+                    quantity: productInfo.selectedQuantity
+                }];
+            } else {
+                message.error('No products found');
                 return;
             }
 
             const checkData = {
-                productQuantity: customProduct.quantity,
-                city: "Hồ Chí Minh",
+                checkQuantityAndWeightProducts: productsToCheck,
+                city: formValues.detailedAddress,
                 district: formValues.district,
-                detailedAddress: formValues.detailedAddress
+                detailedAddress: "Hồ Chí Minh"
             };
 
             console.log('Sending data:', checkData);
 
             const response = await fetch(
-                `https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Check/CheckDeliveryByProductCustom?storeId=${selectedStore}`,
+                `https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Check/CheckDelivery?storeId=${selectedStore}`,
                 {
                     method: 'POST',
                     headers: {
@@ -436,44 +189,214 @@ const CheckoutCustom = () => {
         }
     };
 
-    const OptionCard = ({ id, title, description, price, icon, selected, onClick, discount }) => (
+
+    const handleShippingChange = (method) => {
+        setShippingMethod(method);
+        setIsAddressDisabled(method === 'store-pickup');
+    };
+    const calculateDiscount = () => {
+        if (!selectedVoucher) return 0;
+        const promotion = promotions.find(p => p.promotionId === selectedVoucher);
+        if (!promotion) return 0;
+
+        const subtotal = cartItems ? totalAmount : design.totalPrice;
+        return Math.round((subtotal * promotion.promotionDiscount) / 100);
+    };
+
+    const handleRecipientInfoChange = (field, value) => {
+        setRecipientInfo(prev => ({
+            ...prev,
+            [field]: value
+        }));
+    };
+
+    const handleDepositChange = (value) => {
+        setSelectedDeposit(value);
+    };
+
+    const handleProceedToPayment = async () => {
+        try {
+            await form.validateFields();
+
+            if (!selectedStore) {
+                message.error('Please select a store');
+                return;
+            }
+
+            if (shippingMethod === 'store-pickup') {
+                if (!recipientInfo.date || !recipientInfo.time || !selectedDeposit) {
+                    message.error('Please fill in all required information');
+                    return;
+                }
+            } else if (shippingMethod === 'shop-shipping') {
+                if (!deliveryCheckResult?.success) {
+                    message.error('Please check delivery availability first');
+                    return;
+                }
+            }
+
+            const token = sessionStorage.getItem('accessToken');
+            if (!token) {
+                message.error('Please login to proceed');
+                navigate('/login');
+                return;
+            }
+
+            const decodedToken = jwtDecode(token);
+            const customerId = decodedToken.Id;
+
+            if (!customerId) {
+                message.error('User information not found. Please login again');
+                navigate('/login');
+                return;
+            }
+
+            const formValues = await form.getFieldsValue();
+
+            const formattedDateTime = recipientInfo.date && recipientInfo.time
+                ? `${dayjs(recipientInfo.date).format('YYYY-MM-DD')}T${dayjs(recipientInfo.time).format('HH:mm:ss')}`
+                : null;
+
+            const orderData = {
+                promotionId: selectedVoucher || null,
+                storeId: selectedStore,
+                recipientName: recipientInfo.name || formValues.recipientName,
+                recipientTime: formattedDateTime,
+                phone: recipientInfo.phone || formValues.recipientPhone,
+                status: "Pending",
+                transfer: selectedDeposit === "100",
+                delivery: shippingMethod === 'shop-shipping' && deliveryCheckResult?.success,
+                ...(shippingMethod === 'shop-shipping' && {
+                    deliveryDistrict: formValues.district,
+                    deliveryCity: "Hồ Chí Minh",
+                    deliveryAddress: formValues.detailedAddress,
+                }),
+                orderDetails: cartItems ?
+                    cartItems.map(item => ({
+                        productId: item.productId,
+                        quantity: item.quantity
+                    })) :
+                    [{
+                        productId: productInfo.productId,
+                        quantity: productInfo.selectedQuantity
+                    }],
+                wallet: paymentMethod === 'flower-wallet'
+            };
+
+            console.log('Order Data:', orderData);
+
+            const orderResponse = await axios.post(
+                `https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Order/CreateOrder?CustomerId=${customerId}`,
+                orderData,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            if (orderResponse.status === 200) {
+                message.success('Order created successfully!');
+
+                const createdOrderId = orderResponse.data.orderId;
+                setOrderId(createdOrderId);
+
+                if (paymentMethod === 'flower-wallet' && isWalletAvailable) {
+                    setIsPasswordDialogVisible(true);
+                } else if (paymentMethod === 'vn-pay') {
+                    const vnpayResponse = await axios.post(
+                        'https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/VnPay/proceed-vnpay-payment',
+                        createdOrderId,
+                        {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        }
+                    );
+
+                    if (vnpayResponse.data && vnpayResponse.data.paymentUrl) {
+                        sessionStorage.setItem('lastOrderId', createdOrderId);
+                        window.location.href = vnpayResponse.data.paymentUrl;
+                    } else {
+                        message.error('Failed to get payment URL');
+                        navigate('payment-failure');
+                    }
+                } else {
+                    message.error('Please select a valid payment method.');
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error.response?.data || error);
+            message.error(
+                error.response?.data?.errors ?
+                    Object.values(error.response.data.errors).flat().join(', ') :
+                    'Failed to process. Please try again.'
+            );
+            navigate('payment-failure');
+        }
+    };
+
+    const handlePasswordSubmit = async () => {
+        if (walletPassword) {
+            handleWalletPayment(orderId);
+            setIsPasswordDialogVisible(false);
+        } else {
+            message.error('Please enter your wallet password.');
+        }
+    };
+
+    const handleWalletPayment = async (orderId) => {
+        try {
+            const token = sessionStorage.getItem('accessToken');
+            if (!token) {
+                message.error('Please login to proceed');
+                return;
+            }
+
+            const response = await axios.post(
+                `https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Wallet/PaymentByWallet?OrderId=${orderId}&PasswordWallet=${walletPassword}`,
+                {},
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            if (response.status === 200) {
+                message.success('Payment successful!');
+                navigate('/payment-success');
+            } else {
+                message.error('Payment failed. Please check your password or try again.');
+                navigate('/payment-failure');
+            }
+        } catch (error) {
+            console.error('Error during wallet payment:', error);
+            message.error('Failed to process wallet payment. Please try again.');
+            navigate('/payment-failure');
+        }
+    };
+
+    const handlePaymentChange = (id) => {
+        setPaymentMethod(id);
+    };
+
+    const OptionCard = ({ id, title, description, icon, selected, onClick }) => (
         <div
             className={`border rounded-lg p-4 cursor-pointer mb-2 hover:border-pink-500 transition-all
-                ${selected ? 'border-pink-500 bg-pink-50' : 'border-gray-200'}
-                @media (forced-colors: active) {
-                    forced-color-adjust: none;
-                    border-color: ButtonText;
-                    background-color: ButtonFace;
-                    color: ButtonText;
-                }`}
+                ${selected ? 'border-pink-500 bg-pink-50' : 'border-gray-200'}`}
             onClick={() => onClick(id)}
-            style={{ 
-                '@media (forced-colors: active)': {
-                    forcedColorAdjust: 'none',
-                    borderColor: 'ButtonText',
-                    backgroundColor: 'ButtonFace',
-                    color: 'ButtonText'
-                }
-            }}
         >
             <div className="flex items-center">
                 <div className="w-12 h-12 mr-4">
-                    <img 
-                        src={icon} 
-                        alt={title} 
-                        className="w-full h-full object-contain"
-                        style={{ 
-                            '@media (forced-colors: active)': {
-                                forcedColorAdjust: 'none'
-                            }
-                        }} 
-                    />
+                    <img src={icon} alt={title} className="w-full h-full object-contain" />
                 </div>
                 <div className="flex-grow">
                     <div className="flex justify-between items-center">
                         <h4 className="font-medium text-gray-900">{title}</h4>
-                        {price && <span className="text-gray-900 font-medium">{price}</span>}
-                        {discount && <span className="text-pink-600 font-medium">-{discount}</span>}
                     </div>
                     <p className="text-sm text-gray-500">{description}</p>
                 </div>
@@ -485,11 +408,9 @@ const CheckoutCustom = () => {
         id: PropTypes.string.isRequired,
         title: PropTypes.string.isRequired,
         description: PropTypes.string.isRequired,
-        price: PropTypes.string,
         icon: PropTypes.string.isRequired,
         selected: PropTypes.bool.isRequired,
-        onClick: PropTypes.func.isRequired,
-        discount: PropTypes.string
+        onClick: PropTypes.func.isRequired
     };
 
     const disabledTime = () => ({
@@ -523,7 +444,7 @@ const CheckoutCustom = () => {
                         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
-                        <span>{deliveryCheckResult.message || 'Không thể giao hàng đến địa chỉ này'}</span>
+                        <span>{deliveryCheckResult.message}</span>
                     </div>
                 </div>
             );
@@ -545,161 +466,55 @@ const CheckoutCustom = () => {
                     </Button>
                 </div>
                 <div className="container mx-auto py-10 px-20">
-                    <h1 className="text-center text-6xl font-bold text-pink-600 p-3 rounded">Checkout Custom Product</h1>
-                    <p className="text-xl text-gray-500 mb-10 text-center">Complete Your Custom Order</p>
+                    <h1 className="text-center text-6xl font-bold text-pink-600 p-3 rounded">Checkout</h1>
+                    <p className="text-xl text-gray-500 mb-10 text-center">Complete Your Purchase</p>
 
-                    <div className="mb-6 border border-gray-300 rounded">
-                        <h2 className="text-xl font-semibold text-left text-black bg-pink-200 p-2 rounded">Custom Product Information</h2>
-                        <div className="space-y-4 py-5 px-10">
-                            {loading ? (
-                                <div className="flex justify-center py-4">
-                                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-pink-500"></div>
-                                </div>
-                            ) : customProduct ? (
+                    {design && (
+                        <div className="mb-6 border border-gray-300 rounded">
+                            <h2 className="text-xl font-semibold text-left text-black bg-pink-200 p-2 rounded">Order Information</h2>
+                            <div className="space-y-4 py-5 px-10">
                                 <div className="flex items-center border-b border-gray-200 pb-4">
                                     <div className="w-24 h-24 flex-shrink-0">
                                         <img
-                                            src={customProduct.flowerBasketResponse?.image}
-                                            alt={customProduct.flowerBasketResponse?.flowerBasketName}
+                                            src={design.responseImage}
+                                            alt={design.DesignCustom}
                                             className="w-full h-full object-cover rounded"
                                         />
                                     </div>
+
                                     <div className="flex flex-1 items-center justify-between ml-6">
-                                        <div className="flex flex-col">
-                                            <h3 className="text-lg font-semibold text-gray-900">{customProduct.productName}</h3>
-                                            <p className="text-sm text-gray-500">Basket: {customProduct.flowerBasketResponse?.flowerBasketName}</p>
-                                            <p className="text-sm text-gray-500">Style: {customProduct.styleResponse?.name}</p>
-                                            <div className="mt-2">
-                                                <p className="font-medium">Selected Flowers:</p>
-                                                {customProduct.flowerCustomResponses?.map((flower, index) => (
-                                                    <p key={index} className="text-sm text-gray-600">
-                                                        {flower.flowerResponse.flowerName} x {flower.quantity} - {flower.flowerResponse.color}
-                                                    </p>
-                                                ))}
-                                            </div>
-                                            {customProduct.accessoryResponse && (
-                                                <p className="text-sm text-gray-500">
-                                                    Accessory: {customProduct.accessoryResponse.name} - {customProduct.accessoryResponse.price.toLocaleString()} VND
-                                                </p>
-                                            )}
-                                            <p className="text-sm text-gray-500">Description: {customProduct.description || customProduct.flowerBasketResponse?.decription}</p>
+                                        <div>
+                                            <p className="font-semibold">Response Description:</p>
+                                            <p className="text-gray-600">{design.responseDescription}</p>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="text-lg font-semibold text-pink-600">{customProduct.totalPrice?.toLocaleString()} VND</p>
-                                            <p className="text-gray-600">Quantity: {customProduct.quantity}</p>
-                                        </div>
+                                        <p className="text-lg font-semibold text-pink-600">{design.totalPrice.toLocaleString()} VND</p>
                                     </div>
                                 </div>
-                            ) : (
-                                <p className="text-center text-gray-500">No custom product information available</p>
-                            )}
+                            </div>
                         </div>
-                    </div>
+                    )}
 
-                    <div className="mb-5 border border-gray-300 rounded">
-                        <h2 className="text-xl font-semibold text-left text-black bg-pink-200 p-2 rounded">Special Note About Order</h2>
-                        <div className="grid grid-cols-2 gap-10 p-4">
-                            <div>
-                                <h3 className="mb-2 text-left">Card/Banner Message:</h3>
-                                <Form.Item name="cardMessage">
-                                    <Input.TextArea />
-                                </Form.Item>
-                                <Form.Item name="hideGiverName" valuePropName="checked">
-                                    <Checkbox
-                                        onChange={(e) => {
-                                            form.setFieldsValue({
-                                                hideGiverName: e.target.checked
-                                            });
-                                        }}
-                                    >
-                                        Hide the giver&apos;s name
-                                    </Checkbox>
-                                </Form.Item>
-                            </div>
-                            <div>
-                                <h3 className="mb-2 text-left">Important Note:</h3>
-                                <Form.Item name="importantNote">
-                                    <Input.TextArea />
-                                </Form.Item>
-                            </div>
-                        </div>
+                    <div className="mb-6 border border-gray-300 rounded">
+
                     </div>
 
                     <div className="flex justify-between mb-6">
                         <div className="w-1/2 pr-10">
-                            <div className="mb-5 border border-gray-300 rounded">
-                                <h3 className="text-xl font-semibold text-left text-black bg-pink-200 p-2 rounded">Select Store</h3>
-                                <p className="text-base p-3 text-gray-500 text-left">Select a store to process your order</p>
-                                <div className="p-2">
-                                    <Select
-                                        value={selectedStore}
-                                        onChange={handleStoreChange}
-                                        className="w-full"
-                                        placeholder="Select Store"
-                                        loading={loadingStores}
-                                        optionLabelProp="label"
-                                    >
-                                        {stores.map(store => (
-                                            <Select.Option
-                                                key={store.storeId}
-                                                value={store.storeId}
-                                                label={store.storeName}
-                                            >
-                                                <div className="py-2">
-                                                    <div className="font-medium">{store.storeName}</div>
-                                                    <div className="text-gray-500 text-sm">
-                                                        {store.city}, {store.district}
-                                                    </div>
-                                                    <div className="text-gray-500 text-sm">
-                                                        {store.address}
-                                                    </div>
-                                                </div>
-                                            </Select.Option>
-                                        ))}
-                                    </Select>
-                                </div>
-                            </div>
 
-                            <div className="mb-5 border border-gray-300 rounded">
-                                <h3 className="text-xl font-semibold text-left text-black bg-pink-200 p-2 rounded">Available Vouchers</h3>
-                                <p className="text-base p-3 text-gray-500 text-left">Select a voucher to apply</p>
-                                <div className="p-4">
-                                    {loading ? (
-                                        <div className="flex justify-center py-4">
-                                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-pink-500"></div>
-                                        </div>
-                                    ) : promotions.length > 0 ? (
-                                        promotions.map((promotion) => (
-                                            <OptionCard
-                                                key={promotion.promotionId}
-                                                id={promotion.promotionId}
-                                                title={promotion.promotionName}
-                                                description={`Valid until ${new Date(promotion.endDate).toLocaleDateString()}`}
-                                                discount={`${promotion.promotionDiscount}%`}
-                                                icon={promotion.image}
-                                                selected={selectedVoucher === promotion.promotionId}
-                                                onClick={handleVoucherChange}
-                                            />
-                                        ))
-                                    ) : (
-                                        <p className="text-center text-gray-500">No promotions available</p>
-                                    )}
-                                </div>
-                            </div>
+
 
                             <div className="mb-6 border border-gray-300 rounded">
                                 <h2 className="text-xl font-semibold text-left text-black bg-pink-200 p-2 rounded">Order Summary</h2>
                                 <div className="p-4">
-                                    <p className="mb-2 text-left">Subtotal: {customProduct ? customProduct.totalPrice.toLocaleString() : 'Loading...'} VND</p>
-                                    <p className="mb-2 text-left">Discount (Voucher): -{calculateDiscount().toLocaleString()} VND</p>
-                                    <p className="mb-2 text-left">Shipping: {shippingMethod === 'store-pickup' ? '0' : (deliveryCheckResult?.success ? deliveryCheckResult.distance.toLocaleString() : '0')} VND</p>
+                                    <p className="mb-2 text-left">Subtotal: {design?.totalPrice ? design.totalPrice.toLocaleString() : '0'} VND</p>                                    <p className="mb-2 text-left">Shipping: {shippingMethod === 'store-pickup' ? '0' : (deliveryCheckResult?.success ? deliveryCheckResult.distance.toLocaleString() : '0')} VND</p>
                                     <p className="font-bold text-left">Total: {(
-                                        (customProduct ? customProduct.totalPrice : 0) -
+                                        design.totalPrice -
                                         calculateDiscount() +
                                         (shippingMethod === 'store-pickup' ? 0 : (deliveryCheckResult?.success ? deliveryCheckResult.distance : 0))
                                     ).toLocaleString()} VND</p>
                                 </div>
                             </div>
+
                             {isWalletAvailable && (
                                 <div className="mb-5 border border-gray-300 rounded">
                                     <h3 className="text-xl font-semibold text-left text-black bg-pink-200 p-2 rounded">Payment Method</h3>
@@ -711,7 +526,7 @@ const CheckoutCustom = () => {
                                             description="Pay using VNPAY"
                                             icon="https://i.gyazo.com/4914b35ab9381a3b5a1e7e998ee9550c.png"
                                             selected={paymentMethod === 'vn-pay'}
-                                            onClick={() => handlePaymentMethodChange('vn-pay')}
+                                            onClick={() => setPaymentMethod('vn-pay')}
                                         />
 
                                         <OptionCard
@@ -720,7 +535,7 @@ const CheckoutCustom = () => {
                                             description={`Balance: ${wallet ? wallet.totalPrice : 'Loading...'}`}
                                             icon="https://img.freepik.com/premium-psd/pink-flowers-transparent-background_84443-15455.jpg"
                                             selected={paymentMethod === 'flower-wallet'}
-                                            onClick={() => handlePaymentMethodChange('flower-wallet')}
+                                            onClick={() => setPaymentMethod('flower-wallet')}
                                         />
                                     </div>
                                 </div>
@@ -758,26 +573,8 @@ const CheckoutCustom = () => {
                                 <div className="mb-5 border border-gray-300 rounded">
                                     <h3 className="text-xl font-semibold mb-5 text-left text-black bg-pink-200 p-2 rounded">Add Information</h3>
                                     <Form form={form} className="p-5">
-                                        <Form.Item
-                                            label="Recipient Name"
-                                            required
-                                            rules={[{ required: true, message: 'Please input recipient name!' }]}
-                                        >
-                                            <Input
-                                                value={recipientInfo.name}
-                                                onChange={(e) => handleRecipientInfoChange('name', e.target.value)}
-                                            />
-                                        </Form.Item>
-                                        <Form.Item
-                                            label="Recipient Phone"
-                                            required
-                                            rules={[{ required: true, message: 'Please input recipient phone!' }]}
-                                        >
-                                            <Input
-                                                value={recipientInfo.phone}
-                                                onChange={(e) => handleRecipientInfoChange('phone', e.target.value)}
-                                            />
-                                        </Form.Item>
+
+
                                         <Form.Item
                                             label="Date and Time"
                                             required
@@ -821,35 +618,24 @@ const CheckoutCustom = () => {
                                     </Form>
                                 </div>
                             ) : (
+
                                 <div className="mb-5 border border-gray-300 rounded">
                                     <h3 className="text-xl font-semibold mb-5 text-left text-black bg-pink-200 p-2 rounded">Shipping Address</h3>
                                     <Form className="p-5">
-                                        <Form.Item 
-                                            name="recipientName"
-                                            label="Recipient Name"
-                                            rules={[{ required: true, message: 'Please input recipient name!' }]}
-                                        >
-                                            <Input disabled={isAddressDisabled} />
-                                        </Form.Item>
-                                        <Form.Item 
-                                            name="recipientPhone"
-                                            label="Recipient Phone"
-                                            rules={[{ required: true, message: 'Please input recipient phone!' }]}
-                                        >
-                                            <Input disabled={isAddressDisabled} />
-                                        </Form.Item>
+
                                         <Form.Item label="City">
                                             <Select value="Hồ Chí Minh" disabled>
                                                 <Select.Option value="Hồ Chí Minh">Hồ Chí Minh</Select.Option>
                                             </Select>
                                         </Form.Item>
-                                        <Form.Item 
+
+                                        <Form.Item
                                             name="district"
                                             label="District"
                                             rules={[{ required: true, message: 'Please select district!' }]}
                                         >
-                                            <Select 
-                                                disabled={isAddressDisabled} 
+                                            <Select
+                                                disabled={isAddressDisabled}
                                                 placeholder="Chọn quận"
                                             >
                                                 {districts.map((district) => (
@@ -859,7 +645,7 @@ const CheckoutCustom = () => {
                                                 ))}
                                             </Select>
                                         </Form.Item>
-                                        <Form.Item 
+                                        <Form.Item
                                             name="detailedAddress"
                                             label="Detailed Address"
                                             rules={[{ required: true, message: 'Please input detailed address!' }]}
@@ -920,15 +706,17 @@ const CheckoutCustom = () => {
                                             >
                                                 {isCheckingDelivery ? 'Checking...' : 'Check Delivery'}
                                             </Button>
+                                            <p className="italic text-gray-600 text-sm text-center mt-4">
+                                                * We only accept orders with a weight under 3 kg and a delivery distance under 5 km.
+                                            </p>
                                         </Form.Item>
                                         {renderDeliveryCheckResult()}
                                     </Form>
+
                                 </div>
                             )}
                         </div>
                     </div>
-
-                   
 
                     <div className="text-center mt-10">
                         <Button
@@ -958,4 +746,4 @@ const CheckoutCustom = () => {
     );
 };
 
-export default CheckoutCustom;
+export default Checkout;
