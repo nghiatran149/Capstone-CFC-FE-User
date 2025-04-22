@@ -120,10 +120,7 @@ const Checkout = () => {
 
             const formValues = await form.validateFields(['district', 'detailedAddress']);
 
-            if (!selectedStore) {
-                message.error('Please select a store first');
-                return;
-            }
+          
 
             if (!formValues.district || !formValues.detailedAddress) {
                 message.error('Please fill in all address information');
@@ -131,32 +128,20 @@ const Checkout = () => {
             }
 
             let productsToCheck = [];
-            if (cartItems) {
-                productsToCheck = cartItems.map(item => ({
-                    productId: item.productId,
-                    quantity: item.quantity
-                }));
-            } else if (productInfo) {
-                productsToCheck = [{
-                    productId: productInfo.productId,
-                    quantity: productInfo.selectedQuantity
-                }];
-            } else {
-                message.error('No products found');
-                return;
-            }
+           
 
             const checkData = {
                 checkQuantityAndWeightProducts: productsToCheck,
                 city: formValues.detailedAddress,
                 district: formValues.district,
-                detailedAddress: "Hồ Chí Minh"
+                detailedAddress: "Hồ Chí Minh",
+                productQuantity : 1,
             };
 
             console.log('Sending data:', checkData);
 
             const response = await fetch(
-                `https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Check/CheckDelivery?storeId=${selectedStore}`,
+                `https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Check/CheckDeliveryByProductCustom?storeId=${design.storeId}`,
                 {
                     method: 'POST',
                     headers: {
@@ -218,10 +203,7 @@ const Checkout = () => {
         try {
             await form.validateFields();
 
-            if (!selectedStore) {
-                message.error('Please select a store');
-                return;
-            }
+      
 
             if (shippingMethod === 'store-pickup') {
                 if (!recipientInfo.date || !recipientInfo.time || !selectedDeposit) {
@@ -251,42 +233,18 @@ const Checkout = () => {
                 return;
             }
 
-            const formValues = await form.getFieldsValue();
-
-            const formattedDateTime = recipientInfo.date && recipientInfo.time
-                ? `${dayjs(recipientInfo.date).format('YYYY-MM-DD')}T${dayjs(recipientInfo.time).format('HH:mm:ss')}`
-                : null;
-
             const orderData = {
-                promotionId: selectedVoucher || null,
-                storeId: selectedStore,
-                recipientName: recipientInfo.name || formValues.recipientName,
-                recipientTime: formattedDateTime,
-                phone: recipientInfo.phone || formValues.recipientPhone,
-                status: "Pending",
+                deliveryDistrict: form.getFieldValue('district'),
+                deliveryCity: "Hồ Chí Minh",
+                deliveryAddress: form.getFieldValue('detailedAddress'),
+                wallet: paymentMethod === 'flower-wallet',
                 transfer: selectedDeposit === "100",
-                delivery: shippingMethod === 'shop-shipping' && deliveryCheckResult?.success,
-                ...(shippingMethod === 'shop-shipping' && {
-                    deliveryDistrict: formValues.district,
-                    deliveryCity: "Hồ Chí Minh",
-                    deliveryAddress: formValues.detailedAddress,
-                }),
-                orderDetails: cartItems ?
-                    cartItems.map(item => ({
-                        productId: item.productId,
-                        quantity: item.quantity
-                    })) :
-                    [{
-                        productId: productInfo.productId,
-                        quantity: productInfo.selectedQuantity
-                    }],
-                wallet: paymentMethod === 'flower-wallet'
+                delivery: shippingMethod === 'shop-shipping',
+                recipientTime: `${dayjs(recipientInfo.date).format('YYYY-MM-DD')}T${dayjs(recipientInfo.time).format('HH:mm:ss')}`
             };
 
-            console.log('Order Data:', orderData);
-
-            const orderResponse = await axios.post(
-                `https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Order/CreateOrder?CustomerId=${customerId}`,
+            const response = await axios.put(
+                `https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/DesignCustom/UpdateDesignCustomByCustomer?DesginCustom=${design.DesignCustom}`,
                 orderData,
                 {
                     headers: {
@@ -296,18 +254,14 @@ const Checkout = () => {
                 }
             );
 
-            if (orderResponse.status === 200) {
-                message.success('Order created successfully!');
+            if (response.status === 200) {
+                const orderId = response.data.orderId;
+                message.success('Design updated successfully! Proceeding to payment...');
 
-                const createdOrderId = orderResponse.data.orderId;
-                setOrderId(createdOrderId);
-
-                if (paymentMethod === 'flower-wallet' && isWalletAvailable) {
-                    setIsPasswordDialogVisible(true);
-                } else if (paymentMethod === 'vn-pay') {
+                if (paymentMethod === 'vn-pay') {
                     const vnpayResponse = await axios.post(
                         'https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/VnPay/proceed-vnpay-payment',
-                        createdOrderId,
+                        orderId,
                         {
                             headers: {
                                 'Authorization': `Bearer ${token}`,
@@ -317,15 +271,17 @@ const Checkout = () => {
                     );
 
                     if (vnpayResponse.data && vnpayResponse.data.paymentUrl) {
-                        sessionStorage.setItem('lastOrderId', createdOrderId);
+                        sessionStorage.setItem('lastOrderId', orderId);
                         window.location.href = vnpayResponse.data.paymentUrl;
                     } else {
                         message.error('Failed to get payment URL');
-                        navigate('payment-failure');
+                        navigate('payment-failure'); // Redirect to failure page
                     }
-                } else {
-                    message.error('Please select a valid payment method.');
+                } else if (paymentMethod === 'flower-wallet') {
+                    setIsPasswordDialogVisible(true);
                 }
+            } else {
+                message.error('Failed to update design. Please try again.');
             }
         } catch (error) {
             console.error('Error:', error.response?.data || error);
@@ -334,7 +290,6 @@ const Checkout = () => {
                     Object.values(error.response.data.errors).flat().join(', ') :
                     'Failed to process. Please try again.'
             );
-            navigate('payment-failure');
         }
     };
 
