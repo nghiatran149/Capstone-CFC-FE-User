@@ -766,16 +766,16 @@ const Checkout = () => {
                                 <div className="mb-5 border border-gray-300 rounded">
                                     <h3 className="text-xl font-semibold mb-5 text-left text-black bg-pink-200 p-2 rounded">Add Information</h3>
                                     <Form form={form} className="p-5">
-                                    <Form.Item
-                                             label="Recipient Name"
-                                             required
-                                             rules={[{ required: true, message: 'Please input recipient name!' }]}
-                                         >
-                                             <Input
-                                                 value={recipientInfo.name}
-                                                 onChange={(e) => handleRecipientInfoChange('name', e.target.value)}
-                                             />
-                                         </Form.Item>
+                                        <Form.Item
+                                            label="Recipient Name"
+                                            required
+                                            rules={[{ required: true, message: 'Please input recipient name!' }]}
+                                        >
+                                            <Input
+                                                value={recipientInfo.name}
+                                                onChange={(e) => handleRecipientInfoChange('name', e.target.value)}
+                                            />
+                                        </Form.Item>
                                         <Form.Item
                                             label="Recipient Phone"
                                             required
