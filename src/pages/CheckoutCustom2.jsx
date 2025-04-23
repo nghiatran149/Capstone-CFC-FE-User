@@ -279,6 +279,8 @@ const Checkout = () => {
                     }
                 } else if (paymentMethod === 'flower-wallet') {
                     setIsPasswordDialogVisible(true);
+                    setOrderId(orderId);
+
                 }
             } else {
                 message.error('Failed to update design. Please try again.');
@@ -295,7 +297,7 @@ const Checkout = () => {
 
     const handlePasswordSubmit = async () => {
         if (walletPassword) {
-            handleWalletPayment(orderId);
+            await handleWalletPayment(orderId);
             setIsPasswordDialogVisible(false);
         } else {
             message.error('Please enter your wallet password.');
