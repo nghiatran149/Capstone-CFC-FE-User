@@ -126,12 +126,19 @@ const WalletPage = () => {
                     customerId: order.customerId,
 
                     // Thêm thông tin về ảnh
-                    image: order.productCustomResponse
-                        ? order.productCustomResponse.productCustomImage  // ảnh cho custom product
-                        : order.orderDetails[0]?.productImage,  // ảnh cho normal product
+                    image : order.productCustomResponse
+                    ? order.productCustomResponse.productCustomImage // Ảnh cho custom product
+                    : order.orderDetails && order.orderDetails[0] // Kiểm tra orderDetails có tồn tại không
+                    ? order.orderDetails[0].productImage // Ảnh cho normal product
+                    : order.designCustomBuCustomerResponse // Kiểm tra designCustomBuCustomerResponse
+                    ? order.designCustomBuCustomerResponse.responseImage // Ảnh cho design custom
+                    : 'https://via.placeholder.com/150',
+                     // ảnh cho normal product
 
                     // Thêm toàn bộ thông tin về productCustomResponse để dùng sau này
                     productCustomResponse: order.productCustomResponse,
+                      // Thêm toàn bộ thông tin về productCustomResponse để dùng sau này
+                      designCustomBuCustomerResponse: order.designCustomBuCustomerResponse,
                     // Thêm thông tin orderDetails để dùng sau này
                     orderDetails: order.orderDetails,
 
@@ -998,7 +1005,76 @@ const WalletPage = () => {
                 </div>
             </div>
         );
+        const renderDesignCustom = () => {
+            if (!selectedOrderDetail.designCustomBuCustomerResponse) return null;
 
+            const design = selectedOrderDetail.designCustomBuCustomerResponse;
+
+            return (
+                <div className="space-y-6">
+                    <div className="bg-pink-50 rounded-lg p-6">
+                        <h3 className="text-xl font-bold text-pink-600 mb-4">Design Custom Information</h3>
+                        <div className="grid grid-cols-2 gap-6">
+                            {/* Phần bên trái */}
+                            <div className="space-y-4">
+                                <div>
+                                    <p className="font-semibold">Request Image:</p>
+                                    <img
+                                        src={design.requestImage}
+                                        alt="Request"
+                                        className="w-full h-48 object-cover rounded-lg" // Tăng chiều cao lên 48
+                                    />
+                                </div>
+                                <div>
+                                    <p className="font-semibold">Request Price:</p>
+                                    <p className="text-pink-600 font-bold">{design.requestPrice}</p>
+                                </div>
+                                <div>
+                                    <p className="font-semibold">Request Description:</p>
+                                    <p className="text-gray-700">{design.requestDescription}</p>
+                                </div>
+                                <div>
+                                    <p className="font-semibold">Request Occasion:</p>
+                                    <p className="text-gray-700">{design.requestOccasion}</p>
+                                </div>
+                                <div>
+                                    <p className="font-semibold">Request Main Color:</p>
+                                    <p className="text-gray-700">{design.requestMainColor}</p>
+                                </div>
+                                <div>
+                                    <p className="font-semibold">Request Flower Type:</p>
+                                    <p className="text-gray-700">{design.requestFlowerType}</p>
+                                </div>
+                                <div>
+                                    <p className="font-semibold">Request Card:</p>
+                                    <p className="text-gray-700">{design.requestCard}</p>
+                                </div>
+                            </div>
+
+                            {/* Phần bên phải */}
+                            <div className="space-y-4">
+                                <div>
+                                    <p className="font-semibold">Response Image:</p>
+                                    <img
+                                        src={design.responseImage}
+                                        alt="Response"
+                                        className="w-full h-48 object-cover rounded-lg" // Tăng chiều cao lên 48
+                                    />
+                                </div>
+                                <div>
+                                    <p className="font-semibold">Response Price:</p>
+                                    <p className="text-pink-600 font-bold">{design.responsePrice.toLocaleString()} VNĐ</p>
+                                </div>
+                                <div>
+                                    <p className="font-semibold">Response Description:</p>
+                                    <p className="text-gray-700">{design.responseDescription}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
         const renderNormalOrderDetails = () => (
             <div className="space-y-4">
                 {selectedOrderDetail.orderDetails.map((detail, index) => (
@@ -1150,9 +1226,11 @@ const WalletPage = () => {
                     <Divider />
 
                     {/* Products Section */}
-                    {selectedOrderDetail.productCustomId ?
-                        renderCustomProductDetails() :
-                        renderNormalOrderDetails()
+                    {selectedOrderDetail.designCustomBuCustomerResponse ?
+                        renderDesignCustom() :
+                        selectedOrderDetail.productCustomId ?
+                            renderCustomProductDetails() :
+                            renderNormalOrderDetails() 
                     }
                 </div>
             </Modal>
@@ -1822,10 +1900,21 @@ const WalletPage = () => {
                                                             }}
                                                         />
                                                     ) : order.orderDetails && order.orderDetails[0] ? (
-                                                        // Ảnh cho normal product - sửa lại phần này
+                                                        // Ảnh cho normal product
                                                         <img
                                                             src={order.orderDetails[0].productImage}
                                                             alt="Product"
+                                                            className="w-full h-full object-cover"
+                                                            onError={(e) => {
+                                                                e.target.onerror = null;
+                                                                e.target.src = 'https://via.placeholder.com/150';
+                                                            }}
+                                                        />
+                                                    ) : order.designCustomBuCustomerResponse && order.designCustomBuCustomerResponse.responseImage ? (
+                                                        // Ảnh cho design custom
+                                                        <img
+                                                            src={order.designCustomBuCustomerResponse.responseImage}
+                                                            alt="Design"
                                                             className="w-full h-full object-cover"
                                                             onError={(e) => {
                                                                 e.target.onerror = null;
