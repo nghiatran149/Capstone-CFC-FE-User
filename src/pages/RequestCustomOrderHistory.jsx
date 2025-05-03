@@ -634,10 +634,11 @@ const WalletPage = () => {
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Request Image</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Request Description</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Request Price</th>
-                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Request Occasion</th>
-                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Request MainColor</th>
-                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Request FlowerType</th>
-                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Request Card</th>
+                                        <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Created At</th>
+                                        {/* <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Request Occasion</th> */}
+                                        {/* <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Request MainColor</th> */}
+                                        {/* <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Request FlowerType</th> */}
+                                        {/* <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Request Card</th> */}
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Status</th>
                                         <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase">Actions</th>
                                     </tr>
@@ -668,10 +669,11 @@ const WalletPage = () => {
                                                 </td>
                                                 <td className="px-6 py-4 text-left whitespace-nowrap text-base">{design.requestDescription}</td>
                                                 <td className="px-6 py-4 text-left whitespace-nowrap text-base">{design.requestPrice}</td>
-                                                <td className="px-6 py-4 text-left whitespace-nowrap text-base">{design.requestOccasion}</td>
-                                                <td className="px-6 py-4 text-left whitespace-nowrap text-base">{design.requestMainColor}</td>
-                                                <td className="px-6 py-4 text-left whitespace-nowrap text-base">{design.requestFlowerType}</td>
-                                                <td className="px-6 py-4 text-left whitespace-nowrap text-base">{design.requestCard}</td>
+                                                <td className="px-6 py-4 text-left whitespace-nowrap text-base">{new Date(design.createAt).toLocaleString()}</td>
+                                                {/* <td className="px-6 py-4 text-left whitespace-nowrap text-base">{design.requestOccasion}</td> */}
+                                                {/* <td className="px-6 py-4 text-left whitespace-nowrap text-base">{design.requestMainColor}</td> */}
+                                                {/* <td className="px-6 py-4 text-left whitespace-nowrap text-base">{design.requestFlowerType}</td> */}
+                                                {/* <td className="px-6 py-4 text-left whitespace-nowrap text-base">{design.requestCard}</td> */}
                                                 <td className="px-6 py-4 text-left whitespace-nowrap">
                                                     <span className={`px-2 py-1 text-base rounded-full ${getStatusColor(design.status)}`}>
                                                         {design.status}
@@ -694,94 +696,137 @@ const WalletPage = () => {
             {/* Simple chat modal that will display when isChatModalOpen is true */}
             {isChatModalOpen && <ChatModal />}
 
-            {/* Detail modal for viewing design details */}
+            {/* Design Detail Modal */}
             <Modal
-                title="Design Details"
+                title={<h2 className="text-2xl font-bold text-pink-600">Design Details</h2>}
                 visible={isDetailModalVisible}
                 onCancel={closeDetailModal}
                 footer={null}
                 className="rounded-lg"
+                width={window.innerWidth / 1.5}
             >
                 {selectedDesign && (
-                    <div className="flex flex-col md:flex-row space-x-4 p-4 bg-gray-50 rounded-lg shadow-lg">
+                    <div className="flex flex-col md:flex-row space-x-4">
                         {/* Bên trái */}
-                        <div className="w-full md:w-1/2 space-y-4 p-4 bg-white rounded-lg shadow-md">
-                            <h3 className="text-xl font-bold text-pink-600">Request</h3>
+                        <div className="w-full md:w-1/2 space-y-4 p-4 bg-gray-50 rounded-lg shadow-md">
+                            <h3 className="text-xl font-bold text-gray-700">Request</h3>
+                            {/* Req Image */}
                             <div>
-                                <p className="font-semibold">Design ID:</p>
-                                <p className="text-gray-600">{selectedDesign.designCustomId}</p>
+                                <p className="font-semibold">Request Image:</p>
+                                <img src={selectedDesign.requestImage} alt="Design" className="w-full h-auto" />
                             </div>
-                            <div>
-                                <p className="font-semibold">Image:</p>
-                                <img src={selectedDesign.requestImage} alt="Design" className="w-full h-auto rounded-lg shadow" />
+                            <Divider />
+
+                            {/* Design ID - Created At */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <p className="font-semibold">Design ID:</p>
+                                    <p className="text-gray-600">{selectedDesign.designCustomId}</p>
+                                </div>
+                                <div>
+                                    <p className="font-semibold">Created At:</p>
+                                    <p className="text-gray-600">{new Date(selectedDesign.createAt).toLocaleString()}</p>
+                                </div>
                             </div>
+                            <Divider />
+
+                            {/* Req Price - Occasion */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <p className="font-semibold">Request Price:</p>
+                                    <p className="text-gray-600">{selectedDesign.requestPrice}</p>
+                                </div>
+                                <div>
+                                    <p className="font-semibold">Occasion:</p>
+                                    <p className="text-gray-600">{selectedDesign.requestOccasion}</p>
+                                </div>
+                            </div>
+                            <Divider />
+
+                            {/* Req Description */}
                             <div>
-                                <p className="font-semibold">Description:</p>
+                                <p className="font-semibold">Request Description:</p>
                                 <p className="text-gray-600">{selectedDesign.requestDescription}</p>
                             </div>
-                            <div>
-                                <p className="font-semibold">Price:</p>
-                                <p className="text-gray-600">{selectedDesign.requestPrice}</p>
+                            <Divider />
+
+                            {/* Main Color - Flower Type */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <p className="font-semibold">Main Color:</p>
+                                    <p className="text-gray-600">{selectedDesign.requestMainColor}</p>
+                                </div>
+                                <div>
+                                    <p className="font-semibold">Flower Type:</p>
+                                    <p className="text-gray-600">{selectedDesign.requestFlowerType}</p>
+                                </div>
                             </div>
-                            <div>
-                                <p className="font-semibold">Occasion:</p>
-                                <p className="text-gray-600">{selectedDesign.requestOccasion}</p>
+                            <Divider />
+
+                            {/* Card - Status */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <p className="font-semibold">Card:</p>
+                                    <p className="text-gray-600">{selectedDesign.requestCard}</p>
+                                </div>
+                                <div>
+                                    <p className="font-semibold">Status:</p>
+                                    <p className="text-gray-600">{selectedDesign.status}</p>
+                                </div>
                             </div>
-                            <div>
-                                <p className="font-semibold">Main Color:</p>
-                                <p className="text-gray-600">{selectedDesign.requestMainColor}</p>
+                            <Divider />
+
+                            {/* Recipient Name - Phone */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <p className="font-semibold">Recipient Name:</p>
+                                    <p className="text-gray-600">{selectedDesign.recipientName}</p>
+                                </div>
+                                <div>
+                                    <p className="font-semibold">Phone:</p>
+                                    <p className="text-gray-600">{selectedDesign.phone}</p>
+                                </div>
                             </div>
-                            <div>
-                                <p className="font-semibold">Flower Type:</p>
-                                <p className="text-gray-600">{selectedDesign.requestFlowerType}</p>
-                            </div>
-                            <div>
-                                <p className="font-semibold">Card:</p>
-                                <p className="text-gray-600">{selectedDesign.requestCard}</p>
-                            </div>
-                            <div>
-                                <p className="font-semibold">Status:</p>
-                                <p className="text-gray-600">{selectedDesign.status}</p>
-                            </div>
-                            <div>
-                                <p className="font-semibold">Created At:</p>
-                                <p className="text-gray-600">{new Date(selectedDesign.createAt).toLocaleString()}</p>
-                            </div>
-                            <div>
-                                <p className="font-semibold">Recipient Name:</p>
-                                <p className="text-gray-600">{selectedDesign.recipientName}</p>
-                            </div>
-                            <div>
-                                <p className="font-semibold">Phone:</p>
-                                <p className="text-gray-600">{selectedDesign.phone}</p>
-                            </div>
+
                         </div>
 
                         {/* Bên phải */}
-                        <div className="w-full md:w-1/2 space-y-4 p-4 bg-white rounded-lg shadow-md">
-                            <h3 className="text-xl font-bold text-pink-600">Response</h3>
-                            <div>
-                                <p className="font-semibold">Staff ID:</p>
-                                <p className="text-gray-600">{selectedDesign.staffId}</p>
-                            </div>
-                            <div>
-                                <p className="font-semibold">Staff Name:</p>
-                                <p className="text-gray-600">{selectedDesign.staffName}</p>
-                            </div>
-                            <div>
-                                <p className="font-semibold">Response Price:</p>
-                                <p className="text-gray-600">{selectedDesign.responsePrice}</p>
-                            </div>
+                        <div className="w-full md:w-1/2 space-y-4 p-4 bg-pink-50 rounded-lg shadow-md">
+                            <h3 className="text-xl font-bold text-pink-700">Response</h3>
+                            {/* Res Image */}
                             <div>
                                 <p className="font-semibold">Response Image:</p>
                                 {selectedDesign.responseImage ? (
-                                    <img src={selectedDesign.responseImage} alt="Design Response" className="w-full h-auto rounded-lg shadow" />
+                                    <img src={selectedDesign.responseImage} alt="Design Response" className="w-full h-auto" />
                                 ) : (
                                     <div className="w-full h-40 flex items-center justify-center bg-gray-100 rounded-lg">
                                         No Response Image
                                     </div>
                                 )}
                             </div>
+                            <Divider />
+
+                            {/* Staff ID - Staff Name */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <p className="font-semibold">Staff ID:</p>
+                                    <p className="text-gray-600">{selectedDesign.staffId}</p>
+                                </div>
+                                <div>
+                                    <p className="font-semibold">Staff Name:</p>
+                                    <p className="text-gray-600">{selectedDesign.staffName}</p>
+                                </div>
+                            </div>
+                            <Divider />
+
+                            {/* Res Price */}
+                            <div>
+                                <p className="font-semibold">Response Price:</p>
+                                <p className="text-gray-600">{selectedDesign.responsePrice}</p>
+                            </div>
+                            <Divider />
+
+                            {/* Res Description */}
                             <div>
                                 <p className="font-semibold">Response Description:</p>
                                 <p className="text-gray-600">{selectedDesign.responseDescription || 'No response yet'}</p>
