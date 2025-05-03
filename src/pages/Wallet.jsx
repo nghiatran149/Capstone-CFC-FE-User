@@ -51,23 +51,23 @@ const WalletPage = () => {
     useEffect(() => {
         const queryParams = new URLSearchParams(location.search);
         const shouldOpenChat = queryParams.get('openChat') === 'true';
-        
+
         if (shouldOpenChat) {
             const orderIdParam = queryParams.get('orderId');
             const customerIdParam = queryParams.get('customerId');
             const employeeIdParam = queryParams.get('employeeId');
-            
+
             if (orderIdParam && customerIdParam && employeeIdParam) {
                 // Wait for orders to be loaded
                 const checkAndOpenChat = () => {
                     // Search in all order lists
                     const allOrders = [...orders, ...failOrders, ...cancelOrders, ...refundOrders];
-                    const matchedOrder = allOrders.find(order => 
-                        order.orderId === orderIdParam && 
-                        order.customerId === customerIdParam && 
+                    const matchedOrder = allOrders.find(order =>
+                        order.orderId === orderIdParam &&
+                        order.customerId === customerIdParam &&
                         order.staffId === employeeIdParam
                     );
-                    
+
                     if (matchedOrder) {
                         setSelectedOrder(matchedOrder);
                         setIsChatModalOpen(true);
@@ -84,10 +84,10 @@ const WalletPage = () => {
                         navigate('/wallet', { replace: true });
                     }
                 };
-                
+
                 // Check immediately in case orders are already loaded
                 checkAndOpenChat();
-                
+
                 // If orders aren't loaded yet, set up an interval to check
                 const intervalId = setInterval(() => {
                     if (orders.length > 0 || failOrders.length > 0 || cancelOrders.length > 0 || refundOrders.length > 0) {
@@ -95,13 +95,13 @@ const WalletPage = () => {
                         clearInterval(intervalId);
                     }
                 }, 500);
-                
+
                 // Clean up interval
                 return () => clearInterval(intervalId);
             }
         }
     }, [location.search, orders, failOrders, cancelOrders, refundOrders]);
-    
+
     const fetchOrders = async () => {
         try {
             // Get token from sessionStorage like in ShoppingCart
@@ -126,19 +126,19 @@ const WalletPage = () => {
                     customerId: order.customerId,
 
                     // Thêm thông tin về ảnh
-                    image : order.productCustomResponse
-                    ? order.productCustomResponse.productCustomImage // Ảnh cho custom product
-                    : order.orderDetails && order.orderDetails[0] // Kiểm tra orderDetails có tồn tại không
-                    ? order.orderDetails[0].productImage // Ảnh cho normal product
-                    : order.designCustomBuCustomerResponse // Kiểm tra designCustomBuCustomerResponse
-                    ? order.designCustomBuCustomerResponse.responseImage // Ảnh cho design custom
-                    : 'https://via.placeholder.com/150',
-                     // ảnh cho normal product
+                    image: order.productCustomResponse
+                        ? order.productCustomResponse.productCustomImage // Ảnh cho custom product
+                        : order.orderDetails && order.orderDetails[0] // Kiểm tra orderDetails có tồn tại không
+                            ? order.orderDetails[0].productImage // Ảnh cho normal product
+                            : order.designCustomBuCustomerResponse // Kiểm tra designCustomBuCustomerResponse
+                                ? order.designCustomBuCustomerResponse.responseImage // Ảnh cho design custom
+                                : 'https://via.placeholder.com/150',
+                    // ảnh cho normal product
 
                     // Thêm toàn bộ thông tin về productCustomResponse để dùng sau này
                     productCustomResponse: order.productCustomResponse,
-                      // Thêm toàn bộ thông tin về productCustomResponse để dùng sau này
-                      designCustomBuCustomerResponse: order.designCustomBuCustomerResponse,
+                    // Thêm toàn bộ thông tin về productCustomResponse để dùng sau này
+                    designCustomBuCustomerResponse: order.designCustomBuCustomerResponse,
                     // Thêm thông tin orderDetails để dùng sau này
                     orderDetails: order.orderDetails,
 
@@ -165,7 +165,7 @@ const WalletPage = () => {
                     processing: formattedOrders.filter(o =>
                         ["Arranging & Packing", "Awaiting Design Approval", "Flower Completed", "Delivery"].includes(o.status)
                     ).length,
-                    fail:formattedOrders.filter(o => o.status === "Fail").length,
+                    fail: formattedOrders.filter(o => o.status === "Fail").length,
 
                 });
             }
@@ -197,10 +197,10 @@ const WalletPage = () => {
                     details: order.productCustomResponse ?
                         [order.productCustomResponse.productName] :
                         order.orderDetails.map(detail => detail.productName),
-                        price: order.orderPrice,
-                        // price: order.orderPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }),
+                    price: order.orderPrice,
+                    // price: order.orderPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }),
 
-                        payment: order.transfer ? "100% payment" : "50% deposit",
+                    payment: order.transfer ? "100% payment" : "50% deposit",
                     createAt: new Date(order.createAt).toLocaleString(),
                     date: new Date(order.deliveryDateTime).toLocaleString(),
                     status: order.status,
@@ -242,7 +242,7 @@ const WalletPage = () => {
                     details: order.productCustomResponse ?
                         [order.productCustomResponse.productName] :
                         order.orderDetails.map(detail => detail.productName),
-                        price: order.orderPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }),
+                    price: order.orderPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }),
                     payment: order.transfer ? "100% payment" : "50% deposit",
                     createAt: new Date(order.createAt).toLocaleString(),
                     date: new Date(order.deliveryDateTime).toLocaleString(),
@@ -284,7 +284,7 @@ const WalletPage = () => {
                     details: order.productCustomResponse ?
                         [order.productCustomResponse.productName] :
                         order.orderDetails.map(detail => detail.productName),
-                        price: order.orderPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }),
+                    price: order.orderPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }),
                     payment: order.transfer ? "100% payment" : "50% deposit",
                     createAt: new Date(order.createAt).toLocaleString(),
                     date: new Date(order.deliveryDateTime).toLocaleString(),
@@ -754,21 +754,21 @@ const WalletPage = () => {
                                 onClick={() => setIsChatModalOpen(false)}
                                 className="text-white hover:text-pink-200"
 
-                                // onClick={() => {
-                                //     setIsChatModalOpen(false);
-                                //     navigate('/wallet');
-                                // }}
-                                // className="text-white hover:text-pink-200"
+                            // onClick={() => {
+                            //     setIsChatModalOpen(false);
+                            //     navigate('/wallet');
+                            // }}
+                            // className="text-white hover:text-pink-200"
 
-                                // onClick={() => {
-                                //     setIsChatModalOpen(false);
-                                //     const currentUrl = window.location.href;
-                                //     const baseUrl = window.location.origin + '/wallet';
-                                //     if (currentUrl !== baseUrl) {
-                                //         navigate('/wallet');
-                                //     }
-                                // }}
-                                // className="text-white hover:text-pink-200"
+                            // onClick={() => {
+                            //     setIsChatModalOpen(false);
+                            //     const currentUrl = window.location.href;
+                            //     const baseUrl = window.location.origin + '/wallet';
+                            //     if (currentUrl !== baseUrl) {
+                            //         navigate('/wallet');
+                            //     }
+                            // }}
+                            // className="text-white hover:text-pink-200"
                             >
                                 ✕
                             </button>
@@ -1018,53 +1018,65 @@ const WalletPage = () => {
                             {/* Phần bên trái */}
                             <div className="space-y-4">
                                 <div>
-                                    <p className="font-semibold">Request Image:</p>
+                                    <p className="font-semibold mb-2">Request Image:</p>
                                     <img
                                         src={design.requestImage}
                                         alt="Request"
-                                        className="w-full h-48 object-cover rounded-lg" // Tăng chiều cao lên 48
+                                        className="w-full h-96 object-cover rounded-lg" // Tăng chiều cao lên 48
                                     />
                                 </div>
-                                <div>
-                                    <p className="font-semibold">Request Price:</p>
-                                    <p className="text-pink-600 font-bold">{design.requestPrice}</p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <p className="font-semibold">Request Price:</p>
+                                        <p className="text-pink-600 font-bold">{design.requestPrice}</p>
+                                    </div>
+                                    <div>
+                                        <p className="font-semibold">Request Occasion:</p>
+                                        <p className="text-gray-700">{design.requestOccasion}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className="font-semibold">Request Description:</p>
-                                    <p className="text-gray-700">{design.requestDescription}</p>
+                                <Divider />
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <p className="font-semibold">Request Main Color:</p>
+                                        <p className="text-gray-700">{design.requestMainColor}</p>
+                                    </div>
+                                    <div>
+                                        <p className="font-semibold">Request Flower Type:</p>
+                                        <p className="text-gray-700">{design.requestFlowerType}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className="font-semibold">Request Occasion:</p>
-                                    <p className="text-gray-700">{design.requestOccasion}</p>
+                                <Divider />
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <p className="font-semibold">Request Description:</p>
+                                        <p className="text-gray-700">{design.requestDescription}</p>
+                                    </div>
+                                    <div>
+                                        <p className="font-semibold">Request Card:</p>
+                                        <p className="text-gray-700">{design.requestCard}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className="font-semibold">Request Main Color:</p>
-                                    <p className="text-gray-700">{design.requestMainColor}</p>
-                                </div>
-                                <div>
-                                    <p className="font-semibold">Request Flower Type:</p>
-                                    <p className="text-gray-700">{design.requestFlowerType}</p>
-                                </div>
-                                <div>
-                                    <p className="font-semibold">Request Card:</p>
-                                    <p className="text-gray-700">{design.requestCard}</p>
-                                </div>
+
                             </div>
 
                             {/* Phần bên phải */}
                             <div className="space-y-4">
                                 <div>
-                                    <p className="font-semibold">Response Image:</p>
+                                    <p className="font-semibold mb-2">Response Image:</p>
                                     <img
                                         src={design.responseImage}
                                         alt="Response"
-                                        className="w-full h-48 object-cover rounded-lg" // Tăng chiều cao lên 48
+                                        className="w-full h-96 object-cover rounded-lg" // Tăng chiều cao lên 48
                                     />
                                 </div>
                                 <div>
                                     <p className="font-semibold">Response Price:</p>
                                     <p className="text-pink-600 font-bold">{design.responsePrice.toLocaleString()} VNĐ</p>
                                 </div>
+                                <Divider />
                                 <div>
                                     <p className="font-semibold">Response Description:</p>
                                     <p className="text-gray-700">{design.responseDescription}</p>
@@ -1150,8 +1162,9 @@ const WalletPage = () => {
                             </div>
                         </div>
                     )}
-                    {/* Payment Section */}
-                    {selectedOrderDetail.note && (
+                    
+                    {/* Delivery Section */}
+                    {selectedOrderDetail.delivery && (
                         <div className="bg-red-50 p-6 rounded-lg shadow-md">
                             <h3 className="font-bold text-lg text-red-700 mb-4">Delivery Notes</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1168,11 +1181,11 @@ const WalletPage = () => {
                                     <span>{selectedOrderDetail.deliveryCity ?? "N/A"}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="font-semibold">Delivery Id:</span>
+                                    <span className="font-semibold">Delivery ID:</span>
                                     <span>{selectedOrderDetail.deliveryId ?? "N/A"}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="font-semibold">Shipper Id:</span>
+                                    <span className="font-semibold">Shipper ID:</span>
                                     <span>{selectedOrderDetail.shipperId ?? "N/A"}</span>
                                 </div>
                                 <div className="flex justify-between">
@@ -1198,6 +1211,7 @@ const WalletPage = () => {
                             </div>
                         </div>
                     )}
+
                     {/* Note Section */}
                     {selectedOrderDetail.note && (
                         <div className="bg-yellow-50 p-6 rounded-lg">
@@ -1205,7 +1219,6 @@ const WalletPage = () => {
                             <p className="whitespace-pre-line">{selectedOrderDetail.note}</p>
                         </div>
                     )}
-
 
                     {/* Payment Section */}
                     {selectedOrderDetail.note && (
@@ -1217,20 +1230,18 @@ const WalletPage = () => {
                                 <p><span className="font-semibold">Payment Method:</span> {selectedOrderDetail.paymentMethod}</p>
                                 <p><span className="font-semibold">Payment Price:</span> {selectedOrderDetail.paymentPrice}</p>
                                 <p><span className="font-semibold">Payment Status:</span> {selectedOrderDetail.paymentStatus}</p>
-                                <p><span className="font-semibold">Create At:</span> {selectedOrderDetail.paymentCreateAt}</p>
-
+                                <p><span className="font-semibold">Create At:</span> {new Date(selectedOrderDetail.paymentCreateAt).toLocaleString()}</p>
                             </div>
                         </div>
                     )}
 
-                    <Divider />
 
                     {/* Products Section */}
                     {selectedOrderDetail.designCustomBuCustomerResponse ?
                         renderDesignCustom() :
                         selectedOrderDetail.productCustomId ?
                             renderCustomProductDetails() :
-                            renderNormalOrderDetails() 
+                            renderNormalOrderDetails()
                     }
                 </div>
             </Modal>
@@ -1466,16 +1477,16 @@ const WalletPage = () => {
                 {/* Nút Chat - Hồng Neon */}
                 {(order.status != "Order Successfully") && (
 
-                <button
-                    onClick={() => {
-                        setSelectedOrder(order);
-                        setIsChatModalOpen(true);
-                    }}
-                    className="p-3 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-full transition-all duration-300 shadow-lg"
-                >
-                    <MessageCircle className="w-6 h-6 text-white" />
-                </button>
-                 )}
+                    <button
+                        onClick={() => {
+                            setSelectedOrder(order);
+                            setIsChatModalOpen(true);
+                        }}
+                        className="p-3 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-full transition-all duration-300 shadow-lg"
+                    >
+                        <MessageCircle className="w-6 h-6 text-white" />
+                    </button>
+                )}
 
             </div>
 
@@ -1584,20 +1595,22 @@ const WalletPage = () => {
         const cleaned = order.price.replace(/[₫\s]/g, '').replace(',', '.');
         const price = parseFloat(cleaned);
 
-        if ( hoursRemaining > 24) {
-            amount =  price * 0.7 *1000  ;
+        if (hoursRemaining > 24) {
+            amount = price * 0.7 * 1000;
             return {
                 percentage: 70,
                 amount: amount
             };
         } else if (hoursRemaining <= 24) {
             amount = price * 0.5 *1000;
+6
             return {
                 percentage: 50,
                 amount: amount
             };
         }  else if (hoursRemaining < 3) {
             amount = price * 0.3 *1000;
+
             return {
                 percentage: 30,
                 amount: amount
@@ -1659,7 +1672,7 @@ const WalletPage = () => {
                                 <h3 className="text-lg font-semibold text-blue-700 mb-2">Refund Information</h3>
                                 <div className="space-y-2">
                                     <p className="text-blue-600">
-                                        {orderToCancel.payment === "50% deposit"&& orderToCancel.status !== "Order Successfully" ? (
+                                        {orderToCancel.payment === "50% deposit" && orderToCancel.status !== "Order Successfully" ? (
                                             "Order is not refund."
                                         ) : (
                                             `You will receive a ${refundInfo.percentage}% refund of your payment`
