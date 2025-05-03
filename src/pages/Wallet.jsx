@@ -1102,7 +1102,7 @@ const WalletPage = () => {
                     <div className="flex items-center justify-between border-b pb-4">
                         <div>
                             <h2 className="text-2xl font-bold text-pink-600">Order Details</h2>
-                            <p className="text-gray-500 text-sm">Order ID: {selectedOrderDetail.orderId}</p>
+                            <p className="text-gray-500 text-sm">Order #{selectedOrderDetail.orderId.slice(0, 8)}</p>
                         </div>
                         <Tag color={selectedOrderDetail.status === "đặt hàng thành công" ? "green" :
                             selectedOrderDetail.status === "đang xử lý" ? "blue" : "red"}>
@@ -1133,7 +1133,9 @@ const WalletPage = () => {
                             <h3 className="font-bold text-lg text-gray-700">Contact Information</h3>
                             <p><span className="font-semibold">Store:</span> {selectedOrderDetail.storeName}</p>
                             <p><span className="font-semibold">Store Address:</span> {selectedOrderDetail.storeAddress}</p>
-                            <p><span className="font-semibold">Florist ID:</span> {selectedOrderDetail.staffId}</p>
+                            <p title={selectedOrderDetail.staffId}>
+                            <span className="font-semibold">Florist ID:</span> {selectedOrderDetail.staffId.slice(0, 8)}
+                            </p>
                             <p><span className="font-semibold">Florist FullName:</span> {selectedOrderDetail.staffFullName}</p>
                             <p><span className="font-semibold">Florist Email:</span> {selectedOrderDetail.staffEmail}</p>
                             <p><span className="font-semibold">Florist Phone:</span> {selectedOrderDetail.staffPhone}</p>
@@ -1169,11 +1171,15 @@ const WalletPage = () => {
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="font-semibold">Delivery Id:</span>
-                                    <span>{selectedOrderDetail.deliveryId ?? "N/A"}</span>
+                                    <span title={selectedOrderDetail.deliveryId}>
+                                        {selectedOrderDetail.deliveryId ? `#${selectedOrderDetail.deliveryId.slice(0, 8)}` : "N/A"}
+                                    </span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="font-semibold">Shipper Id:</span>
-                                    <span>{selectedOrderDetail.shipperId ?? "N/A"}</span>
+                                    <span title={selectedOrderDetail.shipperId}>
+                                        {selectedOrderDetail.shipperId ? `#${selectedOrderDetail.shipperId.slice(0, 8)}` : "N/A"}
+                                    </span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="font-semibold">Shipper Email:</span>
@@ -1213,7 +1219,9 @@ const WalletPage = () => {
                             <h3 className="font-bold text-lg text-orange-700 mb-2">Payment Notes</h3>
 
                             <div className="grid grid-cols-2 gap-4">
-                                <p><span className="font-semibold">Payment ID:</span> {selectedOrderDetail.paymentId}</p>
+                            <p title={selectedOrderDetail.paymentId}>
+  <span className="font-semibold">Payment ID:</span> {selectedOrderDetail.paymentId ? `#${selectedOrderDetail.paymentId.slice(0, 8)}` : "N/A"}
+</p>
                                 <p><span className="font-semibold">Payment Method:</span> {selectedOrderDetail.paymentMethod}</p>
                                 <p><span className="font-semibold">Payment Price:</span> {selectedOrderDetail.paymentPrice}</p>
                                 <p><span className="font-semibold">Payment Status:</span> {selectedOrderDetail.paymentStatus}</p>
@@ -1973,7 +1981,7 @@ const WalletPage = () => {
                                 <tbody className="divide-y divide-gray-200">
                                     {refundOrders.map((order) => (
                                         <tr key={order.orderId}>
-                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.orderId}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">Order #{order.orderId.slice(0, 8)}</td>
                                             <td className="px-6 py-4 text-left text-base">{order.details.join(", ")}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.price}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.payment}</td>
@@ -2019,7 +2027,7 @@ const WalletPage = () => {
                                 <tbody className="divide-y divide-gray-200">
                                     {cancelOrders.map((order) => (
                                         <tr key={order.orderId}>
-                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.orderId}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">Order #{order.orderId.slice(0, 8)}</td>
                                             <td className="px-6 py-4 text-left text-base">{order.details.join(", ")}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.price}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.payment}</td>
@@ -2065,7 +2073,7 @@ const WalletPage = () => {
                                 <tbody className="divide-y divide-gray-200">
                                     {failOrders.map((order) => (
                                         <tr key={order.orderId}>
-                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.orderId}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">Order #{order.orderId.slice(0, 8)}</td>
                                             <td className="px-6 py-4 text-left text-base">{order.details.join(", ")}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.price}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.payment}</td>
