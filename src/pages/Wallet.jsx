@@ -1590,13 +1590,13 @@ const WalletPage = () => {
                 percentage: 70,
                 amount: amount
             };
-        } else if (hoursRemaining > 3) {
+        } else if (hoursRemaining <= 24) {
             amount = price * 0.5 *1000;
             return {
                 percentage: 50,
                 amount: amount
             };
-        } else {
+        }  else if (hoursRemaining < 3) {
             amount = price * 0.3 *1000;
             return {
                 percentage: 30,
