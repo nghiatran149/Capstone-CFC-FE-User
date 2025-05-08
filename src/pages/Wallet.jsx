@@ -1702,14 +1702,14 @@ const WalletPage = () => {
 
 
 
-                {/* Payment button for failed orders */}
+                {/* Payment button for failed orders
                 <button
                     onClick={() => handlePaymentRetry(order.orderId)}
                     className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-green-400 hover:from-green-600 hover:to-green-500 text-white text-sm rounded-md shadow-sm transition-colors duration-200 gap-1.5"
                 >
                     <CreditCardOutlined />
                     <span>Pay</span>
-                </button>
+                </button> */}
 
                 {/* Delete button */}
                 <button
