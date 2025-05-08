@@ -1162,7 +1162,7 @@ const WalletPage = () => {
         //                     </div>
         //                 </div>
         //             )}
-                    
+
         //             {/* Delivery Section */}
         //             {selectedOrderDetail.delivery && (
         //                 <div className="bg-red-50 p-6 rounded-lg shadow-md">
@@ -1297,7 +1297,15 @@ const WalletPage = () => {
                             <p><span className="font-semibold">Updated:</span> {new Date(selectedOrderDetail.updateAt).toLocaleString()}</p>
                             <p><span className="font-semibold">Delivery Date:</span> {new Date(selectedOrderDetail.deliveryDateTime).toLocaleString()}</p>
                             <p><span className="font-semibold">Total Price:</span> <span className="text-pink-600 font-bold">{selectedOrderDetail.orderPrice.toLocaleString()} VNĐ</span></p>
-                            <p><span className="font-semibold">Payment Method:</span> {selectedOrderDetail.transfer ? '100% Transfer' : '50% Deposit'}</p>
+                            {/* <p><span className="font-semibold">Payment Method:</span> {selectedOrderDetail.transfer ? '100% Transfer' : '50% Deposit'}</p> */}
+                            <div>
+                                <p><span className="font-semibold">Payment Method:</span> {selectedOrderDetail.transfer ? '100% Transfer' : '50% Deposit'}</p>
+                                {!selectedOrderDetail.transfer && (
+                                    <div className="mt-1 font-semibold text-pink-800 bg-pink-100 p-2 rounded text-sm border-l-4 border-pink-600">
+                                        Customers are required to pay the remaining 50% ({(selectedOrderDetail.orderPrice / 2).toLocaleString()} VNĐ) upon delivery.
+                                    </div>
+                                )}
+                            </div>
                             <p><span className="font-semibold">Delivery Method:</span> {selectedOrderDetail.delivery ? 'Shipping' : 'Pick up'}</p>
 
                         </div>
@@ -1305,7 +1313,7 @@ const WalletPage = () => {
                             <h3 className="font-bold text-lg text-gray-700">Contact Information</h3>
                             <p><span className="font-semibold">Store:</span> {selectedOrderDetail.storeName || "Not assigned yet"}</p>
                             <p><span className="font-semibold">Store Address:</span> {selectedOrderDetail.storeAddress || "Not assigned yet"}</p>
-                            
+
                             {/* Kiểm tra nếu đơn hàng đã được gán cho Florist */}
                             {selectedOrderDetail.staffId ? (
                                 <>
@@ -1332,7 +1340,7 @@ const WalletPage = () => {
                             </div>
                         </div>
                     )}
-                    
+
                     {/* Delivery Section */}
                     {selectedOrderDetail.delivery && (
                         <div className="bg-red-50 p-6 rounded-lg shadow-md">
@@ -1354,7 +1362,7 @@ const WalletPage = () => {
                                     <span className="font-semibold">Delivery ID:</span>
                                     <span>{selectedOrderDetail.deliveryId ?? "N/A"}</span>
                                 </div>
-                                
+
                                 {/* Kiểm tra nếu đơn hàng đã được gán cho Shipper */}
                                 {selectedOrderDetail.shipperId ? (
                                     <>
@@ -1412,6 +1420,14 @@ const WalletPage = () => {
                                 <p><span className="font-semibold">Payment Status:</span> {selectedOrderDetail.paymentStatus}</p>
                                 <p><span className="font-semibold">Create At:</span> {new Date(selectedOrderDetail.paymentCreateAt).toLocaleString()}</p>
                             </div>
+
+                            {!selectedOrderDetail.transfer && (
+                                <div className="mt-4 bg-pink-100 p-3 rounded-md border-l-4 border-pink-600">
+                                    <p className="font-medium text-pink-800">
+                                        Customers are required to pay the remaining 50% ({(selectedOrderDetail.orderPrice / 2).toLocaleString()} VNĐ) upon delivery.
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     )}
 
