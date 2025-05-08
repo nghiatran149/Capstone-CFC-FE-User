@@ -201,6 +201,8 @@ const WalletPage = () => {
             if (data.statusCode === 200) {
                 message.success("Wallet created successfully!");
                 setIsModalVisible(false);
+                window.location.reload(); // Làm mới trang sau khi tạo ví thành công
+
                 // Optionally, refresh wallet data here
             } else {
                 message.error(data.message || 'Failed to create wallet');
@@ -276,6 +278,7 @@ const WalletPage = () => {
             if (data.statusCode === 200) {
                 setWithdrawResponseId(data.data); // Lưu ID để xác nhận OTP
                 message.success("Withdrawal request created. Please enter the OTP.");
+
                 // Hiển thị dialog để nhập OTP
             } else {
                 message.error(data.message || 'Failed to initiate withdrawal');
@@ -299,6 +302,8 @@ const WalletPage = () => {
 
             if (data.statusCode === 200) {
                 message.success("Withdrawal confirmed successfully!");
+                window.location.reload(); // Làm mới trang sau khi tạo ví thành công
+
                 // Cập nhật lại thông tin ví hoặc thực hiện các hành động khác nếu cần
             } else {
                 message.error(data.message || 'Failed to confirm OTP');
@@ -324,6 +329,8 @@ const WalletPage = () => {
                 message.success("Request successful!"); // Hiển thị thông báo thành công
                 // Cập nhật lại danh sách rút tiền
                 setWithdrawalHistory(prevHistory => prevHistory.filter(item => item.withdrawMoneyId !== withdrawMoneyId));
+                window.location.reload(); // Làm mới trang sau khi tạo ví thành công
+
             } else {
                 message.error(data.message || 'Failed to remove withdrawal');
             }

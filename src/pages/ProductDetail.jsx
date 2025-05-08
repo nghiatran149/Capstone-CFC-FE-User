@@ -108,6 +108,8 @@ const ProductDetail = () => {
         setComments([...comments, response.data.data]);
         setText('');
         setRating(0);
+        window.location.reload(); // Làm mới trang sau khi gửi bình luận thành công
+
       } catch (error) {
         console.error("Error submitting comment:", error);
       }
