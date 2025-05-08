@@ -1087,6 +1087,166 @@ const WalletPage = () => {
                 </div>
             );
         };
+        // const renderNormalOrderDetails = () => (
+        //     <div className="space-y-4">
+        //         {selectedOrderDetail.orderDetails.map((detail, index) => (
+        //             <div key={index} className="flex items-center gap-4 border-b pb-4">
+        //                 <img
+        //                     src={detail.productImage}
+        //                     alt={detail.productName}
+        //                     className="w-32 h-32 object-cover rounded-lg"
+        //                 />
+        //                 <div>
+        //                     <p className="font-semibold text-lg">{detail.productName}</p>
+        //                     <p>Price: {detail.price.toLocaleString()} VNĐ</p>
+        //                     <p>Quantity: {detail.quantity}</p>
+        //                     <p>Discount: {detail.discount}%</p>
+        //                     <p>Total: {detail.productTotalPrice.toLocaleString()} VNĐ</p>
+        //                 </div>
+        //             </div>
+        //         ))}
+        //     </div>
+        // );
+
+        // return (
+        //     <Modal
+        //         title={
+        //             <div className="flex items-center justify-between border-b pb-4">
+        //                 <div>
+        //                     <h2 className="text-2xl font-bold text-pink-600">Order Details</h2>
+        //                     <p className="text-gray-500 text-sm">Order ID: {selectedOrderDetail.orderId}</p>
+        //                 </div>
+        //                 <Tag color={selectedOrderDetail.status === "đặt hàng thành công" ? "green" :
+        //                     selectedOrderDetail.status === "đang xử lý" ? "blue" : "red"}>
+        //                     {selectedOrderDetail.status}
+        //                 </Tag>
+        //             </div>
+        //         }
+        //         open={detailModalVisible}
+        //         onCancel={() => setDetailModalVisible(false)}
+        //         width={1000}
+        //         footer={null}
+        //         className="max-h-[90vh] overflow-auto"
+        //     >
+        //         <div className="space-y-6">
+        //             {/* Order Information */}
+        //             <div className="grid grid-cols-2 gap-6 bg-gray-50 p-6 rounded-lg">
+        //                 <div className="space-y-2">
+        //                     <h3 className="font-bold text-lg text-gray-700">Order Information</h3>
+        //                     <p><span className="font-semibold">Created:</span> {new Date(selectedOrderDetail.createAt).toLocaleString()}</p>
+        //                     <p><span className="font-semibold">Updated:</span> {new Date(selectedOrderDetail.updateAt).toLocaleString()}</p>
+        //                     <p><span className="font-semibold">Delivery Date:</span> {new Date(selectedOrderDetail.deliveryDateTime).toLocaleString()}</p>
+        //                     <p><span className="font-semibold">Total Price:</span> <span className="text-pink-600 font-bold">{selectedOrderDetail.orderPrice.toLocaleString()} VNĐ</span></p>
+        //                     <p><span className="font-semibold">Payment Method:</span> {selectedOrderDetail.transfer ? '100% Transfer' : '50% Deposit'}</p>
+        //                     <p><span className="font-semibold">Delivery Method:</span> {selectedOrderDetail.delivery ? 'Shipping' : 'Pick up'}</p>
+
+        //                 </div>
+        //                 <div className="space-y-2">
+        //                     <h3 className="font-bold text-lg text-gray-700">Contact Information</h3>
+        //                     <p><span className="font-semibold">Store:</span> {selectedOrderDetail.storeName}</p>
+        //                     <p><span className="font-semibold">Store Address:</span> {selectedOrderDetail.storeAddress}</p>
+        //                     <p><span className="font-semibold">Florist ID:</span> {selectedOrderDetail.staffId}</p>
+        //                     <p><span className="font-semibold">Florist FullName:</span> {selectedOrderDetail.staffFullName}</p>
+        //                     <p><span className="font-semibold">Florist Email:</span> {selectedOrderDetail.staffEmail}</p>
+        //                     <p><span className="font-semibold">Florist Phone:</span> {selectedOrderDetail.staffPhone}</p>
+        //                 </div>
+        //             </div>
+
+        //             {/* Promotion Information */}
+        //             {selectedOrderDetail.promotionId && (
+        //                 <div className="bg-purple-50 p-6 rounded-lg">
+        //                     <h3 className="font-bold text-lg text-purple-600 mb-2">Promotion Applied</h3>
+        //                     <div className="grid grid-cols-2 gap-4">
+        //                         <p><span className="font-semibold">Promotion Name:</span> {selectedOrderDetail.promotionName}</p>
+        //                         <p><span className="font-semibold">Discount:</span> {selectedOrderDetail.promotionDiscount}%</p>
+        //                     </div>
+        //                 </div>
+        //             )}
+
+        //             {/* Delivery Section */}
+        //             {selectedOrderDetail.delivery && (
+        //                 <div className="bg-red-50 p-6 rounded-lg shadow-md">
+        //                     <h3 className="font-bold text-lg text-red-700 mb-4">Delivery Notes</h3>
+        //                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        //                         <div className="flex justify-between">
+        //                             <span className="font-semibold">Delivery Address:</span>
+        //                             <span>{selectedOrderDetail.deliveryAddress ?? "N/A"}</span>
+        //                         </div>
+        //                         <div className="flex justify-between">
+        //                             <span className="font-semibold">Delivery District:</span>
+        //                             <span>{selectedOrderDetail.deliveryDistrict ?? "N/A"}</span>
+        //                         </div>
+        //                         <div className="flex justify-between">
+        //                             <span className="font-semibold">Delivery City:</span>
+        //                             <span>{selectedOrderDetail.deliveryCity ?? "N/A"}</span>
+        //                         </div>
+        //                         <div className="flex justify-between">
+        //                             <span className="font-semibold">Delivery ID:</span>
+        //                             <span>{selectedOrderDetail.deliveryId ?? "N/A"}</span>
+        //                         </div>
+        //                         <div className="flex justify-between">
+        //                             <span className="font-semibold">Shipper ID:</span>
+        //                             <span>{selectedOrderDetail.shipperId ?? "N/A"}</span>
+        //                         </div>
+        //                         <div className="flex justify-between">
+        //                             <span className="font-semibold">Shipper Email:</span>
+        //                             <span>{selectedOrderDetail.shipperEmail ?? "N/A"}</span>
+        //                         </div>
+        //                         <div className="flex justify-between">
+        //                             <span className="font-semibold">Delivery Phone:</span>
+        //                             <span>{selectedOrderDetail.shipperPhone ?? "N/A"}</span>
+        //                         </div>
+        //                         <div className="flex justify-between">
+        //                             <span className="font-semibold">NumberMoto:</span>
+        //                             <span>{selectedOrderDetail.NumberMoto ?? "N/A"}</span>
+        //                         </div>
+        //                         <div className="flex justify-between">
+        //                             <span className="font-semibold">ColorMoto:</span>
+        //                             <span>{selectedOrderDetail.ColorMoto ?? "N/A"}</span>
+        //                         </div>
+        //                         <div className="flex justify-between">
+        //                             <span className="font-semibold">MotoType:</span>
+        //                             <span>{selectedOrderDetail.MotoType ?? "N/A"}</span>
+        //                         </div>
+        //                     </div>
+        //                 </div>
+        //             )}
+
+        //             {/* Note Section */}
+        //             {selectedOrderDetail.note && (
+        //                 <div className="bg-yellow-50 p-6 rounded-lg">
+        //                     <h3 className="font-bold text-lg text-yellow-700 mb-2">Order Notes</h3>
+        //                     <p className="whitespace-pre-line">{selectedOrderDetail.note}</p>
+        //                 </div>
+        //             )}
+
+        //             {/* Payment Section */}
+        //             {selectedOrderDetail.note && (
+        //                 <div className="bg-orange-50 p-6 rounded-lg">
+        //                     <h3 className="font-bold text-lg text-orange-700 mb-2">Payment Notes</h3>
+
+        //                     <div className="grid grid-cols-2 gap-4">
+        //                         <p><span className="font-semibold">Payment ID:</span> {selectedOrderDetail.paymentId}</p>
+        //                         <p><span className="font-semibold">Payment Method:</span> {selectedOrderDetail.paymentMethod}</p>
+        //                         <p><span className="font-semibold">Payment Price:</span> {selectedOrderDetail.paymentPrice}</p>
+        //                         <p><span className="font-semibold">Payment Status:</span> {selectedOrderDetail.paymentStatus}</p>
+        //                         <p><span className="font-semibold">Create At:</span> {new Date(selectedOrderDetail.paymentCreateAt).toLocaleString()}</p>
+        //                     </div>
+        //                 </div>
+        //             )}
+
+
+        //             {/* Products Section */}
+        //             {selectedOrderDetail.designCustomBuCustomerResponse ?
+        //                 renderDesignCustom() :
+        //                 selectedOrderDetail.productCustomId ?
+        //                     renderCustomProductDetails() :
+        //                     renderNormalOrderDetails()
+        //             }
+        //         </div>
+        //     </Modal>
+        // );
+
         const renderNormalOrderDetails = () => (
             <div className="space-y-4">
                 {selectedOrderDetail.orderDetails.map((detail, index) => (
@@ -1114,7 +1274,7 @@ const WalletPage = () => {
                     <div className="flex items-center justify-between border-b pb-4">
                         <div>
                             <h2 className="text-2xl font-bold text-pink-600">Order Details</h2>
-                            <p className="text-gray-500 text-sm">Order #{selectedOrderDetail.orderId.slice(0, 8)}</p>
+                            <p className="text-gray-500 text-sm">Order ID: {selectedOrderDetail.orderId}</p>
                         </div>
                         <Tag color={selectedOrderDetail.status === "đặt hàng thành công" ? "green" :
                             selectedOrderDetail.status === "đang xử lý" ? "blue" : "red"}>
@@ -1137,20 +1297,36 @@ const WalletPage = () => {
                             <p><span className="font-semibold">Updated:</span> {new Date(selectedOrderDetail.updateAt).toLocaleString()}</p>
                             <p><span className="font-semibold">Delivery Date:</span> {new Date(selectedOrderDetail.deliveryDateTime).toLocaleString()}</p>
                             <p><span className="font-semibold">Total Price:</span> <span className="text-pink-600 font-bold">{selectedOrderDetail.orderPrice.toLocaleString()} VNĐ</span></p>
-                            <p><span className="font-semibold">Payment Method:</span> {selectedOrderDetail.transfer ? '100% Transfer' : '50% Deposit'}</p>
+                            {/* <p><span className="font-semibold">Payment Method:</span> {selectedOrderDetail.transfer ? '100% Transfer' : '50% Deposit'}</p> */}
+                            <div>
+                                <p><span className="font-semibold">Payment Method:</span> {selectedOrderDetail.transfer ? '100% Transfer' : '50% Deposit'}</p>
+                                {!selectedOrderDetail.transfer && (
+                                    <div className="mt-1 font-semibold text-pink-800 bg-pink-100 p-2 rounded text-sm border-l-4 border-pink-600">
+                                        Customers are required to pay the remaining 50% ({(selectedOrderDetail.orderPrice / 2).toLocaleString()} VNĐ) upon delivery.
+                                    </div>
+                                )}
+                            </div>
                             <p><span className="font-semibold">Delivery Method:</span> {selectedOrderDetail.delivery ? 'Shipping' : 'Pick up'}</p>
 
                         </div>
                         <div className="space-y-2">
                             <h3 className="font-bold text-lg text-gray-700">Contact Information</h3>
-                            <p><span className="font-semibold">Store:</span> {selectedOrderDetail.storeName}</p>
-                            <p><span className="font-semibold">Store Address:</span> {selectedOrderDetail.storeAddress}</p>
-                            <p title={selectedOrderDetail.staffId}>
-                            <span className="font-semibold">Florist ID:</span> {selectedOrderDetail.staffId.slice(0, 8)}
-                            </p>
-                            <p><span className="font-semibold">Florist FullName:</span> {selectedOrderDetail.staffFullName}</p>
-                            <p><span className="font-semibold">Florist Email:</span> {selectedOrderDetail.staffEmail}</p>
-                            <p><span className="font-semibold">Florist Phone:</span> {selectedOrderDetail.staffPhone}</p>
+                            <p><span className="font-semibold">Store:</span> {selectedOrderDetail.storeName || "Not assigned yet"}</p>
+                            <p><span className="font-semibold">Store Address:</span> {selectedOrderDetail.storeAddress || "Not assigned yet"}</p>
+
+                            {/* Kiểm tra nếu đơn hàng đã được gán cho Florist */}
+                            {selectedOrderDetail.staffId ? (
+                                <>
+                                    <p><span className="font-semibold">Florist ID:</span> {selectedOrderDetail.staffId}</p>
+                                    <p><span className="font-semibold">Florist FullName:</span> {selectedOrderDetail.staffFullName}</p>
+                                    <p><span className="font-semibold">Florist Email:</span> {selectedOrderDetail.staffEmail}</p>
+                                    <p><span className="font-semibold">Florist Phone:</span> {selectedOrderDetail.staffPhone}</p>
+                                </>
+                            ) : (
+                                <p className="text-yellow-600">
+                                    <span className="font-semibold">Florist:</span> Not assigned yet
+                                </p>
+                            )}
                         </div>
                     </div>
 
@@ -1164,7 +1340,7 @@ const WalletPage = () => {
                             </div>
                         </div>
                     )}
-                    
+
                     {/* Delivery Section */}
                     {selectedOrderDetail.delivery && (
                         <div className="bg-red-50 p-6 rounded-lg shadow-md">
@@ -1183,38 +1359,43 @@ const WalletPage = () => {
                                     <span>{selectedOrderDetail.deliveryCity ?? "N/A"}</span>
                                 </div>
                                 <div className="flex justify-between">
+                                    <span className="font-semibold">Delivery ID:</span>
+                                    <span>{selectedOrderDetail.deliveryId ?? "N/A"}</span>
+                                </div>
 
-                                    <span className="font-semibold">Delivery Id:</span>
-                                    <span title={selectedOrderDetail.deliveryId}>
-                                        {selectedOrderDetail.deliveryId ? `#${selectedOrderDetail.deliveryId.slice(0, 8)}` : "N/A"}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="font-semibold">Shipper Id:</span>
-                                    <span title={selectedOrderDetail.shipperId}>
-                                        {selectedOrderDetail.shipperId ? `#${selectedOrderDetail.shipperId.slice(0, 8)}` : "N/A"}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="font-semibold">Shipper Email:</span>
-                                    <span>{selectedOrderDetail.shipperEmail ?? "N/A"}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="font-semibold">Delivery Phone:</span>
-                                    <span>{selectedOrderDetail.shipperPhone ?? "N/A"}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="font-semibold">NumberMoto:</span>
-                                    <span>{selectedOrderDetail.NumberMoto ?? "N/A"}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="font-semibold">ColorMoto:</span>
-                                    <span>{selectedOrderDetail.ColorMoto ?? "N/A"}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="font-semibold">MotoType:</span>
-                                    <span>{selectedOrderDetail.MotoType ?? "N/A"}</span>
-                                </div>
+                                {/* Kiểm tra nếu đơn hàng đã được gán cho Shipper */}
+                                {selectedOrderDetail.shipperId ? (
+                                    <>
+                                        <div className="flex justify-between">
+                                            <span className="font-semibold">Shipper ID:</span>
+                                            <span>{selectedOrderDetail.shipperId}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="font-semibold">Shipper Email:</span>
+                                            <span>{selectedOrderDetail.shipperEmail}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="font-semibold">Delivery Phone:</span>
+                                            <span>{selectedOrderDetail.shipperPhone}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="font-semibold">NumberMoto:</span>
+                                            <span>{selectedOrderDetail.NumberMoto ?? "N/A"}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="font-semibold">ColorMoto:</span>
+                                            <span>{selectedOrderDetail.ColorMoto ?? "N/A"}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="font-semibold">MotoType:</span>
+                                            <span>{selectedOrderDetail.MotoType ?? "N/A"}</span>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="col-span-2">
+                                        <p className="text-yellow-600 font-semibold">Shipper not assigned yet</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
@@ -1228,19 +1409,25 @@ const WalletPage = () => {
                     )}
 
                     {/* Payment Section */}
-                    {selectedOrderDetail.note && (
+                    {selectedOrderDetail.paymentId && (
                         <div className="bg-orange-50 p-6 rounded-lg">
                             <h3 className="font-bold text-lg text-orange-700 mb-2">Payment Notes</h3>
 
                             <div className="grid grid-cols-2 gap-4">
-                            <p title={selectedOrderDetail.paymentId}>
-  <span className="font-semibold">Payment ID:</span> {selectedOrderDetail.paymentId ? `#${selectedOrderDetail.paymentId.slice(0, 8)}` : "N/A"}
-</p>
+                                <p><span className="font-semibold">Payment ID:</span> {selectedOrderDetail.paymentId}</p>
                                 <p><span className="font-semibold">Payment Method:</span> {selectedOrderDetail.paymentMethod}</p>
-                                <p><span className="font-semibold">Payment Price:</span> {selectedOrderDetail.paymentPrice}</p>
+                                <p><span className="font-semibold">Payment Price:</span> {selectedOrderDetail.paymentPrice.toLocaleString()} VNĐ</p>
                                 <p><span className="font-semibold">Payment Status:</span> {selectedOrderDetail.paymentStatus}</p>
                                 <p><span className="font-semibold">Create At:</span> {new Date(selectedOrderDetail.paymentCreateAt).toLocaleString()}</p>
                             </div>
+
+                            {!selectedOrderDetail.transfer && (
+                                <div className="mt-4 bg-pink-100 p-3 rounded-md border-l-4 border-pink-600">
+                                    <p className="font-medium text-pink-800">
+                                        Customers are required to pay the remaining 50% ({(selectedOrderDetail.orderPrice / 2).toLocaleString()} VNĐ) upon delivery.
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -1610,16 +1797,14 @@ const WalletPage = () => {
                 percentage: 70,
                 amount: amount
             };
-        } else if (hoursRemaining <= 24) {
-            amount = price * 0.5 *1000;
-6
+        } else if (hoursRemaining > 3) {
+            amount = price * 0.5 * 1000;
             return {
                 percentage: 50,
                 amount: amount
             };
-        }  else if (hoursRemaining < 3) {
-            amount = price * 0.3 *1000;
-
+        } else {
+            amount = price * 0.3 * 1000;
             return {
                 percentage: 30,
                 amount: amount
@@ -1995,7 +2180,7 @@ const WalletPage = () => {
                                 <tbody className="divide-y divide-gray-200">
                                     {refundOrders.map((order) => (
                                         <tr key={order.orderId}>
-                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">Order #{order.orderId.slice(0, 8)}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.orderId}</td>
                                             <td className="px-6 py-4 text-left text-base">{order.details.join(", ")}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.price}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.payment}</td>
@@ -2041,7 +2226,7 @@ const WalletPage = () => {
                                 <tbody className="divide-y divide-gray-200">
                                     {cancelOrders.map((order) => (
                                         <tr key={order.orderId}>
-                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">Order #{order.orderId.slice(0, 8)}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.orderId}</td>
                                             <td className="px-6 py-4 text-left text-base">{order.details.join(", ")}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.price}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.payment}</td>
@@ -2087,7 +2272,7 @@ const WalletPage = () => {
                                 <tbody className="divide-y divide-gray-200">
                                     {failOrders.map((order) => (
                                         <tr key={order.orderId}>
-                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">Order #{order.orderId.slice(0, 8)}</td>
+                                            <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.orderId}</td>
                                             <td className="px-6 py-4 text-left text-base">{order.details.join(", ")}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.price}</td>
                                             <td className="px-6 py-4 text-left whitespace-nowrap text-base">{order.payment}</td>
