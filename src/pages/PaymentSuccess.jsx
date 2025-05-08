@@ -35,7 +35,7 @@ const PaymentSuccess = () => {
                             type="primary"
                             size="large"
                             className="bg-pink-500 hover:bg-pink-600"
-                            onClick={() => navigate('/orders')}
+                            onClick={() => navigate('/wallet')}
                         >
                             View Orders
                         </Button>
