@@ -229,12 +229,24 @@ const Checkout = () => {
             const data = await response.json();
             console.log('Response:', data);
 
+            // if (data.success) {
+            //     setDeliveryCheckResult(data);
+            //     message.success(`Có thể đặt xe giao hàng. Phí giao: ${data.distance.toLocaleString()} VNĐ`);
+            // } else {
+            //     setDeliveryCheckResult(data);
+            //     message.error(data.message || 'Cân nặng và số km không phù hợp để đặt shipper');
+            // }
             if (data.success) {
                 setDeliveryCheckResult(data);
-                message.success(`Có thể đặt xe giao hàng. Phí giao: ${data.distance.toLocaleString()} VNĐ`);
+                message.success(`Delivery available. Delivery fee: ${data.distance.toLocaleString()} VNĐ`);
             } else {
-                setDeliveryCheckResult(data);
-                message.error(data.message || 'Cân nặng và số km không phù hợp để đặt shipper');
+                // Ghi đè message từ API với thông báo cố định
+                const customData = {
+                    ...data,
+                    message: "Delivery not available. The order exceeds 5km in distance or 3kg in weight." // Thông báo tiếng Anh theo yêu cầu
+                };
+                setDeliveryCheckResult(customData);
+                message.error("Delivery not available. The order exceeds 5km in distance or 3kg in weight.");
             }
         } catch (error) {
             console.error('Error checking delivery:', error);
@@ -259,11 +271,11 @@ const Checkout = () => {
                             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                             </svg>
-                            Có thể đặt xe giao hàng
+                            Delivery available.
                         </span>
                     </div>
                     <div className="flex items-center justify-between text-lg">
-                        <span className="text-gray-600">Phí giao hàng:</span>
+                        <span className="text-gray-600">Delivery fee:</span>
                         <span className="font-bold text-green-600">{deliveryCheckResult.distance.toLocaleString()} VNĐ</span>
                     </div>
                 </div>
@@ -837,7 +849,7 @@ const Checkout = () => {
                                         >
                                             <Select
                                                 disabled={isAddressDisabled}
-                                                placeholder="Chọn quận"
+                                                placeholder="Select district"
                                             >
                                                 {districts.map((district) => (
                                                     <Option key={district} value={district}>
@@ -851,7 +863,7 @@ const Checkout = () => {
                                             label="Detailed Address"
                                             rules={[{ required: true, message: 'Please input detailed address!' }]}
                                         >
-                                            <Input disabled={isAddressDisabled} placeholder="Nhập địa chỉ chi tiết" />
+                                            <Input disabled={isAddressDisabled} placeholder="Input detailed address" />
                                         </Form.Item>
                                         <Form.Item
                                             label="Date and Time"
