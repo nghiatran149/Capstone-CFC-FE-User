@@ -240,10 +240,9 @@ const Checkout = () => {
                 setDeliveryCheckResult(data);
                 message.success(`Delivery available. Delivery fee: ${data.distance.toLocaleString()} VNĐ`);
             } else {
-                // Ghi đè message từ API với thông báo cố định
                 const customData = {
                     ...data,
-                    message: "Delivery not available. The order exceeds 5km in distance or 3kg in weight." // Thông báo tiếng Anh theo yêu cầu
+                    message: "Delivery not available. The order exceeds 5km in distance or 3kg in weight."
                 };
                 setDeliveryCheckResult(customData);
                 message.error("Delivery not available. The order exceeds 5km in distance or 3kg in weight.");
