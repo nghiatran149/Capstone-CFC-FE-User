@@ -1932,11 +1932,11 @@ const WalletPage = () => {
                         <p className="text-3xl font-bold">{stats.processing}</p>
                     </div>
 
-                    <div className="bg-red-500 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
+                    {/* <div className="bg-red-500 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
                         <div className="absolute right-0 top-0 w-24 h-24 bg-red-400 rounded-full transform translate-x-8 -translate-y-8"></div>
                         <h3 className="text-xl font-medium mb-2">Failed Orders</h3>
                         <p className="text-3xl font-bold">{stats.fail}</p>
-                    </div>
+                    </div> */}
                 </div>
 
                 {/* Tab Navigation */}
@@ -1969,7 +1969,7 @@ const WalletPage = () => {
                         >
                             Cancel Orders
                         </button>
-                        <button
+                        {/* <button
                             onClick={() => setActiveTab('fail')}
                             className={`py-3 px-6 font-medium text-lg transition-all border-b-2 ${activeTab === 'fail'
                                 ? 'border-pink-500 text-pink-500'
@@ -1977,7 +1977,7 @@ const WalletPage = () => {
                                 }`}
                         >
                             Failed Orders
-                        </button>
+                        </button> */}
                     </div>
                 </div>
 
