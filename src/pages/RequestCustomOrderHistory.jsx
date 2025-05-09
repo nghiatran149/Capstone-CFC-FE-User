@@ -469,6 +469,8 @@ const WalletPage = () => {
             if (response.data.statusCode === 200) {
                 message.success('Design deleted successfully!');
                 fetchDesigns(); // Refresh the designs list after deletion
+                window.location.reload(); // Làm mới trang sau khi tạo ví thành công
+
             } else {
                 message.error('Failed to delete design');
             }

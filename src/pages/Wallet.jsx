@@ -417,6 +417,8 @@ const WalletPage = () => {
                 message.success('Order canceled successfully');
                 setIsConfirmModalVisible(false); // Đóng modal sau khi hủy thành công
                 fetchOrders(); // Reload orders
+                window.location.reload(); // Làm mới trang sau khi tạo ví thành công
+
             } else {
                 message.error(data.message || 'Failed to cancel order');
             }
@@ -1521,6 +1523,8 @@ const WalletPage = () => {
                 if (data.statusCode === 200) {
                     message.success('Feedback created successfully');
                     onClose(); // Close the input modal
+                    window.location.reload(); // Làm mới trang sau khi tạo ví thành công
+
                 } else {
                     message.error(data.message || 'Failed to create feedback');
                 }
