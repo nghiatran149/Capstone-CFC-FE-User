@@ -9,28 +9,7 @@ const { Text, Title } = Typography;
 const { Option } = Select;
 
 // Format time helper function
-const formatTime = (dateString) => {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now - date;
 
-  const diffSec = Math.floor(diffMs / 1000);
-  const diffMin = Math.floor(diffSec / 60);
-  const diffHour = Math.floor(diffMin / 60);
-  const diffDay = Math.floor(diffHour / 24);
-
-  if (diffSec < 60) {
-    return 'Vừa xong';
-  } else if (diffMin < 60) {
-    return `${diffMin} phút trước`;
-  } else if (diffHour < 24) {
-    return `${diffHour} giờ trước`;
-  } else if (diffDay < 7) {
-    return `${diffDay} ngày trước`;
-  } else {
-    return date.toLocaleDateString('vi-VN');
-  }
-};
 
 // Status filter options
 const statusOptions = [
@@ -82,9 +61,7 @@ const NotificationItem = ({ notification, onClick }) => {
         <div className="flex-grow">
           <div className="flex justify-between items-start mb-1">
             <Text strong>{notification.type || "Thông báo"}</Text>
-            <Text type="secondary" className="text-xs">
-              {formatTime(notification.updateAt ?? notification.createAt)}
-            </Text>
+           
           </div>
           <Text className="block mb-2">{notification.message}</Text>
           <div className="flex flex-wrap gap-2">

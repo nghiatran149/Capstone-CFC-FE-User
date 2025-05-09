@@ -1466,6 +1466,7 @@ const WalletPage = () => {
                     const data = await response.json();
 
                     if (data.statusCode === 200 && data.data) {
+
                         setCanRequestRefund(true); // Cho phép request refund nếu API trả về true
                     } else {
                         setCanRequestRefund(false); // Không cho phép nếu API trả về false
@@ -1552,21 +1553,18 @@ const WalletPage = () => {
                         onChange={(e) => setVideoFile(e.target.files[0])}
                         className="mt-2 border rounded-lg p-2"
                     />
-                    <div className="mt-2 flex items-center">
-                        <label className="font-semibold mr-2">Request Refund:</label>
-                        <input
-                            type="checkbox"
-                            checked={requestRefund}
-                            onChange={() => {
-                                if (canRequestRefund) {
-                                    setRequestRefund(!requestRefund);
-                                } else {
-                                    message.error('You cannot request a refund at this time.');
-                                }
-                            }}
-                            onChange={() => setRequestRefund(!requestRefund)} />
-                    </div>
-                    <div>* bạn phải kích hoạt ví mới được sử dung refund</div>
+                    {canRequestRefund ? (
+                        <div className="mt-2 flex items-center">
+                            <label className="font-semibold mr-2">Request Refund:</label>
+                            <input
+                                type="checkbox"
+                                checked={requestRefund}
+                                onChange={() => setRequestRefund(!requestRefund)}
+                            />
+                        </div>
+                    ) : (
+                        <div className="mt-2 text-red-500">* Bạn phải kích hoạt ví mới được sử dụng refund</div>
+                    )}
                     {/* Rating Section */}
                     <div className="mb-6 mt-4">
                         <h4 className="font-semibold">Rating:</h4>
@@ -1652,7 +1650,7 @@ const WalletPage = () => {
                 </button>
 
                 {/* Nút Hủy Đơn - Gradient Đỏ-Cam */}
-                {order.status !== "Received" && order.status !== "Delivery" && order.status !== "Request refund" &&order.status !== "Fail" && (
+                {order.status !== "Received" && order.status !== "Delivery" && order.status !== "Request refund" && order.status !== "Fail" && (
                     <button
                         onClick={() => showCancelConfirm(order)}
                         className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-600 hover:to-orange-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
@@ -1671,7 +1669,7 @@ const WalletPage = () => {
                     </button>
                 )}
                 {/* Nút Chat - Hồng Neon */}
-                {(order.status != "Order Successfully"&& order.status !== "Received" ) && (
+                {(order.status != "Order Successfully" && order.status !== "Received") && (
 
                     <button
                         onClick={() => {
