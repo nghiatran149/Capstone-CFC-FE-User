@@ -28,7 +28,7 @@ const WalletPage = () => {
     const navigate = useNavigate();
     useEffect(() => {
         const fetchWallet = async () => {
-            try {
+            {
                 const token = sessionStorage.getItem('accessToken');
                 if (!token) {
                     message.error('Please login to view orders');
@@ -44,19 +44,13 @@ const WalletPage = () => {
 
                 if (data.statusCode === 200) {
                     setWallet(data.data);
-                } else {
-                    console.error("Failed to fetch wallet:", data.message);
-                    message.error(data.message || 'Failed to load wallet');
-                }
-            } catch (error) {
-                console.error("Error fetching wallet data:", error);
-                message.error('Failed to load wallet');
-            }
+                } 
+            } 
         };
         fetchWallet();
 
         const fetchCheckWallet = async () => {
-            try {
+            {
                 const token = sessionStorage.getItem('accessToken');
                 if (!token) {
                     message.error('Please login to view orders');
@@ -77,10 +71,7 @@ const WalletPage = () => {
 
 
                 }
-            } catch (error) {
-                console.error("Error fetching wallet data:", error);
-                message.error('Failed to load wallet');
-            }
+            } 
         };
         fetchCheckWallet()
     }, [token, navigate]);
@@ -188,7 +179,7 @@ const WalletPage = () => {
 
         const customerId = jwtDecode(sessionStorage.getItem('accessToken')).Id;
 
-        try {
+         {
             const response = await fetch(`https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Wallet/CreateWallet?CusomterId=${customerId}&PasswordWallet=${password}`, {
                 method: 'POST',
                 headers: {
@@ -204,13 +195,8 @@ const WalletPage = () => {
                 window.location.reload(); // Làm mới trang sau khi tạo ví thành công
 
                 // Optionally, refresh wallet data here
-            } else {
-                message.error(data.message || 'Failed to create wallet');
-            }
-        } catch (error) {
-            console.error("Error creating wallet:", error);
-            message.error('Failed to create wallet');
-        }
+            } 
+        } 
     };
 
     const handleDeposit = async () => {
