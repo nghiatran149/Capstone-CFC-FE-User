@@ -79,7 +79,7 @@ const Checkout = () => {
                     setPaymentMethod('vn-pay'); // Set default payment method to VNPAY if wallet is not available
                 }
             }
-        }
+        } 
     };
     const fetchWallet = async () => {
         {
@@ -98,9 +98,9 @@ const Checkout = () => {
 
             if (data.statusCode === 200) {
                 setWallet(data.data);
-            }
-        }
-
+            } 
+        } 
+        
     };
     const handleCheck = async () => {
         try {
@@ -437,39 +437,30 @@ const Checkout = () => {
                 return;
             }
 
-            if (!walletPassword || walletPassword.trim() === '') {
-                message.error('Please enter your wallet password');
-                return;
-            }
-
             const response = await axios.post(
-                `https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Wallet/PaymentByWallet`,
+                `https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/Wallet/PaymentByWallet?OrderId=${orderId}&PasswordWallet=${walletPassword}`,
                 {},
                 {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
-                    },
-                    params: {
-                        OrderId: orderId,
-                        PasswordWallet: walletPassword
                     }
                 }
             );
 
-            message.success('Payment successful!');
-            navigate('/payment-success');
+            if (response.status === 200) {
+                message.success('Payment successful!');
+                navigate('/payment-success'); // Redirect to success page
+            } else {
+                message.error('Payment failed. Please check your password or try again.');
+                navigate('/payment-failure'); // Redirect to failure page
+            }
         } catch (error) {
             console.error('Error during wallet payment:', error);
-
-            // Nếu backend trả message cụ thể trong error.response.data
-            const errorMessage = error.response?.data?.message || error.response?.data || 'Failed to process wallet payment.';
-            message.error(errorMessage);
-
-            navigate('/payment-failure');
+            message.error('Failed to process wallet payment. Please try again.');
+            navigate('/payment-failure'); // Redirect to failure page
         }
     };
-
 
     const handlePaymentChange = (id) => {
         setPaymentMethod(id); // Update the payment method state
