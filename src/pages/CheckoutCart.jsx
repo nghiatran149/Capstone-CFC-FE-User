@@ -55,7 +55,7 @@ const Checkout = () => {
         fetchWallet();
     }, []);
     const checkWallet = async () => {
-        try {
+        {
             const token = sessionStorage.getItem('accessToken');
             if (!token) {
                 message.error('Please login to continue');
@@ -74,16 +74,11 @@ const Checkout = () => {
                 if (!data.data) {
                     setPaymentMethod('vn-pay');
                 }
-            } else {
-                message.error(data.message || 'Failed to check wallet status');
             }
-        } catch (error) {
-            console.error("Error checking wallet:", error);
-            message.error('Failed to check wallet status');
         }
     };
     const fetchWallet = async () => {
-        try {
+        {
             const token = sessionStorage.getItem('accessToken');
             if (!token) {
                 message.error('Please login to view orders');
@@ -99,14 +94,8 @@ const Checkout = () => {
 
             if (data.statusCode === 200) {
                 setWallet(data.data);
-            } else {
-                console.error("Failed to fetch wallet:", data.message);
-                message.error(data.message || 'Failed to load wallet');
             }
-        } catch (error) {
-            console.error("Error fetching wallet data:", error);
-            message.error('Failed to load wallet');
-        }
+        } 
     };
     const fetchPromotions = async () => {
         try {
@@ -229,12 +218,23 @@ const Checkout = () => {
             const data = await response.json();
             console.log('Response:', data);
 
+            // if (data.success) {
+            //     setDeliveryCheckResult(data);
+            //     message.success(`Có thể đặt xe giao hàng. Phí giao: ${data.distance.toLocaleString()} VNĐ`);
+            // } else {
+            //     setDeliveryCheckResult(data);
+            //     message.error(data.message || 'Cân nặng và số km không phù hợp để đặt shipper');
+            // }
             if (data.success) {
                 setDeliveryCheckResult(data);
-                message.success(`Có thể đặt xe giao hàng. Phí giao: ${data.distance.toLocaleString()} VNĐ`);
+                message.success(`Delivery available. Delivery fee: ${data.distance.toLocaleString()} VNĐ`);
             } else {
-                setDeliveryCheckResult(data);
-                message.error(data.message || 'Cân nặng và số km không phù hợp để đặt shipper');
+                const customData = {
+                    ...data,
+                    message: "Delivery not available. The order exceeds 5km in distance or 3kg in weight."
+                };
+                setDeliveryCheckResult(customData);
+                message.error("Delivery not available. The order exceeds 5km in distance or 3kg in weight.");
             }
         } catch (error) {
             console.error('Error checking delivery:', error);
@@ -259,11 +259,11 @@ const Checkout = () => {
                             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                             </svg>
-                            Có thể đặt xe giao hàng
+                            Delivery available.
                         </span>
                     </div>
                     <div className="flex items-center justify-between text-lg">
-                        <span className="text-gray-600">Phí giao hàng:</span>
+                        <span className="text-gray-600">Delivery fee:</span>
                         <span className="font-bold text-green-600">{deliveryCheckResult.distance.toLocaleString()} VNĐ</span>
                     </div>
                 </div>
@@ -547,10 +547,7 @@ const Checkout = () => {
                                         <div className="flex flex-1 items-center justify-between ml-6">
                                             <div className="flex flex-col">
                                                 <h3 className="text-lg font-semibold text-gray-900">{item.productName}</h3>
-                                                <p className="text-sm text-gray-500">Size: {item.size}</p>
-                                                <p className="text-sm text-gray-500">Category: {item.categoryName}</p>
                                             </div>
-                                            <p className="text-pink-600 font-medium">{item.productPrice.toLocaleString()} VND</p>
                                             <p className="text-gray-600">x{item.quantity}</p>
                                             <p className="text-lg font-semibold text-pink-600">{item.totalPrice.toLocaleString()} VND</p>
                                         </div>
@@ -837,7 +834,7 @@ const Checkout = () => {
                                         >
                                             <Select
                                                 disabled={isAddressDisabled}
-                                                placeholder="Chọn quận"
+                                                placeholder="Select district"
                                             >
                                                 {districts.map((district) => (
                                                     <Option key={district} value={district}>
@@ -851,7 +848,7 @@ const Checkout = () => {
                                             label="Detailed Address"
                                             rules={[{ required: true, message: 'Please input detailed address!' }]}
                                         >
-                                            <Input disabled={isAddressDisabled} placeholder="Nhập địa chỉ chi tiết" />
+                                            <Input disabled={isAddressDisabled} placeholder="Input detailed address" />
                                         </Form.Item>
                                         <Form.Item
                                             label="Date and Time"

@@ -104,7 +104,7 @@ const CheckoutCustom = () => {
     };
 
     const checkWallet = async () => {
-        try {
+         {
             const token = sessionStorage.getItem('accessToken');
             if (!token) {
                 message.error('Please login to continue');
@@ -123,17 +123,12 @@ const CheckoutCustom = () => {
                 if (!data.data) {
                     setPaymentMethod('vn-pay');
                 }
-            } else {
-                message.error(data.message || 'Failed to check wallet status');
-            }
-        } catch (error) {
-            console.error("Error checking wallet:", error);
-            message.error('Failed to check wallet status');
+            } 
         }
     };
 
     const fetchWallet = async () => {
-        try {
+        {
             const token = sessionStorage.getItem('accessToken');
             if (!token) {
                 message.error('Please login to view wallet');
@@ -149,14 +144,8 @@ const CheckoutCustom = () => {
 
             if (data.statusCode === 200) {
                 setWallet(data.data);
-            } else {
-                console.error("Failed to fetch wallet:", data.message);
-                message.error(data.message || 'Failed to load wallet');
             }
-        } catch (error) {
-            console.error("Error fetching wallet data:", error);
-            message.error('Failed to load wallet');
-        }
+        } 
     };
 
     // Redirect if no customId
@@ -198,7 +187,7 @@ const CheckoutCustom = () => {
         setSelectedDeposit(value);
     };
 
-    
+
 
     const handleProceedToPayment = async () => {
         try {
@@ -288,9 +277,9 @@ const CheckoutCustom = () => {
                 const createdOrderId = orderResponse.data.orderId; // Get orderId from response
                 setOrderId(createdOrderId); // Cập nhật orderId trong state
                 sessionStorage.setItem('lastOrderId', createdOrderId); // Lưu orderId vào sessionStorage
-              
+
                 // Check payment method
-                if (paymentMethod === 'flower-wallet'&& isWalletAvailable) {
+                if (paymentMethod === 'flower-wallet' && isWalletAvailable) {
                     setIsPasswordDialogVisible(true); // Show password dialog
                 } else {
                     // Proceed with VNPAY payment
@@ -317,9 +306,9 @@ const CheckoutCustom = () => {
         } catch (error) {
             console.error('Error:', error.response?.data || error);
             message.error(
-                error.response?.data?.errors ? 
-                Object.values(error.response.data.errors).flat().join(', ') : 
-                'Failed to process. Please try again.'
+                error.response?.data?.errors ?
+                    Object.values(error.response.data.errors).flat().join(', ') :
+                    'Failed to process. Please try again.'
             );
         }
     };
@@ -426,12 +415,23 @@ const CheckoutCustom = () => {
             const data = await response.json();
             console.log('Response:', data);
 
+            // if (data.success) {
+            //     setDeliveryCheckResult(data);
+            //     message.success(`Có thể đặt xe giao hàng. Phí giao: ${data.distance.toLocaleString()} VNĐ`);
+            // } else {
+            //     setDeliveryCheckResult(data);
+            //     message.error(data.message || 'Cân nặng và số km không phù hợp để đặt shipper');
+            // }
             if (data.success) {
                 setDeliveryCheckResult(data);
-                message.success(`Có thể đặt xe giao hàng. Phí giao: ${data.distance.toLocaleString()} VNĐ`);
+                message.success(`Delivery available. Delivery fee: ${data.distance.toLocaleString()} VNĐ`);
             } else {
-                setDeliveryCheckResult(data);
-                message.error(data.message || 'Cân nặng và số km không phù hợp để đặt shipper');
+                const customData = {
+                    ...data,
+                    message: "Delivery not available. The order exceeds 5km in distance or 3kg in weight."
+                };
+                setDeliveryCheckResult(customData);
+                message.error("Delivery not available. The order exceeds 5km in distance or 3kg in weight.");
             }
         } catch (error) {
             console.error('Error checking delivery:', error);
@@ -456,7 +456,7 @@ const CheckoutCustom = () => {
                     color: ButtonText;
                 }`}
             onClick={() => onClick(id)}
-            style={{ 
+            style={{
                 '@media (forced-colors: active)': {
                     forcedColorAdjust: 'none',
                     borderColor: 'ButtonText',
@@ -467,15 +467,15 @@ const CheckoutCustom = () => {
         >
             <div className="flex items-center">
                 <div className="w-12 h-12 mr-4">
-                    <img 
-                        src={icon} 
-                        alt={title} 
+                    <img
+                        src={icon}
+                        alt={title}
                         className="w-full h-full object-contain"
-                        style={{ 
+                        style={{
                             '@media (forced-colors: active)': {
                                 forcedColorAdjust: 'none'
                             }
-                        }} 
+                        }}
                     />
                 </div>
                 <div className="flex-grow">
@@ -516,11 +516,11 @@ const CheckoutCustom = () => {
                             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                             </svg>
-                            Có thể đặt xe giao hàng
+                            Delivery available.
                         </span>
                     </div>
                     <div className="flex items-center justify-between text-lg">
-                        <span className="text-gray-600">Phí giao hàng:</span>
+                        <span className="text-gray-600">Delivery fee:</span>
                         <span className="font-bold text-green-600">{deliveryCheckResult.distance.toLocaleString()} VNĐ</span>
                     </div>
                 </div>
@@ -833,14 +833,14 @@ const CheckoutCustom = () => {
                                 <div className="mb-5 border border-gray-300 rounded">
                                     <h3 className="text-xl font-semibold mb-5 text-left text-black bg-pink-200 p-2 rounded">Shipping Address</h3>
                                     <Form className="p-5">
-                                        <Form.Item 
+                                        <Form.Item
                                             name="recipientName"
                                             label="Recipient Name"
                                             rules={[{ required: true, message: 'Please input recipient name!' }]}
                                         >
                                             <Input disabled={isAddressDisabled} />
                                         </Form.Item>
-                                        <Form.Item 
+                                        <Form.Item
                                             name="recipientPhone"
                                             label="Recipient Phone"
                                             rules={[{ required: true, message: 'Please input recipient phone!' }]}
@@ -852,13 +852,13 @@ const CheckoutCustom = () => {
                                                 <Select.Option value="Hồ Chí Minh">Hồ Chí Minh</Select.Option>
                                             </Select>
                                         </Form.Item>
-                                        <Form.Item 
+                                        <Form.Item
                                             name="district"
                                             label="District"
                                             rules={[{ required: true, message: 'Please select district!' }]}
                                         >
-                                            <Select 
-                                                disabled={isAddressDisabled} 
+                                            <Select
+                                                disabled={isAddressDisabled}
                                                 placeholder="Chọn quận"
                                             >
                                                 {districts.map((district) => (
@@ -868,7 +868,7 @@ const CheckoutCustom = () => {
                                                 ))}
                                             </Select>
                                         </Form.Item>
-                                        <Form.Item 
+                                        <Form.Item
                                             name="detailedAddress"
                                             label="Detailed Address"
                                             rules={[{ required: true, message: 'Please input detailed address!' }]}
@@ -937,7 +937,7 @@ const CheckoutCustom = () => {
                         </div>
                     </div>
 
-                   
+
 
                     <div className="text-center mt-10">
                         <Button

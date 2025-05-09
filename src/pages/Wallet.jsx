@@ -1652,7 +1652,7 @@ const WalletPage = () => {
                 </button>
 
                 {/* Nút Hủy Đơn - Gradient Đỏ-Cam */}
-                {order.status !== "Received" && order.status !== "Delivery" && order.status !== "Request refund" && (
+                {order.status !== "Received" && order.status !== "Delivery" && order.status !== "Request refund" &&order.status !== "Fail" && (
                     <button
                         onClick={() => showCancelConfirm(order)}
                         className="inline-flex items-center px-5 py-2 bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-600 hover:to-orange-500 text-white rounded-lg shadow-lg transition-all duration-300 gap-2"
@@ -1671,7 +1671,7 @@ const WalletPage = () => {
                     </button>
                 )}
                 {/* Nút Chat - Hồng Neon */}
-                {(order.status != "Order Successfully") && (
+                {(order.status != "Order Successfully"&& order.status !== "Received" ) && (
 
                     <button
                         onClick={() => {
